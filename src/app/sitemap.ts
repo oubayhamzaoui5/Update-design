@@ -5,18 +5,6 @@ import { getAllPublishedPosts } from '@/lib/services/posts.service'
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const baseUrl = process.env.NEXT_PUBLIC_SITE_URL ?? 'http://localhost:3000'
-  const pb = getPb()
-
-  const [categories, products, posts] = await Promise.all([
-    pb.collection('categories').getFullList(500, { fields: 'slug,updated' }),
-    pb
-      .collection('products')
-      .getFullList(2000, {
-        filter: 'isActive=true && (inView=true || inView=null)',
-        fields: 'slug,updated',
-      }),
-    getAllPublishedPosts(),
-  ])
 
   const staticRoutes: MetadataRoute.Sitemap = [
     {
@@ -56,6 +44,26 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       priority: 0.7,
     },
   ]
+  let categories: any[] = []
+  let products: any[] = []
+  let posts: Array<{ slug: string; updated?: string | Date | null }> = []
+
+  try {
+    const pb = getPb()
+    ;[categories, products, posts] = await Promise.all([
+      pb.collection('categories').getFullList(500, { fields: 'slug,updated' }),
+      pb
+        .collection('products')
+        .getFullList(2000, {
+          filter: 'isActive=true && (inView=true || inView=null)',
+          fields: 'slug,updated',
+        }),
+      getAllPublishedPosts(),
+    ])
+  } catch (error) {
+    console.error('Sitemap dynamic data unavailable, serving static routes only.', error)
+    return staticRoutes
+  }
 
   const categoryRoutes: MetadataRoute.Sitemap = categories
     .filter((c: any) => Boolean(c.slug))
