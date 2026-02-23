@@ -1,20 +1,23 @@
 'use client'
 
 import Link from 'next/link'
-import { useSearchParams } from 'next/navigation'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 
 import { useAuth } from '@/lib/auth/client'
 
 export default function ConnexionPage() {
   const { login } = useAuth()
-  const searchParams = useSearchParams()
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
+  const [nextPath, setNextPath] = useState<string | null>(null)
 
-  const nextPath = searchParams.get('next')
+  useEffect(() => {
+    if (typeof window === 'undefined') return
+    const params = new URLSearchParams(window.location.search)
+    setNextPath(params.get('next'))
+  }, [])
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()

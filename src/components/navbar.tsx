@@ -4,7 +4,7 @@
 import { useState, useEffect, useRef } from "react"
 import Image from "next/image"
 import Link from "next/link"
-import { usePathname, useRouter, useSearchParams } from "next/navigation"
+import { usePathname, useRouter } from "next/navigation"
 import { createPortal } from "react-dom"
 import {
   Search,
@@ -117,7 +117,6 @@ function escapeFilterValue(v: string) {
 export function Navbar(props: NavbarProps) {
   const router = useRouter()
   const pathname = usePathname()
-  const searchParams = useSearchParams()
   const categoriesProp = props.categories ?? []
 
   const [isMenuOpen, setIsMenuOpen] = useState(false)
@@ -160,7 +159,7 @@ export function Navbar(props: NavbarProps) {
   const [showSignupPromo, setShowSignupPromo] = useState(false)
 
   const getLoginHref = () => {
-    const query = searchParams.toString()
+    const query = typeof window !== "undefined" ? window.location.search.slice(1) : ""
     const currentPath = `${pathname}${query ? `?${query}` : ""}`
     return `/connexion?next=${encodeURIComponent(currentPath)}`
   }

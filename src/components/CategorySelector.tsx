@@ -1,15 +1,15 @@
 "use client";
 
 import Link from "next/link";
-import { motion } from "framer-motion";
+import { motion, type Variants } from "framer-motion";
 
 export default function CategorySelector() {
-  const variants = {
+  const variants: Variants = {
     hidden: { opacity: 0, y: 50 },
-    visible: (delay = 0) => ({
+    visible: (delay: number = 0) => ({
       opacity: 1,
       y: 0,
-      transition: { delay, duration: 0.8, ease: "easeOut" },
+      transition: { delay, duration: 0.8, ease: [0.22, 1, 0.36, 1] },
     }),
   };
 

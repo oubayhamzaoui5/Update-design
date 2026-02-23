@@ -1,11 +1,11 @@
 "use client"
 
-import { motion } from 'framer-motion'
+import { motion, type Variants } from 'framer-motion'
 import Link from 'next/link'
 
 export default function Hero() {
   // Animation variants for the container (staggers the children)
-  const containerVariants = {
+  const containerVariants: Variants = {
     hidden: { opacity: 0 },
     visible: {
       opacity: 1,
@@ -17,14 +17,14 @@ export default function Hero() {
   }
 
   // Animation for individual text lines
-  const itemVariants = {
+  const itemVariants: Variants = {
     hidden: { y: 30, opacity: 0 },
     visible: {
       y: 0,
       opacity: 1,
       transition: {
         duration: 0.8,
-        ease: [0.21, 0.47, 0.32, 0.98], // Premium "out-quint" easing
+        ease: [0.21, 0.47, 0.32, 0.98] as [number, number, number, number], // Premium "out-quint" easing
       },
     },
   }

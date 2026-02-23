@@ -1,8 +1,8 @@
 'use client'
 
 import Link from 'next/link'
-import { useRouter, useSearchParams } from 'next/navigation'
-import { type FormEvent, useMemo, useState } from 'react'
+import { useRouter } from 'next/navigation'
+import { type FormEvent, useEffect, useMemo, useState } from 'react'
 
 import { getPb } from '@/lib/pb'
 
@@ -40,8 +40,7 @@ function clearGuestCart() {
 
 export default function InscriptionPage() {
   const router = useRouter()
-  const searchParams = useSearchParams()
-  const nextPath = searchParams.get('next')
+  const [nextPath, setNextPath] = useState<string | null>(null)
 
   const [firstName, setFirstName] = useState('')
   const [lastName, setLastName] = useState('')
@@ -57,6 +56,12 @@ export default function InscriptionPage() {
     if (!nextPath) return '/connexion'
     return `/connexion?next=${encodeURIComponent(nextPath)}`
   }, [nextPath])
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return
+    const params = new URLSearchParams(window.location.search)
+    setNextPath(params.get('next'))
+  }, [])
 
   const createCartFromGuestCart = async (pb: any) => {
     if (typeof window === 'undefined') return
