@@ -28,6 +28,11 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ message: 'Invalid sync payload' }, { status: 400 })
     }
 
+    const isHttpsRequest =
+      request.headers.get('x-forwarded-proto') === 'https' ||
+      request.nextUrl.protocol === 'https:' ||
+      process.env.NEXT_PUBLIC_SITE_URL?.startsWith('https://') === true
+
     const pb = new PocketBase(PB_URL)
     pb.authStore.save(body.token, body.user as any)
 
@@ -54,7 +59,7 @@ export async function POST(request: NextRequest) {
     const cookieStore = await cookies()
     cookieStore.set('pb_auth', authCookie, {
       httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
+      secure: process.env.NODE_ENV === 'production' && isHttpsRequest,
       sameSite: 'lax',
       maxAge: 60 * 60 * 24 * 7,
       path: '/',

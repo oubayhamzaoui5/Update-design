@@ -42,6 +42,11 @@ export async function POST(request: NextRequest) {
       )
     }
 
+    const isHttpsRequest =
+      request.headers.get('x-forwarded-proto') === 'https' ||
+      request.nextUrl.protocol === 'https:' ||
+      process.env.NEXT_PUBLIC_SITE_URL?.startsWith('https://') === true
+
     // Set secure HTTP-only cookie
     const cookieStore = await cookies()
     const authCookie = JSON.stringify({
@@ -60,7 +65,7 @@ export async function POST(request: NextRequest) {
 
     cookieStore.set('pb_auth', authCookie, {
       httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
+      secure: process.env.NODE_ENV === 'production' && isHttpsRequest,
       sameSite: 'lax',
       maxAge: 60 * 60 * 24 * 7, // 7 days
       path: '/',
