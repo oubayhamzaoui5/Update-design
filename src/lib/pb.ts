@@ -1,14 +1,14 @@
 import PocketBase from 'pocketbase'
 
-const PB_URL =
-  process.env.NEXT_PUBLIC_PB_URL ??
-  process.env.POCKETBASE_URL ??
-  'http://127.0.0.1:8090'
-
 let clientPb: PocketBase | null = null
 
 export function createServerPb() {
-  const pb = new PocketBase(PB_URL)
+  const serverUrl =
+    process.env.POCKETBASE_URL ??
+    process.env.NEXT_PUBLIC_PB_URL ??
+    'http://127.0.0.1:8090'
+
+  const pb = new PocketBase(serverUrl)
   pb.autoCancellation(false)
   return pb
 }
@@ -21,7 +21,12 @@ export function getPb(_persistSession = false) {
 
   if (clientPb) return clientPb
 
-  clientPb = new PocketBase(PB_URL)
+  const clientUrl =
+    process.env.NEXT_PUBLIC_PB_URL ??
+    process.env.POCKETBASE_URL ??
+    'http://127.0.0.1:8090'
+
+  clientPb = new PocketBase(clientUrl)
   clientPb.autoCancellation(false)
 
   return clientPb
