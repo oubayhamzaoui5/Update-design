@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 
 import React, { useEffect, useState } from 'react';
 import { ChevronDown, Loader2, Package } from 'lucide-react';
@@ -73,11 +73,11 @@ export default function BestSellingProducts() {
       className="w-full h-full object-cover"
       onError={(e) => {
         // Fallback if the URL returns a 404
-        (e.target as HTMLImageElement).src = '/placeholder-square.png'; 
+        (e.target as HTMLImageElement).src = '/aboutimg.webp'; 
       }}
     />
   ) : (
-    <span className="text-xl">{product.image || 'ðŸ“¦'}</span>
+    <span className="text-xl">{product.image || '📦'}</span>
   )}
 </div>
                 <div className="min-w-0">

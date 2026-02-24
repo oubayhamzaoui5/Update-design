@@ -715,7 +715,7 @@ useEffect(() => {
   const LogoSwap = ({ size = 60 }: { size?: number }) => (
     <div className="relative" style={{ width: size, height: size }}>
       <Image
-        src="/logow.png"
+        src="/logow.webp"
         alt="Logo"
         fill
         sizes="(max-width: 768px) 36px, 60px"
@@ -813,7 +813,8 @@ useEffect(() => {
                     Array.isArray(prod.images) &&
                     prod.images.length > 0
                       ? pbFileUrl(prod.id, prod.images[0]!)
-                      : "/placeholder-square.png"
+                                                      : "/placeholder-square.webp"
+
 
                   const price =
                     prod?.promoPrice &&
@@ -1070,7 +1071,7 @@ useEffect(() => {
                             const firstImg =
                               Array.isArray(p.images) && p.images.length > 0
                                 ? pbFileUrl(p.id, p.images[0]!)
-                                : "/placeholder-square.png"
+                                : "/placeholder-square.webp"
 
                             return (
                               <Link
@@ -1346,7 +1347,7 @@ useEffect(() => {
                             const firstImg =
                               Array.isArray(p.images) && p.images.length > 0
                                 ? pbFileUrl(p.id, p.images[0]!)
-                                : "/placeholder-square.png"
+                                : "/placeholder-square.webp"
 
                             return (
                               <Link

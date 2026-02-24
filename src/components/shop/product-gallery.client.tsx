@@ -12,7 +12,7 @@ export default function ProductGallery({
 }) {
   const [currentImage, setCurrentImage] = useState(0)
 
-  const safeImages = Array.isArray(images) && images.length ? images : ["/placeholder-square.png"]
+  const safeImages = Array.isArray(images) && images.length ? images : ["/aboutimg.webp"]
 
   // Manual image selection
   const handleSelectImage = (index: number) => {

@@ -422,7 +422,7 @@ async function getVariantsAndValues(
     const product = mapProduct(v, categoriesById)
     return {
       ...product,
-      image: product.imageUrls[0] ?? '/placeholder-square.png',
+      image: product.imageUrls[0] ?? '/aboutimg.webp',
     }
   })
 
@@ -484,7 +484,7 @@ async function getVariantsAndValues(
           value: raw,
           resolvedValue: {
             type: 'image',
-            url: image ? fileUrl('variables', parsed.id, image) : '/placeholder-square.png',
+            url: image ? fileUrl('variables', parsed.id, image) : '/aboutimg.webp',
           },
         })
       } else {
@@ -626,11 +626,11 @@ export async function getProductDetailsBySlug(rawSlug: string): Promise<ProductD
     product: {
       ...base,
       details,
-      image: base.imageUrls[0] ?? '/placeholder-square.png',
+      image: base.imageUrls[0] ?? '/aboutimg.webp',
     },
     categories,
     categoryName,
-    imageUrls: base.imageUrls.length > 0 ? base.imageUrls : ['/placeholder-square.png'],
+    imageUrls: base.imageUrls.length > 0 ? base.imageUrls : ['/aboutimg.webp'],
     availability,
     variants,
     variantUrlMap,

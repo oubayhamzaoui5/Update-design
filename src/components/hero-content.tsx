@@ -80,7 +80,7 @@ export default function Hero() {
       {/* The Image stays static as requested */}
       <div
         className="min-h-[500px] flex-1 bg-cover bg-center"
-        style={{ backgroundImage: "url('/heroimg.png')" }}
+        style={{ backgroundImage: "url('/heroimg.webp')" }}
       >
         <div className="h-full w-full bg-gradient-to-r from-white/20 to-transparent" />
       </div>

@@ -20,7 +20,7 @@ export default function CategorySelector() {
     <section className="w-full h-screen flex flex-col md:flex-row gap-2 overflow-hidden py-20 px-1">
       {/* LEFT - PROFILÉ MURAL */}
       <div className="relative h-full w-full md:w-1/2 overflow-hidden group">
-        <div className="absolute inset-0 bg-cover bg-center transition-transform duration-700  " style={{ backgroundImage: "url('/c2.png')" }} />
+        <div className="absolute inset-0 bg-cover bg-center transition-transform duration-700  " style={{ backgroundImage: "url('/c2.webp')" }} />
         <div className="absolute inset-0  bg-black/80" />
 
         <motion.div 
@@ -58,7 +58,7 @@ export default function CategorySelector() {
 
       {/* RIGHT - PANNEAU MURAL */}
       <div className="relative h-full w-full md:w-1/2 overflow-hidden group">
-        <div className="absolute inset-0 bg-cover bg-center transition-transform duration-700  " style={{ backgroundImage: "url('/c1.png')" }} />
+        <div className="absolute inset-0 bg-cover bg-center transition-transform duration-700  " style={{ backgroundImage: "url('/c1.webp')" }} />
         <div className="absolute inset-0  bg-black/75" />
 
         <motion.div 

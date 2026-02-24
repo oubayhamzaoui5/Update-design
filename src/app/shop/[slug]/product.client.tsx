@@ -420,7 +420,7 @@ export default function ProductClient({
                                   }`}
                                 >
                                   <Image
-                                    src={value.resolvedValue.url ?? '/placeholder-square.png'}
+                                    src={value.resolvedValue.url ?? '/aboutimg.webp'}
                                     alt={key}
                                     fill
                                     unoptimized

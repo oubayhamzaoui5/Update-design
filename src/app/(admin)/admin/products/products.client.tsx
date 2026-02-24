@@ -1,4 +1,4 @@
-﻿'use client'
+'use client'
 
 import { useMemo, useState } from 'react'
 import EmptyState from '@/components/admin/empty-state'
@@ -171,7 +171,7 @@ export default function ProductsClient({
               : 0
             const currentSrc = hasImages
               ? fileUrl(p.id, imgs[clampedIndex])
-              : '/placeholder-square.png'
+              : '/aboutimg.webp'
             const cats = (p.categories || [])
               .map((id) => categoryMap.get(id))
               .filter(Boolean) as CategoryOption[]

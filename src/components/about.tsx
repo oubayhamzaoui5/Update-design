@@ -62,7 +62,7 @@ export default function About() {
       <div className="mx-auto grid max-w-7xl grid-cols-1 gap-12 lg:grid-cols-2">
         <div className="relative h-[320px] overflow-hidden rounded-2xl shadow-sm lg:h-[420px]">
           <Image
-            src="/about.png"
+            src="/aboutimg.webp"
             alt="A propos d UPDATE DESIGN"
             fill
             sizes="(min-width: 1024px) 50vw, 100vw"

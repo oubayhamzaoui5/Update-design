@@ -8,10 +8,10 @@ import { ScrollTrigger } from "gsap/ScrollTrigger";
 gsap.registerPlugin(ScrollTrigger);
 
 const baseImages = [
-  "/crystal-chandelier-luxury.jpg",
-  "/modern-arc-lamp-minimalist.jpg",
-  "/gold-pendant-light-modern.jpg",
-  "/designer-sculptural-floor-lamp.jpg",
+  "/aboutimg.webp",
+  "/aboutimg.webp",
+  "/aboutimg.webp",
+  "/aboutimg.webp",
 ];
 
 const products = [

@@ -1,4 +1,4 @@
-﻿import type { Metadata } from 'next'
+import type { Metadata } from 'next'
 import { Playfair_Display } from 'next/font/google'
 import Image from 'next/image'
 import { Cpu, Leaf, Shield } from 'lucide-react'
@@ -43,7 +43,7 @@ export default async function AboutPage() {
           <Reveal>
             <div className="relative aspect-[4/5] overflow-hidden rounded-2xl">
               <Image
-                src="/about.png"
+                src="/aboutimg.webp"
                 alt="Artisan designer en train d ajuster un luminaire"
                 fill
                 sizes="(max-width: 1024px) 100vw, 50vw"

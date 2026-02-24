@@ -15,7 +15,7 @@ export default function ShopProductCard({
   productHref: string
   prioritizeImage: boolean
 }) {
-  const imageSrc = product.imageUrls[0] ?? '/placeholder-square.png'
+  const imageSrc = product.imageUrls[0] ?? '/aboutimg.webp'
   const hoverImageSrc = product.imageUrls[1] ?? null
   const [imageLoaded, setImageLoaded] = useState(false)
   const [hoverImageLoaded, setHoverImageLoaded] = useState(false)

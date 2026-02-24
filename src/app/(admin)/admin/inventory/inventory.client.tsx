@@ -1,4 +1,4 @@
-﻿'use client'
+'use client'
 import { useState } from 'react'
 import { useInventory } from '@/hooks/useInventory'
 import InventoryFilters from '@/components/admin/InventoryFilters'
@@ -81,7 +81,7 @@ export default function InventoryClient({
                 inv.filtered.map((p) => {
                   const image = p.images?.[0]
                       ? productImageUrl(p.id, p.images[0])
-                      : '/placeholder-square.png'
+                      : '/aboutimg.webp'
 
                   const isOutOfStock = p.stock <= 0
                   const isLowStock = p.stock < 10

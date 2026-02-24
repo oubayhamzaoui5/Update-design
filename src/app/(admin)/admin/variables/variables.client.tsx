@@ -1,4 +1,4 @@
-﻿'use client'
+'use client'
 
 import { useMemo, useState } from 'react'
 import { Image, Palette, Trash2 } from 'lucide-react'
@@ -117,7 +117,7 @@ export default function VariablesClient({
     >
       {v.type === 'image' && (
         <img
-          src={v.image || '/placeholder-square.png'}
+          src={v.image || '/aboutimg.webp'}
           alt={v.name}
           className="h-full w-full object-cover"
         />
@@ -170,7 +170,7 @@ export default function VariablesClient({
     >
       {v.type === 'image' && (
         <img
-          src={v.image || '/placeholder-square.png'}
+          src={v.image || '/aboutimg.webp'}
           alt={v.name}
           className="h-full w-full object-cover"
         />

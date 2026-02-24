@@ -39,7 +39,7 @@ export default function Hero() {
       <div
         className="absolute inset-0"
         style={{
-          backgroundImage: "url('/backgrounddark.png')",
+          backgroundImage: "url('/aboutimg.webp')",
           backgroundSize: "cover",
           backgroundPosition: "center",
           zIndex: 1,
@@ -51,7 +51,7 @@ export default function Hero() {
         className="absolute inset-0 transition-opacity"
         style={{
           transitionDuration: `${BG_FADE_DURATION}ms`,
-          backgroundImage: "url('/background.png')",
+          backgroundImage: "url('/aboutimg.webp')",
           backgroundSize: "cover",
           backgroundPosition: "center",
           zIndex: 2,
@@ -131,7 +131,7 @@ transitionProperty: "opacity, transform",
   }}
 >
   <img
-    src="/lampdark.png"
+    src="/aboutimg.webp"
     alt="lamp dark"
     className="max-h-[100vh] max-w-full h-auto w-auto  md:object-contain"
   />
@@ -145,7 +145,7 @@ transitionProperty: "opacity, transform",
             opacity: lampFadeOut ? 0 : 1,
           }}
         >
-          <img src="/lamp.png" alt="lamp" className="max-h-[100vh] max-w-full h-auto w-auto object-contain" />
+          <img src="/aboutimg.webp" alt="lamp" className="max-h-[100vh] max-w-full h-auto w-auto object-contain" />
         </div>
       </div>
     </div>

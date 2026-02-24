@@ -44,21 +44,21 @@ export const homeCategories: LuxeCategory[] = [
     id: 'suspensions',
     title: 'Suspensions',
     href: '/boutique?category=suspensions',
-    image: '/gold-pendant-light-modern.jpg',
+    image: '/aboutimg.webp',
     description: 'Volumes aeriens et silhouettes architecturales.',
   },
   {
     id: 'lampes-table',
     title: 'Lampes de Table',
     href: '/boutique?category=lampes-table',
-    image: '/modern-arc-lamp-minimalist.jpg',
+    image: '/aboutimg.webp',
     description: 'Lumiere d ambiance pour salon, bureau et chambre.',
   },
   {
     id: 'appliques-murales',
     title: 'Appliques Murales',
     href: '/boutique?category=appliques-murales',
-    image: '/bedroom-with-elegant-wall-sconces.jpg',
+    image: '/aboutimg.webp',
     description: 'Eclairage mural precis pour rythmer les espaces.',
   },
 ]
@@ -69,7 +69,7 @@ export const featuredProducts: LuxeProduct[] = [
     name: 'Suspension Halo en Laiton',
     slug: 'suspension-halo-laiton',
     priceEuro: 890,
-    image: '/designer-pendant-lights.jpg',
+    image: '/aboutimg.webp',
     category: 'Suspensions',
   },
   {
@@ -77,7 +77,7 @@ export const featuredProducts: LuxeProduct[] = [
     name: 'Lampe de Table Verre Fume',
     slug: 'lampe-table-verre-fume',
     priceEuro: 420,
-    image: '/luxury-home-decor-pieces.jpg',
+    image: '/aboutimg.webp',
     category: 'Lampes de Table',
   },
   {
@@ -85,7 +85,7 @@ export const featuredProducts: LuxeProduct[] = [
     name: 'Applique Murale Marbre Noir',
     slug: 'applique-murale-marbre-noir',
     priceEuro: 560,
-    image: '/bedroom-with-elegant-wall-sconces.jpg',
+    image: '/aboutimg.webp',
     category: 'Appliques Murales',
   },
   {
@@ -93,7 +93,7 @@ export const featuredProducts: LuxeProduct[] = [
     name: 'Lampadaire Atelier Signature',
     slug: 'lampadaire-atelier-signature',
     priceEuro: 990,
-    image: '/designer-sculptural-floor-lamp.jpg',
+    image: '/aboutimg.webp',
     category: 'Lampadaires',
   },
 ]
@@ -131,19 +131,19 @@ export const studioMembers: StudioMember[] = [
     id: 'm1',
     name: 'Claire Martin',
     role: 'Directrice Artistique',
-    image: '/placeholder-user.jpg',
+    image: '/aboutimg.webp',
   },
   {
     id: 'm2',
     name: 'Julien Roche',
     role: 'Curateur Lumiere',
-    image: '/placeholder-user.jpg',
+    image: '/aboutimg.webp',
   },
   {
     id: 'm3',
     name: 'Nora El Hadi',
     role: 'Responsable Studio',
-    image: '/placeholder-user.jpg',
+    image: '/aboutimg.webp',
   },
 ]
 

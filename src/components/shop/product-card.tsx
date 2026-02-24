@@ -67,7 +67,7 @@ export default function ProductCard({
     setLiked(initialWishlisted)
   }, [initialWishlisted])
 
-  const imageSrc = imageCount > 0 ? imageUrls[0] : '/placeholder-square.png'
+  const imageSrc = imageCount > 0 ? imageUrls[0] : '/aboutimg.webp'
   const hoverImageSrc = imageCount > 1 ? imageUrls[1] : imageSrc
 
   const hasPromo = p.promoPrice != null && p.promoPrice > 0 && p.promoPrice < p.price

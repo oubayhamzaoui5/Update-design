@@ -9,7 +9,7 @@ export default function HeroSection() {
       <div className="absolute inset-0 bg-gradient-to-r from-background via-background/80 to-transparent" />
       <div className="absolute inset-0 opacity-30">
         <Image
-          src="/luxury-modern-interior-with-chandelier.jpg"
+          src="/aboutimg.webp"
           alt="Salon moderne avec luminaires design"
           fill
           priority

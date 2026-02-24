@@ -17,7 +17,7 @@ export default function ProductCard({ product }: { product: HomeProduct }) {
       <Link href={`/produit/${product.slug}`} className="block">
         <div className="relative aspect-square overflow-hidden bg-foreground/5">
           <Image
-            src={product.imageUrl || '/placeholder-square.png'}
+            src={product.imageUrl || '/aboutimg.webp'}
             alt={product.name}
             fill
             className="object-cover transition duration-500 group-hover:scale-105"

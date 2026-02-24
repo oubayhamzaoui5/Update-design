@@ -13,19 +13,19 @@ import HeroContent from '@/components/hero-content'
 const roomCategories = [
   {
     name: 'Lighting',
-    image: '/lighting.png',
+    image: '/lighting.webp',
   },
   {
     name: 'Decoration',
-    image: '/decoration.png',
+    image: '/decoration.webp',
   },
   {
     name: 'Suspension',
-    image: '/suspension.png',
+    image: '/suspension.webp',
   },
   {
     name: 'Abat-jour',
-    image: '/abat-jour.png',
+    image: '/abat-jour.webp',
   },
 ]
 
@@ -197,7 +197,7 @@ export default async function HomePage() {
               <img
                 alt="Artisan polissant un luminaire"
                 className="rounded-2xl shadow-2xl"
-                src="https://lh3.googleusercontent.com/aida-public/AB6AXuCl2qFeuWBzxFYASCO7ntG7rhCSkdYdtVfec3m5gpmy4bAhyuL2vWMDc2B5J28bk0MILVSKJr7cgQHs-5egpDEW3ZlVlZdpb97lPWKh5YI5XCIVU_26wqXrf488x5FvK5cPY1IbW-aS44Bh7cV_nsCHaixvdogOkK8u0bteoZ0d5Ih5w6fP8zFT8tUVYw1rrA4mYgDgidubcUI3ED6xoKncPFUAgsExCJXtozlSclGQ-jfCuAuV61MrotKKhIQ0aAvNWgF99UUPJEc"
+                src="/aboutimg.webp"
               />
             </div>
             <div className="flex-1">
