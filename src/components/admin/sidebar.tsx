@@ -58,7 +58,7 @@ export default function Sidebar() {
       <div className="flex items-center justify-center px-6 py-4">
         <Link href="/" className="flex items-center justify-center">
           <div className="relative h-20 w-20">
-            <Image src="/aboutimg.webp" alt="Logo" width={160} height={160} className="object-cover" />
+            <Image src="/logow.webp" alt="Logo" width={160} height={160} className="object-cover" />
           </div>
         </Link>
       </div>

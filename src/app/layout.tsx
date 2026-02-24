@@ -16,19 +16,19 @@ export const metadata: Metadata = {
   icons: {
     icon: [
       {
-        url: '/aboutimg.webp',
+        url: '/logow.webp',
         media: '(prefers-color-scheme: light)',
       },
       {
-        url: '/aboutimg.webp',
+        url: '/logow.webp',
         media: '(prefers-color-scheme: dark)',
       },
       {
-        url: '/aboutimg.webp',
+        url: '/logow.webp',
         type: 'image/svg+xml',
       },
     ],
-    apple: '/aboutimg.webp',
+    apple: '/logow.webp',
   },
 }
 
