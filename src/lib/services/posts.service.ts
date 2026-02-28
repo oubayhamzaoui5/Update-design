@@ -191,12 +191,12 @@ function resolveCoverImageUrl(pb: PocketBaseLike, record: Record<string, unknown
   if (typeof rawCover === 'string' && rawCover.trim()) {
     const safe = toSafeCoverImage(rawCover)
     if (safe) return safe
-    return pb.files.getURL(record, rawCover.trim())
+    return pb.files.getUrl(record, rawCover.trim())
   }
 
   if (Array.isArray(rawCover)) {
     const first = rawCover.find((value) => typeof value === 'string' && value.trim())
-    if (typeof first === 'string') return pb.files.getURL(record, first.trim())
+    if (typeof first === 'string') return pb.files.getUrl(record, first.trim())
   }
 
   return ''
