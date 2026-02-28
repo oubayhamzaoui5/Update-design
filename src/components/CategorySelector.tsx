@@ -17,7 +17,7 @@ export default function CategorySelector() {
   const viewportConfig = { once: true, amount: 0.4 };
 
   return (
-    <section className="w-full h-screen flex flex-col md:flex-row gap-2 overflow-hidden py-20 px-1">
+    <section className="w-full h-[80vh] flex flex-col md:flex-row gap-4 overflow-hidden py-16 px-6">
       {/* LEFT - PROFILÉ MURAL */}
       <div className="relative h-full w-full md:w-1/2 overflow-hidden group">
         <div className="absolute inset-0 bg-cover bg-center transition-transform duration-700  " style={{ backgroundImage: "url('/c2.webp')" }} />
@@ -34,7 +34,7 @@ export default function CategorySelector() {
             variants={variants}
             custom={0}
           >
-            PROFILÉ MURAL DÉCORATIF
+            PROFILE MURAL DÉCORATIF
           </motion.h2>
 
           <motion.p
@@ -47,7 +47,7 @@ export default function CategorySelector() {
           </motion.p>
 
           <motion.div variants={variants} custom={0.4}>
-            <Link href="/shop?category=profile" className="inline-block">
+            <Link href="/boutique/categorie/effet-bois-d-interieur" className="inline-block">
               <button className="mt-8 px-8 py-3 border border-white/70 text-white text-sm font-bold uppercase tracking-[0.2em] transition-all duration-500 hover:bg-white hover:text-black hover:font-bold cursor-pointer">
                 Explorer
               </button>
@@ -85,7 +85,7 @@ export default function CategorySelector() {
           </motion.p>
 
           <motion.div variants={variants} custom={0.4}>
-            <Link href="/shop?category=pvc" className="inline-block">
+            <Link href="/boutique/categorie/effet-marbre" className="inline-block">
               <button className="mt-8 px-8 py-3 border border-white/70 text-white text-sm font-bold uppercase tracking-[0.2em] transition-all duration-500 hover:bg-white hover:text-black hover:font-bold cursor-pointer">
                 Explorer
               </button>

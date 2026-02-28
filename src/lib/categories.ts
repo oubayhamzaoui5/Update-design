@@ -3,6 +3,7 @@ export type Category = {
   id: string
   name: string
   slug: string
+  order?: number
   parent?: string | string[] | null
   description?: string | null
 }
@@ -20,7 +21,7 @@ export async function fetchCategories(): Promise<Category[]> {
 
   try {
     const res = await fetch(
-      `${PB_URL}/api/collections/categories/records?perPage=200&sort=name`,
+      `${PB_URL}/api/collections/categories/records?perPage=200&sort=order,name`,
       { cache: "no-store" }
     )
 
@@ -31,6 +32,7 @@ export async function fetchCategories(): Promise<Category[]> {
       id: c.id,
       name: c.name ?? "",
       slug: c.slug ?? "",
+      order: Number(c.order ?? 0),
       parent: c.parent ?? null,
       description: c.desc ?? c.description ?? null,
     }))

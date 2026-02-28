@@ -49,8 +49,12 @@ async function getLatestOrder(): Promise<LatestOrder> {
 }
 
 function base64UrlToArrayBuffer(base64Url: string): ArrayBuffer {
-  const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/')
-  const pad = '='.repeat((4 - (base64.length % 4)) % 4)
+  const normalized = String(base64Url ?? '').trim()
+  const base64 = normalized.replace(/-/g, '+').replace(/_/g, '/')
+  const remainder = base64.length % 4
+  const requiredPad = remainder === 0 ? 0 : 4 - remainder
+  const safePadCount = Number.isFinite(requiredPad) ? Math.max(0, Math.min(3, requiredPad)) : 0
+  const pad = '='.repeat(safePadCount)
   const raw = window.atob(`${base64}${pad}`)
   const output = new Uint8Array(raw.length)
   for (let i = 0; i < raw.length; i += 1) {

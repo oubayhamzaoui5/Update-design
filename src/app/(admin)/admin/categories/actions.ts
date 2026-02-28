@@ -13,6 +13,7 @@ type UpsertCategoryInput = {
   desc?: string
   promo?: number
   activeAll?: boolean
+  order?: number
 }
 
 function normalizePayload(input: UpsertCategoryInput) {
@@ -26,6 +27,10 @@ function normalizePayload(input: UpsertCategoryInput) {
     typeof input.promo === 'number' && Number.isFinite(input.promo)
       ? Math.max(0, input.promo)
       : 0
+  const order =
+    typeof input.order === 'number' && Number.isFinite(input.order)
+      ? Math.max(0, input.order)
+      : 0
 
   return {
     name,
@@ -34,6 +39,7 @@ function normalizePayload(input: UpsertCategoryInput) {
     desc: input.desc?.trim() ?? '',
     promo,
     activeAll: Boolean(input.activeAll),
+    order,
   }
 }
 
@@ -64,6 +70,30 @@ export async function deleteCategoryAction(id: string) {
   assertPocketBaseId(id, 'category id')
   const { pb } = await getAdminPbForAction()
   await pb.collection('categories').delete(id)
+  revalidatePath('/admin/categories')
+  revalidatePath('/boutique')
+  revalidatePath('/shop')
+  revalidateTag('shop-categories', 'max')
+  return { ok: true }
+}
+
+export async function reorderCategoriesAction(
+  updates: Array<{ id: string; order: number }>
+) {
+  if (!Array.isArray(updates) || updates.length === 0) {
+    throw new Error('No category order updates provided')
+  }
+
+  const { pb } = await getAdminPbForAction()
+
+  await Promise.all(
+    updates.map(async (update) => {
+      assertPocketBaseId(update.id, 'category id')
+      const safeOrder = Number.isFinite(update.order) ? Math.max(0, update.order) : 0
+      await pb.collection('categories').update(update.id, { order: safeOrder })
+    })
+  )
+
   revalidatePath('/admin/categories')
   revalidatePath('/boutique')
   revalidatePath('/shop')

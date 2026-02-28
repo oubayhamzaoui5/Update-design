@@ -25,13 +25,23 @@ function sanitizeHtml(html: string): string {
 function toInput(formData: FormData): PostUpsertInput {
   const title = String(formData.get('title') ?? '').trim()
   const rawSlug = String(formData.get('slug') ?? '').trim()
+  const coverImageEntry = formData.get('coverImage')
+  const coverImage =
+    coverImageEntry instanceof File && coverImageEntry.size > 0
+      ? coverImageEntry
+      : undefined
+  const relatedProducts = formData
+    .getAll('relatedProducts')
+    .map((value) => String(value).trim())
+    .filter(Boolean)
 
   return {
     title,
     slug: rawSlug || slugify(title),
     excerpt: String(formData.get('excerpt') ?? ''),
-    coverImage: String(formData.get('coverImage') ?? ''),
+    coverImage,
     content: sanitizeHtml(String(formData.get('content') ?? '')),
+    relatedProducts,
     published: parsePublished(formData.get('published')),
   }
 }

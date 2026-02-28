@@ -2,27 +2,65 @@
 
 import Image from 'next/image'
 import Link from 'next/link'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
+import { Heart } from 'lucide-react'
 
+import { getPb } from '@/lib/pb'
+import { toggleWishlistForProduct } from '@/lib/shop/client-api'
 import type { ProductListItem } from '@/lib/services/product.service'
 
 export default function ShopProductCard({
   product,
   productHref,
   prioritizeImage,
+  initialWishlisted = false,
+  enableWishlist = true,
+  disableAnimations,
 }: {
   product: ProductListItem
   productHref: string
   prioritizeImage: boolean
+  initialWishlisted?: boolean
+  enableWishlist?: boolean
+  disableAnimations?: boolean
 }) {
+  void disableAnimations
   const imageSrc = product.imageUrls[0] ?? '/aboutimg.webp'
   const hoverImageSrc = product.imageUrls[1] ?? null
   const [imageLoaded, setImageLoaded] = useState(false)
   const [hoverImageLoaded, setHoverImageLoaded] = useState(false)
+  const [isSignedIn, setIsSignedIn] = useState(false)
+  const [isWishlisted, setIsWishlisted] = useState(initialWishlisted)
+  const [isWishLoading, setIsWishLoading] = useState(false)
 
   const hasPromo =
     product.promoPrice != null && product.promoPrice > 0 && product.promoPrice < product.price
-  const inStock = product.inStock ?? true
+
+  useEffect(() => {
+    const signedIn = getPb(true).authStore.isValid
+    setIsSignedIn(signedIn)
+  }, [])
+
+  useEffect(() => {
+    if (!isSignedIn || !enableWishlist) {
+      setIsWishlisted(false)
+      return
+    }
+    setIsWishlisted(initialWishlisted)
+  }, [enableWishlist, initialWishlisted, isSignedIn])
+
+  const handleWishlistClick = async (event: React.MouseEvent) => {
+    event.preventDefault()
+    event.stopPropagation()
+
+    try {
+      setIsWishLoading(true)
+      const next = await toggleWishlistForProduct(product.id)
+      setIsWishlisted(next)
+    } finally {
+      setIsWishLoading(false)
+    }
+  }
 
   return (
     <article className="group">
@@ -78,34 +116,52 @@ export default function ShopProductCard({
             )}
           </div>
 
-          {!inStock && (
-            <div className="absolute inset-0 z-10 flex items-center justify-center bg-black/25">
-              <span className="text-sm font-semibold text-white">Rupture de stock</span>
+          {isSignedIn && enableWishlist && (
+            <button
+              type="button"
+              aria-label={isWishlisted ? 'Retirer des favoris' : 'Ajouter aux favoris'}
+              className="absolute right-4 top-4 z-20 grid h-9 w-9 place-items-center rounded-full bg-gray-500/20 backdrop-blur-sm transition hover:scale-105 active:scale-95 disabled:cursor-not-allowed disabled:opacity-70"
+              onClick={handleWishlistClick}
+              disabled={isWishLoading}
+            >
+              <Heart
+                className={`h-5 w-5 transition-colors ${
+                  isWishlisted ? 'fill-accent text-accent' : 'fill-transparent text-foreground/80'
+                }`}
+              />
+            </button>
+          )}
+
+          {!product.inStock && (
+            <div className="absolute inset-0 z-10 flex items-center justify-center bg-black/45">
+              <span className="text-base font-extrabold text-white">Rupture de stock</span>
             </div>
           )}
+
         </div>
       </Link>
 
-      <div className="space-y-2">
-        <h3 className="line-clamp-1 text-sm font-semibold">
+      <div className="space-y-1">
+        <h3 className="line-clamp-1 text-base font-bold mb-0 lg:mb-1">
           <Link href={productHref} prefetch={false} className="transition-colors hover:text-accent">
             {product.name}
           </Link>
         </h3>
 
-        <div className="flex items-center justify-between text-xs text-muted-foreground">
-          <span className="line-clamp-1">{product.sku ? `Reference : ${product.sku}` : '\u00A0'}</span>
-          <span className={`font-semibold ${inStock ? 'text-emerald-600' : 'text-red-600'}`}>
-            {inStock ? 'En stock' : 'Rupture de stock'}
+        <div className="text-sm text-muted-foreground mt-0 mb-1 lg:mb-2">
+          <span className="line-clamp-1 font-semibold">
+            {product.sku ? `Reference : ${product.sku}` : '\u00A0'}
           </span>
         </div>
 
+      
+
         {product.description && (
-          <p className="line-clamp-2 text-xs text-muted-foreground">{product.description}</p>
+          <p className="line-clamp-2 text-sm text-muted-foreground mb-1">{product.description}</p>
         )}
 
         <div className="flex items-center gap-2">
-          <span className="text-sm font-semibold text-accent">
+          <span className="text-base font-bold text-accent">
             {hasPromo ? product.promoPrice!.toFixed(2) : product.price.toFixed(2)} {product.currency}
           </span>
 
@@ -114,7 +170,11 @@ export default function ShopProductCard({
               {product.price.toFixed(2)} {product.currency}
             </span>
           )}
+          
         </div>
+          {product.isVariant && (
+          <p className="text-[10px] lg:text-[11px] text-muted-foreground font-bold">*Disponible dans d'autres modeles</p>
+        )}
       </div>
     </article>
   )

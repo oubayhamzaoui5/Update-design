@@ -11,6 +11,7 @@ const registerSchema = z.object({
   email: z.string().email("Adresse email invalide"),
   password: z.string().min(8, 'Le mot de passe doit contenir au moins 8 caractères'),
   passwordConfirm: z.string(),
+  surname: z.string().min(2, 'Le prenom doit contenir au moins 2 caracteres'),
   name: z.string().min(2, 'Le nom doit contenir au moins 2 caractères'),
   username: z.string().min(3, "Le nom d'utilisateur doit contenir au moins 3 caractères"),
 }).refine((data) => data.password === data.passwordConfirm, {
@@ -33,6 +34,7 @@ export async function POST(request: NextRequest) {
       email: data.email,
       password: data.password,
       passwordConfirm: data.passwordConfirm,
+      surname: data.surname,
       name: data.name,
       username: data.username,
       role: 'user', // Default role
@@ -53,6 +55,7 @@ export async function POST(request: NextRequest) {
       user: {
         id: record.id,
         email: record.email,
+        surname: record.surname,
         name: record.name,
         username: record.username,
       },

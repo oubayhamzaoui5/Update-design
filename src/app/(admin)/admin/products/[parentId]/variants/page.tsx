@@ -23,7 +23,7 @@ export async function generateMetadata({ params }: Props) {
   const { parentId } = await params
 
   return {
-    title: 'Variantes produit | Administration',
+    title: 'Update Design | Tableau de bord',
     description: `Gerez les variantes du produit ${parentId}`,
     robots: 'noindex, nofollow',
   }

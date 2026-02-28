@@ -162,3 +162,23 @@
   scrollbar-width: thin; /* Firefox thin (≈8px, cannot go thinner) */
   scrollbar-color: var(--accent) var(--background);
 }
+
+/* force visible horizontal scrollbar for mobile product sliders */
+.always-visible-scrollbar {
+  scrollbar-gutter: stable both-edges;
+}
+
+.always-visible-scrollbar::-webkit-scrollbar {
+  height: 6px;
+}
+
+.always-visible-scrollbar::-webkit-scrollbar-track {
+  background: rgba(0, 0, 0, 0.1);
+  border-radius: 9999px;
+}
+
+.always-visible-scrollbar::-webkit-scrollbar-thumb {
+  background: var(--accent);
+  border-radius: 9999px;
+}
+

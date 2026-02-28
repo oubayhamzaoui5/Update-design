@@ -2,6 +2,7 @@
 
 import { useState } from "react"
 import Image from "next/image"
+import { ChevronLeft, ChevronRight } from "lucide-react"
 
 export default function ProductGallery({
   images,
@@ -13,11 +14,22 @@ export default function ProductGallery({
   const [currentImage, setCurrentImage] = useState(0)
 
   const safeImages = Array.isArray(images) && images.length ? images : ["/aboutimg.webp"]
+  const hasMultipleImages = safeImages.length > 1
 
   // Manual image selection
   const handleSelectImage = (index: number) => {
     if (index === currentImage) return
     setCurrentImage(index)
+  }
+
+  const handlePreviousImage = () => {
+    if (!hasMultipleImages) return
+    setCurrentImage((prev) => (prev === 0 ? safeImages.length - 1 : prev - 1))
+  }
+
+  const handleNextImage = () => {
+    if (!hasMultipleImages) return
+    setCurrentImage((prev) => (prev === safeImages.length - 1 ? 0 : prev + 1))
   }
 
   return (
@@ -32,10 +44,30 @@ export default function ProductGallery({
           className="object-cover"
           priority
         />
+        {hasMultipleImages && (
+          <>
+            <button
+              type="button"
+              onClick={handlePreviousImage}
+              aria-label="Previous image"
+              className="absolute left-3 top-1/2 -translate-y-1/2 rounded-full bg-background/80 p-2 text-foreground shadow-sm transition hover:bg-background"
+            >
+              <ChevronLeft className="h-5 w-5" />
+            </button>
+            <button
+              type="button"
+              onClick={handleNextImage}
+              aria-label="Next image"
+              className="absolute right-3 top-1/2 -translate-y-1/2 rounded-full bg-background/80 p-2 text-foreground shadow-sm transition hover:bg-background"
+            >
+              <ChevronRight className="h-5 w-5" />
+            </button>
+          </>
+        )}
       </div>
 
       {/* Thumbnails */}
-      {safeImages.length > 1 && (
+      {hasMultipleImages && (
         <div className="grid grid-cols-4 gap-3">
           {safeImages.map((img, i) => (
             <button

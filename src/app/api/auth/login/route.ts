@@ -54,6 +54,7 @@ export async function POST(request: NextRequest) {
       record: {
         id: authData.record.id,
         email: authData.record.email,
+        surname: authData.record.surname,
         name: authData.record.name,
         username: authData.record.username,
         role: authData.record.role || 'user',
@@ -76,6 +77,7 @@ export async function POST(request: NextRequest) {
       user: {
         id: authData.record.id,
         email: authData.record.email,
+        surname: authData.record.surname,
         name: authData.record.name,
         username: authData.record.username,
         role: authData.record.role || 'user',

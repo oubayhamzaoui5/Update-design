@@ -11,8 +11,9 @@ import Card from '@/components/admin/card'
 import Footer from '@/components/footer'
 import { Navbar } from '@/components/navbar'
 import ProductGallery from '@/components/shop/product-gallery.client'
-import ProductCard, { type CategoryOption, type Product } from '@/components/shop/product-card'
+import ShopProductCard from '@/app/shop/_components/shop-product-card'
 import { getPb } from '@/lib/pb'
+import type { ProductListItem, ShopCategory } from '@/lib/services/product.service'
 import {
   addToCartForUser,
   fetchIsInCart,
@@ -23,9 +24,8 @@ import {
 type DetailItem = { label: string; value: string }
 type VariantKey = Record<string, string>
 
-type ProductWithDetails = Product & {
+type ProductWithDetails = ProductListItem & {
   details?: DetailItem[] | null
-  isParent?: boolean
   variantKey?: VariantKey
 }
 
@@ -130,8 +130,8 @@ export default function ProductClient({
   product: ProductWithDetails
   imageUrls: string[]
   categoryName: string
-  categories: CategoryOption[]
-  relatedProducts: ProductWithDetails[]
+  categories: ShopCategory[]
+  relatedProducts: ProductListItem[]
   availability: AvailabilityInfo
   variants?: ProductWithDetails[]
   variantUrlMap?: Record<string, string>
@@ -186,9 +186,12 @@ export default function ProductClient({
 
   useEffect(() => {
     if (typeof window === 'undefined') return
-    const dismissed = window.localStorage.getItem(SIGNUP_PROMO_DISMISSED_KEY) === '1'
+    const dismissedUntilRaw = window.localStorage.getItem(SIGNUP_PROMO_DISMISSED_KEY)
+    const dismissedUntil = dismissedUntilRaw ? Number(dismissedUntilRaw) : 0
+    const isDismissed =
+      !!dismissedUntilRaw && Number.isFinite(dismissedUntil) && Date.now() < dismissedUntil
     const isLoggedIn = getPb(true).authStore.isValid
-    setHasSignupPromoBanner(!isLoggedIn && !dismissed)
+    setHasSignupPromoBanner(!isLoggedIn && !isDismissed)
   }, [])
 
   const mainCategory = useMemo(() => {
@@ -235,6 +238,15 @@ export default function ProductClient({
   useEffect(() => {
     let cancelled = false
     const run = async () => {
+      const signedIn = getPb(true).authStore.isValid
+      if (!signedIn) {
+        if (!cancelled) {
+          const exists = getGuestCart().some((item) => item.productId === product.id)
+          setIsInCart(exists)
+        }
+        return
+      }
+
       try {
         const inCart = await fetchIsInCart(product.id)
         if (!cancelled && inCart) {
@@ -259,6 +271,12 @@ export default function ProductClient({
   useEffect(() => {
     let cancelled = false
     const run = async () => {
+      const signedIn = getPb(true).authStore.isValid
+      if (!signedIn) {
+        if (!cancelled) setIsWishlisted(false)
+        return
+      }
+
       try {
         const inWishlist = await fetchIsInWishlist(product.id)
         if (!cancelled) setIsWishlisted(inWishlist)
@@ -338,7 +356,7 @@ export default function ProductClient({
     : 'bg-destructive/10 text-destructive'
   const globalStatusDotClass = isInStock ? 'bg-emerald-600' : 'bg-red-500'
 
-  const navOffset = hasSignupPromoBanner ? 116 : 76
+  const navOffset = hasSignupPromoBanner ? 136 : 76
 
   return (
     <div className="min-h-screen bg-background" style={{ paddingTop: navOffset }}>
@@ -583,18 +601,7 @@ export default function ProductClient({
       <div className="mx-auto max-w-7xl px-4 py-10">
         <div className="space-y-2">
           <div className="flex gap-2">
-            <button
-              type="button"
-              onClick={() => setActiveTab('description')}
-              className={`rounded-md px-3 py-1 text-sm font-semibold ${
-                activeTab === 'description'
-                  ? 'bg-secondary text-foreground'
-                  : 'bg-transparent text-muted-foreground hover:bg-secondary/60'
-              }`}
-            >
-              Description
-            </button>
-            {hasDetails && (
+              {hasDetails && (
               <button
                 type="button"
                 onClick={() => setActiveTab('details')}
@@ -607,6 +614,18 @@ export default function ProductClient({
                 Details
               </button>
             )}
+            <button
+              type="button"
+              onClick={() => setActiveTab('description')}
+              className={`rounded-md px-3 py-1 text-sm font-semibold ${
+                activeTab === 'description'
+                  ? 'bg-secondary text-foreground'
+                  : 'bg-transparent text-muted-foreground hover:bg-secondary/60'
+              }`}
+            >
+              Description
+            </button>
+          
           </div>
 
           <Card className="rounded-2xl border border-border bg-background p-5">
@@ -634,10 +653,18 @@ export default function ProductClient({
       {relatedProducts.length > 0 && (
         <div className="mx-auto max-w-7xl border-t border-border px-4 py-10">
           <h2 className="mb-6 text-2xl font-bold">Vous pourriez aussi aimer</h2>
-          <div className="grid grid-cols-2 gap-6 md:grid-cols-4">
-            {relatedProducts.map((item) => (
-              <ProductCard key={item.id} p={item} categories={categories} />
-            ))}
+          <div className="grid grid-cols-1 gap-4 min-[420px]:grid-cols-2 sm:gap-6 lg:grid-cols-3 xl:grid-cols-4">
+            {relatedProducts.map((item, idx) => {
+              const productHref = `/produit/${item.slug}`
+              return (
+                <div
+                  key={item.id}
+                  className="rounded-2xl border border-transparent p-2 transition hover:border-foreground/15 hover:bg-foreground/[0.02] [content-visibility:auto]"
+                >
+                  <ShopProductCard product={item} productHref={productHref} prioritizeImage={idx === 0} />
+                </div>
+              )
+            })}
           </div>
         </div>
       )}

@@ -3,7 +3,9 @@ import 'server-only'
 import { unstable_cache } from 'next/cache'
 import { z } from 'zod'
 
+import { getSession } from '@/lib/auth/server'
 import { createServerPb } from '@/lib/pb'
+import { getWishlistProductIds } from '@/lib/services/shop-user.service'
 
 const PB_ID_REGEX = /^[a-zA-Z0-9]{15}$/
 const SLUG_REGEX = /^[a-z0-9]+(?:-[a-z0-9]+)*$/i
@@ -19,6 +21,7 @@ const shopListQuerySchema = z.object({
   category: z.string().trim().min(1).max(80).optional(),
   promotions: z.enum(['0', '1']).optional(),
   nouveautes: z.enum(['0', '1']).optional(),
+  wishlist: z.enum(['0', '1']).optional(),
   sort: z.enum(['name', 'priceAsc', 'priceDesc', 'latest']).default('name'),
 })
 
@@ -36,6 +39,7 @@ export type ShopCategory = {
   id: string
   name: string
   slug: string
+  order: number
   parent: string | string[] | null
   description: string | null
   promo: number
@@ -57,6 +61,7 @@ export type ProductListItem = {
   currency: string
   categories: string[]
   isNew: boolean
+  isVariant: boolean
   isParent: boolean
   variantKey: Record<string, string>
   stock: number
@@ -140,6 +145,7 @@ function mapCategory(record: PocketBaseRecord): ShopCategory {
     id: String(record.id ?? ''),
     name: String(record.name ?? ''),
     slug: String(record.slug ?? ''),
+    order: Number(record.order ?? 0),
     parent: (record.parent as string | string[] | null | undefined) ?? null,
     description: String(record.desc ?? record.description ?? '') || null,
     promo: Number(record.promo ?? 0),
@@ -213,6 +219,7 @@ function mapProduct(
     currency: String(record.currency ?? 'DT'),
     categories: categoryIds,
     isNew: Boolean(record.isNew),
+    isVariant: Boolean(record.isVariant),
     isParent: Boolean(record.isParent),
     variantKey: (record.variantKey as Record<string, string> | undefined) ?? {},
     stock,
@@ -224,8 +231,8 @@ const getCachedCategories = unstable_cache(
   async (): Promise<ShopCategory[]> => {
     const pb = createServerPb()
     const records = await pb.collection('categories').getFullList(500, {
-      sort: 'name',
-      fields: 'id,name,slug,parent,desc,description,promo,activeAll',
+      sort: 'order,name',
+      fields: 'id,name,slug,order,parent,desc,description,promo,activeAll',
       requestKey: null,
     })
     return records.map((c) => mapCategory(c as PocketBaseRecord))
@@ -318,6 +325,65 @@ export async function getShopList(input: ShopListInput): Promise<ShopListResult>
     baseFilters.push('isNew=true')
   }
 
+  if (input.wishlist === '1') {
+    const session = await getSession()
+    if (!session) {
+      return {
+        products: [],
+        categories,
+        categorySlug: input.category ?? null,
+        activeCategory,
+        pagination: {
+          page: input.page,
+          perPage: input.perPage,
+          totalItems: 0,
+          totalPages: 0,
+          hasPrevPage: false,
+          hasNextPage: false,
+        },
+        applied: {
+          query: input.query ?? '',
+          promotions: input.promotions === '1',
+          nouveautes: input.nouveautes === '1',
+          sort: input.sort,
+        },
+      }
+    }
+
+    const wishlistIds = await getWishlistProductIds({
+      token: session.token,
+      userId: session.user.id,
+    })
+
+    if (wishlistIds.length === 0) {
+      return {
+        products: [],
+        categories,
+        categorySlug: input.category ?? null,
+        activeCategory,
+        pagination: {
+          page: input.page,
+          perPage: input.perPage,
+          totalItems: 0,
+          totalPages: 0,
+          hasPrevPage: false,
+          hasNextPage: false,
+        },
+        applied: {
+          query: input.query ?? '',
+          promotions: input.promotions === '1',
+          nouveautes: input.nouveautes === '1',
+          sort: input.sort,
+        },
+      }
+    }
+
+    const wishlistFilter = wishlistIds
+      .map((id) => `id="${escapePbString(id)}"`)
+      .join(' || ')
+    baseFilters.push(`(${wishlistFilter})`)
+  }
+
   const pb = createServerPb()
 
   const fetchList = async (filter: string) =>
@@ -325,7 +391,7 @@ export async function getShopList(input: ShopListInput): Promise<ShopListResult>
       filter,
       sort: sortToPocketBase(input.sort),
       fields:
-        'id,slug,sku,name,price,promoPrice,isActive,inView,description,images,currency,categories,category,isNew,isParent,variantKey,stock',
+        'id,slug,sku,name,price,promoPrice,isActive,inView,description,images,currency,categories,category,isNew,isVariant,isParent,variantKey,stock',
       requestKey: null,
     })
 
@@ -393,7 +459,7 @@ async function getVariantsAndValues(
     const children = await pb.collection('products').getFullList(200, {
       filter: `parent="${escapePbString(recordId)}" && isActive=true && (inView=true || inView=null)`,
       fields:
-        'id,slug,sku,name,price,promoPrice,isActive,inView,description,images,currency,categories,category,isNew,isParent,parent,variantKey,stock',
+        'id,slug,sku,name,price,promoPrice,isActive,inView,description,images,currency,categories,category,isNew,isVariant,isParent,parent,variantKey,stock',
       requestKey: null,
     })
     rawVariants = [baseRecord, ...(children as unknown as PocketBaseRecord[])]
@@ -401,13 +467,13 @@ async function getVariantsAndValues(
     const [parent, siblings] = await Promise.all([
       pb.collection('products').getOne(parentId, {
         fields:
-          'id,slug,sku,name,price,promoPrice,isActive,inView,description,images,currency,categories,category,isNew,isParent,parent,variantKey,stock',
+          'id,slug,sku,name,price,promoPrice,isActive,inView,description,images,currency,categories,category,isNew,isVariant,isParent,parent,variantKey,stock',
         requestKey: null,
       }),
       pb.collection('products').getFullList(200, {
         filter: `parent="${escapePbString(parentId)}" && isActive=true && (inView=true || inView=null)`,
         fields:
-          'id,slug,sku,name,price,promoPrice,isActive,inView,description,images,currency,categories,category,isNew,isParent,parent,variantKey,stock',
+          'id,slug,sku,name,price,promoPrice,isActive,inView,description,images,currency,categories,category,isNew,isVariant,isParent,parent,variantKey,stock',
         requestKey: null,
       }),
     ])
@@ -545,7 +611,7 @@ async function getRelatedProducts(
           filter: `${baseFilter} && ${buildExcludeFilter()} && (${relationFilter})`,
           sort: '-created',
           fields:
-            'id,slug,sku,name,price,promoPrice,isActive,inView,description,images,currency,categories,category,isNew,isParent,variantKey,stock',
+            'id,slug,sku,name,price,promoPrice,isActive,inView,description,images,currency,categories,category,isNew,isVariant,isParent,variantKey,stock',
           requestKey: null,
         })
         .catch(() => null)
@@ -561,7 +627,7 @@ async function getRelatedProducts(
       filter: `${baseFilter} && ${buildExcludeFilter()}`,
       sort: '-created',
       fields:
-        'id,slug,sku,name,price,promoPrice,isActive,inView,description,images,currency,categories,category,isNew,isParent,variantKey,stock',
+        'id,slug,sku,name,price,promoPrice,isActive,inView,description,images,currency,categories,category,isNew,isVariant,isParent,variantKey,stock',
       requestKey: null,
     })
     addRecords(fallback.items as unknown as PocketBaseRecord[])
@@ -584,7 +650,7 @@ export async function getProductDetailsBySlug(rawSlug: string): Promise<ProductD
       `slug="${escapedSlug}" && isActive=true && (inView=true || inView=null)`,
       {
         fields:
-          'id,slug,sku,name,price,promoPrice,isActive,inView,description,images,currency,categories,category,isNew,isParent,parent,variantKey,details,stock',
+          'id,slug,sku,name,price,promoPrice,isActive,inView,description,images,currency,categories,category,isNew,isVariant,isParent,parent,variantKey,details,stock',
         requestKey: null,
       }
     )

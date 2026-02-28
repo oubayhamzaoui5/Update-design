@@ -211,8 +211,11 @@ export function CheckoutContent() {
 
   useEffect(() => {
     if (typeof window === "undefined") return
-    const dismissed = window.localStorage.getItem(SIGNUP_PROMO_DISMISSED_KEY)
-    setIsPromoBannerVisible(!isLoggedIn && dismissed !== "1")
+    const dismissedUntilRaw = window.localStorage.getItem(SIGNUP_PROMO_DISMISSED_KEY)
+    const dismissedUntil = dismissedUntilRaw ? Number(dismissedUntilRaw) : 0
+    const isDismissed =
+      !!dismissedUntilRaw && Number.isFinite(dismissedUntil) && Date.now() < dismissedUntil
+    setIsPromoBannerVisible(!isLoggedIn && !isDismissed)
   }, [isLoggedIn])
 
   useEffect(() => {
@@ -642,7 +645,7 @@ export function CheckoutContent() {
 
       <div
         className={`mx-auto max-w-7xl px-4 ${
-          isPromoBannerVisible ? "pt-36 md:pt-40" : "pt-24 md:pt-28"
+          isPromoBannerVisible ? "pt-40 md:pt-44" : "pt-24 md:pt-28"
         }`}
       >
         <nav className="flex items-center gap-2 text-xs font-medium text-muted-foreground mb-8 overflow-x-auto whitespace-nowrap">

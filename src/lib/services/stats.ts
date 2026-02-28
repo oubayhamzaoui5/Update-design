@@ -385,7 +385,7 @@ export const fetchRecentPurchases = async () => {
     return records.items.map((r: any) => {
       const fullName = (r.firstName || r.lastName) 
         ? `${r.firstName} ${r.lastName}`.trim() 
-        : (r.expand?.user?.name || 'Client Invité');
+        : ([r.expand?.user?.surname, r.expand?.user?.name].filter(Boolean).join(' ').trim() || 'Client Invité');
 
       // --- New Product Name Logic ---
       const items = r.items || [];
@@ -483,7 +483,7 @@ export const fetchBestSellingProducts = async () => {
           let imageUrl = '';
           if (productRecord && productRecord.images?.length > 0) {
             // Build the URL correctly using the PocketBase helper
-            imageUrl = pb.files.getUrl(productRecord, productRecord.images[0], { thumb: '100x100' });
+            imageUrl = pb.files.getURL(productRecord, productRecord.images[0], { thumb: '100x100' });
           }
 
           return {
@@ -502,3 +502,4 @@ export const fetchBestSellingProducts = async () => {
     return [];
   }
 };
+

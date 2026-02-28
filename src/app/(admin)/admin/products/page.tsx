@@ -7,7 +7,7 @@ export const dynamic = 'force-dynamic'
 export const runtime = 'nodejs'
 
 export const metadata = {
-  title: 'Produits | Administration',
+  title: 'Update Design | Tableau de bord',
   description: 'Gerez votre catalogue produits',
   robots: 'noindex, nofollow',
 }

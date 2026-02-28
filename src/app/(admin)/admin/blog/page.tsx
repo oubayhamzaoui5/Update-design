@@ -1,13 +1,15 @@
 import Link from 'next/link'
+import { Eye, EyeOff, SquarePen } from 'lucide-react'
 
 import { deletePostAction, togglePostPublishedAction } from '@/app/(admin)/admin/blog/actions'
+import { DeletePostButton } from '@/app/(admin)/admin/blog/_components/delete-post-button'
 import { getAdminPosts } from '@/lib/services/posts.service'
 
 export const dynamic = 'force-dynamic'
 export const runtime = 'nodejs'
 
 export const metadata = {
-  title: 'Blog | Administration',
+  title: 'Update Design | Tableau de bord',
   description: 'Gerez les articles du blog',
   robots: 'noindex, nofollow',
 }
@@ -19,8 +21,8 @@ export default async function AdminBlogPage() {
     <div className="space-y-6 p-6 md:p-8">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
-          <h1 className="text-3xl font-bold text-blue-600">Blog</h1>
-          <p className="text-sm text-foreground/70">Gerez vos articles MDX stockes dans PocketBase.</p>
+          <h1 className="mb-2 text-4xl font-bold text-blue-600">Blog</h1>
+          <p className="text-slate-600 text-lg">Gerez vos articles.</p>
         </div>
         <Link
           href="/admin/blog/create"
@@ -31,73 +33,69 @@ export default async function AdminBlogPage() {
       </div>
 
       {posts.length === 0 ? (
-        <div className="rounded-xl border border-dashed border-foreground/20 p-8 text-sm text-foreground/70">
+        <div className="rounded-2xl border border-dashed border-foreground/20 p-8 text-sm text-foreground/70">
           Aucun article pour le moment.
         </div>
       ) : (
-        <div className="overflow-hidden rounded-xl border border-foreground/10">
-          <table className="w-full text-left text-sm">
-            <thead className="bg-foreground/5">
-              <tr>
-                <th className="px-4 py-3 font-semibold">Titre</th>
-                <th className="px-4 py-3 font-semibold">Slug</th>
-                <th className="px-4 py-3 font-semibold">Etat</th>
-                <th className="px-4 py-3 font-semibold">Mis a jour</th>
-                <th className="px-4 py-3 font-semibold">Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              {posts.map((post) => (
-                <tr key={post.id} className="border-t border-foreground/10">
-                  <td className="px-4 py-3">{post.title}</td>
-                  <td className="px-4 py-3 text-foreground/70">/{post.slug}</td>
-                  <td className="px-4 py-3">
-                    <span
-                      className={`inline-flex rounded-full px-2 py-0.5 text-xs font-semibold ${
-                        post.published ? 'bg-emerald-100 text-emerald-800' : 'bg-amber-100 text-amber-800'
-                      }`}
+        <div className="space-y-3">
+          {posts.map((post) => (
+            <article
+              key={post.id}
+              className="flex flex-col gap-4 bg-transparent p-2 md:flex-row md:items-start"
+            >
+              <div className="aspect-video w-full shrink-0 overflow-hidden rounded-md bg-slate-100 dark:bg-zinc-800 md:w-100">
+                {post.coverImage ? (
+                  <img src={post.coverImage} alt={post.title} className="h-full w-full object-cover" />
+                ) : (
+                  <div className="flex h-full w-full items-center justify-center text-xs font-medium text-slate-500 dark:text-zinc-400">
+                    Pas d'image
+                  </div>
+                )}
+              </div>
+
+              <div className="min-w-0 flex-1 space-y-1">
+                <div className="flex items-start justify-between gap-1">
+                  <h3 className="truncate text-xl font-bold text-slate-900 dark:text-zinc-100">{post.title}</h3>
+                  <div className="flex shrink-0 items-center gap-2">
+                    <Link
+                      href={`/admin/blog/${post.id}/edit`}
+                      aria-label={`Modifier ${post.title}`}
+                      className="rounded-md p-2 text-white transition  bg-blue-600 hover:bg-blue-500 "
                     >
-                      {post.published ? 'Publie' : 'Brouillon'}
-                    </span>
-                  </td>
-                  <td className="px-4 py-3 text-foreground/70">
-                    {post.updated ? new Date(post.updated).toLocaleDateString('fr-FR') : '-'}
-                  </td>
-                  <td className="px-4 py-3">
-                    <div className="flex flex-wrap items-center gap-2">
-                      <Link
-                        href={`/admin/blog/${post.id}/edit`}
-                        className="rounded-md border border-foreground/20 px-3 py-1.5 text-xs font-medium hover:bg-foreground/5"
+                      <SquarePen className="h-4 w-4" />
+                    </Link>
+
+                    <form action={togglePostPublishedAction.bind(null, post.id, !post.published)}>
+                      <button
+                        type="submit"
+                        aria-label={post.published ? `Masquer ${post.title}` : `Publier ${post.title}`}
+                        className="rounded-md p-2 bg-slate-600 cursor-pointer text-white transition hover:bg-slate-500 dark:text-zinc-400 dark:hover:bg-zinc-800"
                       >
-                        Modifier
-                      </Link>
+                        {post.published ? <Eye className="h-4 w-4" /> : <EyeOff className="h-4 w-4" />}
+                      </button>
+                    </form>
 
-                      <form action={togglePostPublishedAction.bind(null, post.id, !post.published)}>
-                        <button
-                          type="submit"
-                          className="rounded-md border border-foreground/20 px-3 py-1.5 text-xs font-medium hover:bg-foreground/5"
-                        >
-                          {post.published ? 'Masquer' : 'Publier'}
-                        </button>
-                      </form>
-
-                      <form action={deletePostAction.bind(null, post.id)}>
-                        <button
-                          type="submit"
-                          className="rounded-md border border-red-300 px-3 py-1.5 text-xs font-medium text-red-600 hover:bg-red-50"
-                        >
-                          Supprimer
-                        </button>
-                      </form>
-                    </div>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+                    <DeletePostButton action={deletePostAction.bind(null, post.id)} title={post.title} />
+                  </div>
+                </div>
+                <p className="line-clamp-2 text-base text-slate-600 dark:text-zinc-300">{post.excerpt || 'Sans extrait.'}</p>
+                <div className="flex items-center gap-2 pt-1">
+                  <span
+                    className={`inline-flex rounded-full px-2 py-0.5 text-xs font-semibold ${
+                      post.published ? 'bg-emerald-100 text-emerald-800' : 'bg-amber-100 text-amber-800'
+                    }`}
+                  >
+                    {post.published ? 'Publie' : 'Brouillon'}
+                  </span>
+                  <span className="text-xs text-slate-500 dark:text-zinc-400">
+                    {post.updated ? new Date(post.updated).toLocaleDateString('fr-FR') : '-'}
+                  </span>
+                </div>
+              </div>
+            </article>
+          ))}
         </div>
       )}
     </div>
   )
 }
-

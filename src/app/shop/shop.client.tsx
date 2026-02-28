@@ -9,6 +9,7 @@ import { Navbar } from '@/components/navbar'
 import { Button } from '@/components/ui/button'
 import { getPb } from '@/lib/pb'
 import { detectShopPreset, getShopPresetPath, stripPresetParams } from '@/lib/shop-presets'
+import { fetchWishlistIds } from '@/lib/shop/client-api'
 import type { ShopListResult } from '@/lib/services/product.service'
 
 import ShopProductCard from './_components/shop-product-card'
@@ -106,6 +107,8 @@ export default function ShopClient({
   const [isFetchingMore, setIsFetchingMore] = useState(false)
   const [loadMoreError, setLoadMoreError] = useState<string | null>(null)
   const [hasSignupPromoBanner, setHasSignupPromoBanner] = useState(false)
+  const [isSignedIn, setIsSignedIn] = useState(false)
+  const [wishlistIds, setWishlistIds] = useState<Set<string>>(new Set())
   const sentinelRef = useRef<HTMLDivElement | null>(null)
   const isFetchingRef = useRef(false)
   const lastLoadAtRef = useRef(0)
@@ -125,10 +128,40 @@ export default function ShopClient({
 
   useEffect(() => {
     if (typeof window === 'undefined') return
-    const dismissed = window.localStorage.getItem(SIGNUP_PROMO_DISMISSED_KEY) === '1'
-    const isLoggedIn = getPb(true).authStore.isValid
-    setHasSignupPromoBanner(!isLoggedIn && !dismissed)
+    const dismissedUntilRaw = window.localStorage.getItem(SIGNUP_PROMO_DISMISSED_KEY)
+    const dismissedUntil = dismissedUntilRaw ? Number(dismissedUntilRaw) : 0
+    const isDismissed =
+      !!dismissedUntilRaw && Number.isFinite(dismissedUntil) && Date.now() < dismissedUntil
+    const signedIn = getPb(true).authStore.isValid
+    setIsSignedIn(signedIn)
+    setHasSignupPromoBanner(!signedIn && !isDismissed)
   }, [])
+
+  useEffect(() => {
+    if (!isSignedIn) {
+      setWishlistIds(new Set())
+      return
+    }
+
+    let cancelled = false
+    const loadWishlistIds = async () => {
+      try {
+        const ids = await fetchWishlistIds()
+        if (!cancelled) {
+          setWishlistIds(new Set(ids))
+        }
+      } catch {
+        if (!cancelled) {
+          setWishlistIds(new Set())
+        }
+      }
+    }
+
+    void loadWishlistIds()
+    return () => {
+      cancelled = true
+    }
+  }, [isSignedIn])
 
   const originQuery = useMemo(() => {
     const params = new URLSearchParams(currentQuery)
@@ -252,8 +285,8 @@ export default function ShopClient({
     router.push(buildShopHref(currentQuery, updates))
   }
 
-  const navOffset = hasSignupPromoBanner ? 96 : 56
-  const stickyOffset = hasSignupPromoBanner ? 96 : 56
+  const navOffset = hasSignupPromoBanner ? 116 : 76
+  const stickyOffset = hasSignupPromoBanner ? 76 : 56
 
   return (
     <div className="relative min-h-screen bg-background" style={{ paddingTop: navOffset }}>
@@ -390,7 +423,13 @@ export default function ShopClient({
                       key={product.id}
                       className="rounded-2xl border border-transparent p-2 transition hover:border-foreground/15 hover:bg-foreground/[0.02] [content-visibility:auto]"
                     >
-                      <ShopProductCard product={product} productHref={productHref} prioritizeImage={idx === 0} />
+                      <ShopProductCard
+                        product={product}
+                        productHref={productHref}
+                        prioritizeImage={idx === 0}
+                        enableWishlist={isSignedIn}
+                        initialWishlisted={wishlistIds.has(product.id)}
+                      />
                     </div>
                   )
                 })}
@@ -427,5 +466,3 @@ export default function ShopClient({
     </div>
   )
 }
-
-

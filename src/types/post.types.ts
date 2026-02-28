@@ -5,6 +5,7 @@ export type BlogPost = {
   excerpt: string
   coverImage: string
   content: string
+  relatedProducts: string[]
   published: boolean
   created: string
   updated: string
@@ -16,7 +17,8 @@ export type PostUpsertInput = {
   title?: string
   slug?: string
   excerpt?: string
-  coverImage?: string
+  coverImage?: string | File
   content?: string
+  relatedProducts?: string[]
   published?: boolean
 }

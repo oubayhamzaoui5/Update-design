@@ -8,6 +8,7 @@ export type AdminCategoryRecord = {
   id: string
   name: string
   slug: string
+  order: number
   parents: string[]
   desc?: string | null
   promo: number
@@ -70,12 +71,13 @@ async function createAdminPb() {
 
 export async function getAdminCategories(): Promise<AdminCategoryRecord[]> {
   const pb = await createAdminPb()
-  const res = await pb.collection('categories').getList(1, 200, { sort: 'name' })
+  const res = await pb.collection('categories').getList(1, 200, { sort: 'order,name' })
 
   return res.items.map((r: any) => ({
     id: r.id,
     name: r.name ?? '',
     slug: r.slug ?? '',
+    order: Number(r.order ?? 0),
     parents: normalizeParentIds(r.parent),
     desc: r.desc ?? '',
     promo: Number(r.promo ?? 0),
@@ -157,7 +159,9 @@ export async function getAdminOrders(): Promise<OrderRecord[]> {
           const user = await pb.collection('users').getOne(r.user)
           userRecord = {
             id: user.id,
+            surname: user.surname,
             name: user.name,
+            fullName: [user.surname, user.name].filter(Boolean).join(' ').trim(),
             email: user.email,
             username: user.username,
             verif: Boolean(user.verif),

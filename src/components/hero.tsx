@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react"
 import Link from "next/link"
+import Image from "next/image"
 export default function Hero() {
   // ⏱️ Variables
   const LAMP_SLIDE_DELAY = 500
@@ -9,55 +10,55 @@ export default function Hero() {
   const LAMP_SLIDE_DURATION = 2100
   const LAMP_FADE_DURATION = 2000
 
-  const BG_FADE_DELAY = 2500
-  const BG_FADE_DURATION = 2000
+  const BG_IMAGES = ["hero1.webp", "hero2.webp", "hero3.webp", "hero4.webp", "hero5.webp", "hero6.webp"]
+  const BG_CHANGE_INTERVAL = 4000
+  const BG_FADE_DURATION = 1000
 
   const CONTENT_DELAY = 400
 
   const [lampVisible, setLampVisible] = useState(false)
   const [lampFadeOut, setLampFadeOut] = useState(false)
-  const [bgFadeOut, setBgFadeOut] = useState(false)
   const [showContent, setShowContent] = useState(false)
+  const [currentBgIndex, setCurrentBgIndex] = useState(0)
 
   useEffect(() => {
     const slideTimer = setTimeout(() => setLampVisible(true), LAMP_SLIDE_DELAY)
     const fadeTimer = setTimeout(() => setLampFadeOut(true), LAMP_FADE_DELAY)
-    const bgTimer = setTimeout(() => setBgFadeOut(true), BG_FADE_DELAY)
+    const bgTimer = setInterval(() => {
+      setCurrentBgIndex((prev) => (prev + 1) % BG_IMAGES.length)
+    }, BG_CHANGE_INTERVAL)
     const contentTimer = setTimeout(() => setShowContent(true), CONTENT_DELAY)
 
     return () => {
       clearTimeout(slideTimer)
       clearTimeout(fadeTimer)
-      clearTimeout(bgTimer)
+      clearInterval(bgTimer)
       clearTimeout(contentTimer)
     }
   }, [])
 
   return (
-    <div className="relative w-full h-screen overflow-hidden pt-24">
-      {/* Background DARK */}
-      <div
-        className="absolute inset-0"
-        style={{
-          backgroundImage: "url('/aboutimg.webp')",
-          backgroundSize: "cover",
-          backgroundPosition: "center",
-          zIndex: 1,
-        }}
-      />
+    <div className="relative h-screen w-screen overflow-hidden pt-24">
+      <div className="absolute inset-0 z-10">
+        {BG_IMAGES.map((image, index) => (
+          <Image
+            key={image}
+            src={`/${image}`}
+            alt=""
+            fill
+            sizes="100vw"
+            priority={index === 0}
+            loading={index === 0 ? undefined : "lazy"}
+            className="object-cover transition-opacity ease-in-out"
+            style={{
+              transitionDuration: `${BG_FADE_DURATION}ms`,
+              opacity: index === currentBgIndex ? 1 : 0,
+            }}
+          />
+        ))}
+      </div>
 
-      {/* Background LIGHT */}
-      <div
-        className="absolute inset-0 transition-opacity"
-        style={{
-          transitionDuration: `${BG_FADE_DURATION}ms`,
-          backgroundImage: "url('/aboutimg.webp')",
-          backgroundSize: "cover",
-          backgroundPosition: "center",
-          zIndex: 2,
-          opacity: bgFadeOut ? 0 : 1,
-        }}
-      />
+      <div className="absolute inset-0 z-20 bg-black/40" />
 
       {/* 🔆 CONTENT + GLOW */}
       <div

@@ -1,31 +1,53 @@
-import type { Metadata } from 'next'
-import Link from 'next/link'
+﻿import type { Metadata } from 'next'
 
 import Footer from '@/components/footer'
 import { Navbar } from '@/components/navbar'
-import CategorySelector from '@/components/CategorySelector'
-import Reveal from '@/components/luxe/reveal'
-import ShopProductCard from '@/app/shop/_components/shop-product-card'
+import HeroContent from '@/components/hero-content'
+import HomeBestSellersSection from '@/components/home/home-best-sellers-section'
+import HomeCategoriesSection from '@/components/home/home-categories-section'
+import HomeContactSection from '@/components/home/home-contact-section'
+import HomeFaqSection from '@/components/home/home-faq-section'
+import HomeHeritageSection from '@/components/home/home-heritage-section'
+import HomeLatestBlogsSection from '@/components/home/home-latest-blogs-section'
+import HomeMarblePanelSection from '@/components/home/home-marble-panel-section'
+import HomeMapSection from '@/components/home/home-map-section'
+import HomeWoodProfileSection from '@/components/home/home-wood-profile-section'
 import { getPb } from '@/lib/pb'
+import { getAllPublishedPosts } from '@/lib/services/posts.service'
 import type { ProductListItem } from '@/lib/services/product.service'
-import HeroContent from '@/components/hero-content' 
 
 const roomCategories = [
   {
+    name: 'PROFILE MURAL D\u00c9CORATIF',
+    image: '/c2.webp',
+    href: '/boutique/categorie/effet-bois-d-interieur',
+    spanTwoColumns: true,
+  },
+  {
+    name: 'PANNEAU MURAL EN PVC',
+    image: '/c1.webp',
+    href: '/boutique/categorie/effet-marbre',
+    spanTwoColumns: true,
+  },
+  {
     name: 'Lighting',
     image: '/lighting.webp',
+    href: '/boutique/categorie/lighting',
   },
   {
     name: 'Decoration',
     image: '/decoration.webp',
+    href: '/boutique/categorie/decoration',
   },
   {
     name: 'Suspension',
     image: '/suspension.webp',
+    href: '/boutique/categorie/suspension',
   },
   {
     name: 'Abat-jour',
     image: '/abat-jour.webp',
+    href: '/boutique/categorie/abat-jour',
   },
 ]
 
@@ -61,6 +83,7 @@ function mapRecordToHomeProduct(record: any): ProductListItem {
         ? [String(record.category)]
         : [],
     isNew: Boolean(record.isNew),
+    isVariant: Boolean(record.isVariant),
     isParent: Boolean(record.isParent),
     variantKey:
       record.variantKey && typeof record.variantKey === 'object'
@@ -80,7 +103,7 @@ async function getHomeBestSellerProducts(): Promise<ProductListItem[]> {
     const bestSellerRes = await pb.collection('products').getList(1, HOME_PRODUCTS_LIMIT, {
       sort: '-soldCount,-created',
       filter: baseFilter,
-      fields: 'id,slug,sku,name,price,promoPrice,isActive,inView,description,images,currency,categories,category,isNew,stock',
+      fields: 'id,slug,sku,name,price,promoPrice,isActive,inView,description,images,currency,categories,category,isNew,isVariant,stock',
       requestKey: null,
     })
 
@@ -91,7 +114,7 @@ async function getHomeBestSellerProducts(): Promise<ProductListItem[]> {
       const latestRes = await pb.collection('products').getList(1, HOME_PRODUCTS_LIMIT, {
         sort: '-created',
         filter: baseFilter,
-        fields: 'id,slug,sku,name,price,promoPrice,isActive,inView,description,images,currency,categories,category,isNew,stock',
+        fields: 'id,slug,sku,name,price,promoPrice,isActive,inView,description,images,currency,categories,category,isNew,isVariant,stock',
         requestKey: null,
       })
       ordered.push(...latestRes.items.map(mapRecordToHomeProduct))
@@ -106,7 +129,7 @@ async function getHomeBestSellerProducts(): Promise<ProductListItem[]> {
       const fillRes = await pb.collection('products').getList(1, 48, {
         sort: '-created',
         filter: baseFilter,
-        fields: 'id,slug,sku,name,price,promoPrice,isActive,inView,description,images,currency,categories,category,isNew,stock',
+        fields: 'id,slug,sku,name,price,promoPrice,isActive,inView,description,images,currency,categories,category,isNew,isVariant,stock',
         requestKey: null,
       })
 
@@ -131,121 +154,29 @@ export const metadata: Metadata = {
 }
 
 export default async function HomePage() {
-  const bestSellers = await getHomeBestSellerProducts()
+  const [bestSellers, posts] = await Promise.all([
+    getHomeBestSellerProducts(),
+    getAllPublishedPosts(),
+  ])
+  const latestPosts = posts.slice(0, 6)
 
   return (
-    <div className="bg-[#f8f7f6] text-slate-900">
+    <div className="bg-white text-slate-900">
       <Navbar />
 
       <main>
         <HeroContent />
-        <CategorySelector />
+        <HomeCategoriesSection categories={roomCategories} />
+        <HomeHeritageSection />
+        <HomeMarblePanelSection />
+        <HomeWoodProfileSection />
 
-        <section className="mx-auto max-w-7xl px-2 py-18">
-          <Reveal>
-            <div className="mb-12 flex items-end justify-between">
-              <div>
-                <h2 className="mb-2 text-3xl font-bold">Explorer nos categories</h2>
-                <p className="text-slate-500">Des solutions lumineuses pensees pour chaque espace de votre maison.</p>
-              </div>
-              <Link href="/boutique" className="border-b-2 border-[#c19a2f]/20 pb-1 font-bold text-[#c19a2f] transition-all hover:border-[#c19a2f]">
-                Explorer tous les categories
-              </Link>
-            </div>
-          </Reveal>
-          <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-4">
-            {roomCategories.map((item) => (
-              <Reveal key={item.name}>
-                <Link className="group relative block aspect-square overflow-hidden rounded-xl" href="/boutique">
-                  <img src={item.image} alt={item.name} className="absolute inset-0 h-full w-full object-cover transition-transform duration-500 group-hover:scale-105" />
-                  <div className="absolute inset-0 bg-gradient-to-t from-slate-900/80 via-transparent to-transparent" />
-                  <div className="absolute bottom-6 left-6">
-                    <h3 className="text-xl font-bold tracking-wide text-white">{item.name}</h3>
-                    <span className="text-sm font-semibold text-[#c19a2f] opacity-0 transition-opacity group-hover:opacity-100">Explorer -&gt;</span>
-                  </div>
-                </Link>
-              </Reveal>
-            ))}
-          </div>
-        </section>
+        <HomeBestSellersSection products={bestSellers} />
+                <HomeContactSection />
 
-        <section className="overflow-hidden bg-[#c19a2f]/5 py-18">
-          <Reveal>
-            <div className="mx-auto mb-12 flex max-w-7xl items-center justify-between px-2">
-              <h2 className="text-3xl font-bold">Meilleures ventes</h2>
-            
-            </div>
-          </Reveal>
-          <div className="mx-auto grid max-w-7xl grid-cols-1 gap-6 px-2 md:grid-cols-2 xl:grid-cols-4">
-            {bestSellers.map((product, idx) => (
-              <Reveal key={product.id}>
-                <div className="rounded-2xl border border-transparent p-2 transition hover:border-foreground/15 hover:bg-foreground/[0.02]">
-                  <ShopProductCard
-                    product={product}
-                    productHref={`/produit/${product.slug}`}
-                    prioritizeImage={idx < 2}
-                  />
-                </div>
-              </Reveal>
-            ))}
-          </div>
-        </section>
-
-        <section className="bg-slate-100 py-18">
-          <div className="mx-auto flex max-w-7xl flex-col items-center gap-16 px-2 lg:flex-row">
-            <div className="flex-1">
-              <img
-                alt="Artisan polissant un luminaire"
-                className="rounded-2xl shadow-2xl"
-                src="/aboutimg.webp"
-              />
-            </div>
-            <div className="flex-1">
-              <span className="mb-4 block text-xs font-bold uppercase tracking-[0.3em] text-[#c19a2f]">Notre heritage</span>
-              <h2 className="mb-8 text-4xl font-bold">Qualité & Distinction</h2>
-              <p className="mb-6 text-lg leading-relaxed text-slate-600">
-                Depuis plus de deux decennies, Update Design met en avant un eclairage artisanal qui allie elegance intemporelle et precision moderne.
-              </p>
-              <p className="mb-10 text-lg leading-relaxed text-slate-600">
-                Nous selectionnons des metaux durables et du verre souffle a la main pour des pieces concues pour durer.
-              </p>
-              <div className="grid grid-cols-3 gap-8 border-t border-[#c19a2f]/20 pt-10">
-                <div>
-                  <p className="mb-1 text-3xl font-bold text-[#c19a2f]">20+</p>
-                  <p className="text-xs font-semibold uppercase tracking-widest text-slate-400">Ans d experience</p>
-                </div>
-                <div>
-                  <p className="mb-1 text-3xl font-bold text-[#c19a2f]">150+</p>
-                  <p className="text-xs font-semibold uppercase tracking-widest text-slate-400">Designs uniques</p>
-                </div>
-                <div>
-                  <p className="mb-1 text-3xl font-bold text-[#c19a2f]">5k+</p>
-                  <p className="text-xs font-semibold uppercase tracking-widest text-slate-400">Clients satisfaits</p>
-                </div>
-              </div>
-            </div>
-          </div>
-        </section>
-
-        <section className="bg-[#c19a2f] py-18 text-center text-white">
-          <div className="mx-auto max-w-3xl px-2">
-            <h2 className="mb-4 text-4xl font-bold">Rejoignez le cercle prive</h2>
-            <p className="mb-10 text-lg text-white/80">
-              Recevez en avant-premiere nos nouvelles collections, conseils deco et evenements exclusifs.
-            </p>
-            <form className="mx-auto flex max-w-xl flex-col gap-4 sm:flex-row">
-              <input
-                className="flex-1 rounded-lg border border-white/30 bg-white/20 px-2 py-4 text-white placeholder:text-white/60 focus:bg-white/30 focus:outline-none"
-                placeholder="Votre adresse email"
-                type="email"
-              />
-              <button className="rounded-lg bg-white px-10 py-4 font-extrabold uppercase tracking-widest text-[#c19a2f] transition-all hover:bg-slate-100">
-                S abonner
-              </button>
-            </form>
-            <p className="mt-6 text-[10px] uppercase tracking-widest text-white/50">Desinscription a tout moment.</p>
-          </div>
-        </section>
+        <HomeFaqSection />
+        <HomeLatestBlogsSection posts={latestPosts} />
+        <HomeMapSection />
       </main>
 
       <Footer />

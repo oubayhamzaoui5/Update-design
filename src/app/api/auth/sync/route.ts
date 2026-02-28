@@ -12,6 +12,7 @@ type SyncBody = {
   user?: {
     id?: string
     email?: string
+    surname?: string
     name?: string
     username?: string
     role?: string
@@ -47,6 +48,7 @@ export async function POST(request: NextRequest) {
       record: {
         id: record.id,
         email: record.email,
+        surname: record.surname,
         name: record.name,
         username: record.username,
         role: record.role || 'user',
@@ -69,6 +71,7 @@ export async function POST(request: NextRequest) {
       user: {
         id: record.id,
         email: record.email,
+        surname: record.surname,
         name: record.name,
         username: record.username,
         role: record.role || 'user',

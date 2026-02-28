@@ -130,6 +130,7 @@ function mapRecommendedProduct(record: Record<string, unknown>): ProductListItem
     currency: String(record.currency ?? 'DT'),
     categories: normalizeCategoryIds(record),
     isNew: Boolean(record.isNew),
+    isVariant: Boolean(record.isVariant),
     isParent: Boolean(record.isParent),
     variantKey: (record.variantKey as Record<string, string> | undefined) ?? {},
     stock,
@@ -203,7 +204,7 @@ export async function getRecommendedProductsFromOrders(
           filter: `${baseFilter} && (${categoryFilter})`,
           sort: '-created',
           fields:
-            'id,slug,sku,name,price,promoPrice,isActive,inView,description,images,currency,categories,category,isNew,isParent,variantKey,stock',
+            'id,slug,sku,name,price,promoPrice,isActive,inView,description,images,currency,categories,category,isNew,isVariant,isParent,variantKey,stock',
           requestKey: null,
         })
 
@@ -219,7 +220,7 @@ export async function getRecommendedProductsFromOrders(
       filter: baseFilter,
       sort: '-created',
       fields:
-        'id,slug,sku,name,price,promoPrice,isActive,inView,description,images,currency,categories,category,isNew,isParent,variantKey,stock',
+        'id,slug,sku,name,price,promoPrice,isActive,inView,description,images,currency,categories,category,isNew,isVariant,isParent,variantKey,stock',
       requestKey: null,
     })
     pushUnique(recommended, latest.items as unknown as Array<Record<string, unknown>>)
@@ -231,7 +232,7 @@ export async function getRecommendedProductsFromOrders(
       filter: 'isActive = true && (inView = true || inView = null) && stock > 0',
       sort: '-created',
       fields:
-        'id,slug,sku,name,price,promoPrice,isActive,inView,description,images,currency,categories,category,isNew,isParent,variantKey,stock',
+        'id,slug,sku,name,price,promoPrice,isActive,inView,description,images,currency,categories,category,isNew,isVariant,isParent,variantKey,stock',
       requestKey: null,
     })
     pushUnique(recommended, broadLatest.items as unknown as Array<Record<string, unknown>>)

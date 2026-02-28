@@ -3,10 +3,11 @@
 import { Fragment, useEffect, useMemo, useState } from 'react'
 import EmptyState from '@/components/admin/empty-state'
 import { slugify } from '@/utils/slug'
-import { Pencil, Plus, Trash2, X, Search, ChevronDown } from 'lucide-react'
+import { ArrowDown, ArrowUp, Pencil, Plus, Trash2, X, Search, ChevronDown } from 'lucide-react'
 import {
   createCategoryAction,
   deleteCategoryAction,
+  reorderCategoriesAction,
   updateCategoryAction,
 } from './actions'
 
@@ -14,6 +15,7 @@ type Category = {
   id: string
   name: string
   slug: string
+  order: number
   parents: string[]
   desc?: string | null
   promo: number
@@ -45,6 +47,13 @@ function normalizeParentIds(p: unknown): string[] {
   return []
 }
 
+function compareCategories(a: Category, b: Category) {
+  const orderA = Number.isFinite(a.order) ? a.order : 0
+  const orderB = Number.isFinite(b.order) ? b.order : 0
+  if (orderA !== orderB) return orderA - orderB
+  return a.name.localeCompare(b.name)
+}
+
 export default function CategoriesClient(props: { initialCategories: Category[] }) {
   const { initialCategories } = props
 
@@ -53,17 +62,28 @@ export default function CategoriesClient(props: { initialCategories: Category[] 
   const [open, setOpen] = useState(false)
   const [notice, setNotice] = useState<string | null>(null)
   const [saving, setSaving] = useState(false)
+  const [movingId, setMovingId] = useState<string | null>(null)
 
   const [editState, setEditState] = useState<EditState>({ mode: 'create' })
 
   const [form, setForm] = useState({
     name: '',
     slug: '',
+    order: '0',
     parents: [] as string[],
     desc: '',
     promo: '',
     activeAll: false,
   })
+
+  const nextOrderValue = useMemo(() => {
+    return (
+      categories.reduce((max, item) => {
+        const value = Number.isFinite(item.order) ? item.order : 0
+        return Math.max(max, value)
+      }, 0) + 1
+    )
+  }, [categories])
 
   // UI state for custom parents dropdown
   const [parentDropdownOpen, setParentDropdownOpen] = useState(false)
@@ -93,7 +113,7 @@ export default function CategoriesClient(props: { initialCategories: Category[] 
 
   // visible categories sorted by name
   const visible = useMemo(() => {
-    return filtered.slice().sort((a, b) => a.name.localeCompare(b.name))
+    return filtered.slice().sort(compareCategories)
   }, [filtered])
 
   const visibleIds = useMemo(
@@ -111,9 +131,9 @@ export default function CategoriesClient(props: { initialCategories: Category[] 
         m.get(pid)!.push(c)
       }
     }
-    // sort each children list by name
+    // sort each children list by custom order
     for (const [key, arr] of m.entries()) {
-      arr.sort((a, b) => a.name.localeCompare(b.name))
+      arr.sort(compareCategories)
       m.set(key, arr)
     }
     return m
@@ -141,13 +161,14 @@ export default function CategoriesClient(props: { initialCategories: Category[] 
       .filter((c) =>
         !q ? true : c.name.toLowerCase().includes(q)
       )
-      .sort((a, b) => a.name.localeCompare(b.name))
+      .sort(compareCategories)
   }, [categories, editState, parentSearch])
 
   function resetForm() {
     setForm({
       name: '',
       slug: '',
+      order: String(nextOrderValue),
       parents: [],
       desc: '',
       promo: '',
@@ -167,6 +188,7 @@ export default function CategoriesClient(props: { initialCategories: Category[] 
     setForm({
       name: cat.name ?? '',
       slug: slugify(cat.slug || cat.name || ''),
+      order: String(cat.order ?? 0),
       parents: cat.parents ?? [],
       desc: cat.desc ?? '',
       promo: cat.promo > 0 ? String(cat.promo) : '',
@@ -206,6 +228,7 @@ export default function CategoriesClient(props: { initialCategories: Category[] 
       const payload = {
         name: form.name,
         slug: form.slug || slugify(form.name),
+        order: form.order.trim() === '' ? nextOrderValue : Number(form.order),
         parentIds: form.parents,
         desc: form.desc || '',
         promo: form.promo.trim() === '' ? 0 : Number(form.promo),
@@ -218,14 +241,13 @@ export default function CategoriesClient(props: { initialCategories: Category[] 
           id: created.id,
           name: created.name ?? payload.name,
           slug: created.slug ?? payload.slug,
+          order: Number(created.order ?? payload.order ?? 0),
           parents: normalizeParentIds(created.parent ?? payload.parentIds),
           desc: created.desc ?? payload.desc,
           promo: Number(created.promo ?? payload.promo ?? 0),
           activeAll: Boolean(created.activeAll ?? payload.activeAll),
         }
-        setCategories((prev) =>
-          [...prev, rec].sort((a, b) => a.name.localeCompare(b.name))
-        )
+        setCategories((prev) => [...prev, rec])
         setNotice('Categorie creee avec succes.')
       } else {
         const id = editState.id
@@ -234,16 +256,13 @@ export default function CategoriesClient(props: { initialCategories: Category[] 
           id: updatedRec.id,
           name: updatedRec.name ?? payload.name,
           slug: updatedRec.slug ?? payload.slug,
+          order: Number(updatedRec.order ?? payload.order ?? 0),
           parents: normalizeParentIds(updatedRec.parent ?? payload.parentIds),
           desc: updatedRec.desc ?? payload.desc,
           promo: Number(updatedRec.promo ?? payload.promo ?? 0),
           activeAll: Boolean(updatedRec.activeAll ?? payload.activeAll),
         }
-        setCategories((prev) =>
-          prev
-            .map((c) => (c.id === updated.id ? updated : c))
-            .sort((a, b) => a.name.localeCompare(b.name))
-        )
+        setCategories((prev) => prev.map((c) => (c.id === updated.id ? updated : c)))
         setNotice('Categorie mise a jour avec succes.')
       }
 
@@ -272,6 +291,47 @@ export default function CategoriesClient(props: { initialCategories: Category[] 
     }
   }
 
+  async function moveCategory(catId: string, siblings: Category[], direction: 'up' | 'down') {
+    if (movingId) return
+    const currentIndex = siblings.findIndex((item) => item.id === catId)
+    if (currentIndex < 0) return
+
+    const targetIndex = direction === 'up' ? currentIndex - 1 : currentIndex + 1
+    if (targetIndex < 0 || targetIndex >= siblings.length) return
+
+    const reordered = siblings.slice()
+    const [moved] = reordered.splice(currentIndex, 1)
+    reordered.splice(targetIndex, 0, moved)
+
+    const updates = reordered.map((item, index) => ({
+      id: item.id,
+      order: index + 1,
+    }))
+    const updatesMap = new Map(updates.map((item) => [item.id, item.order]))
+    const snapshot = categories
+
+    setMovingId(catId)
+    setNotice(null)
+    setCategories((prev) =>
+      prev.map((item) =>
+        updatesMap.has(item.id)
+          ? { ...item, order: updatesMap.get(item.id) ?? item.order }
+          : item
+      )
+    )
+
+    try {
+      await reorderCategoriesAction(updates)
+      setNotice('Ordre des categories mis a jour.')
+    } catch (e) {
+      console.error(e)
+      setCategories(snapshot)
+      setNotice('Echec de la mise a jour de l ordre des categories.')
+    } finally {
+      setMovingId(null)
+    }
+  }
+
   const selectedParents = form.parents
     .map((id) => categoryById.get(id))
     .filter((c): c is Category => !!c)
@@ -285,7 +345,7 @@ export default function CategoriesClient(props: { initialCategories: Category[] 
 
   // Recursive renderer so children-of-children (and deeper) are shown
   function renderRows(cats: Category[], level = 0): React.ReactNode {
-    return cats.map((cat) => {
+    return cats.map((cat, index) => {
       const children = childrenByParentId.get(cat.id) ?? []
 
       const rowClass = 'border-b border-slate-100 hover:bg-slate-50'
@@ -313,6 +373,7 @@ export default function CategoriesClient(props: { initialCategories: Category[] 
                   >
                     {cat.name}
                   </span>
+                  <span className="ml-2 text-xs text-slate-400">#{cat.order}</span>
                   {cat.promo > 0 && (
                     <span className="absolute -right-1 -top-2 rounded-full bg-red-100 px-2 py-0.5 text-[10px] font-semibold text-red-700">
                       {cat.promo}%
@@ -330,6 +391,24 @@ export default function CategoriesClient(props: { initialCategories: Category[] 
             </td>
             <td className="py-4 px-4">
               <div className="flex justify-center gap-2">
+                <button
+                  onClick={() => moveCategory(cat.id, cats, 'up')}
+                  disabled={index === 0 || movingId === cat.id}
+                  className="inline-flex items-center rounded-lg px-2 py-1.5 text-xs font-medium bg-slate-100 text-slate-700 hover:bg-slate-200 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+                  aria-label={`Monter ${cat.name}`}
+                  title="Monter"
+                >
+                  <ArrowUp className="h-3.5 w-3.5" />
+                </button>
+                <button
+                  onClick={() => moveCategory(cat.id, cats, 'down')}
+                  disabled={index === cats.length - 1 || movingId === cat.id}
+                  className="inline-flex items-center rounded-lg px-2 py-1.5 text-xs font-medium bg-slate-100 text-slate-700 hover:bg-slate-200 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+                  aria-label={`Descendre ${cat.name}`}
+                  title="Descendre"
+                >
+                  <ArrowDown className="h-3.5 w-3.5" />
+                </button>
                 <button
                   onClick={() => openEdit(cat)}
                   className="inline-flex items-center rounded-lg px-3 py-1.5 text-xs font-medium bg-blue-50 text-blue-700 hover:bg-blue-100 transition-colors"
@@ -466,6 +545,17 @@ export default function CategoriesClient(props: { initialCategories: Category[] 
                       onChange={(e) =>
                         setForm({ ...form, name: e.target.value })
                       }
+                      className={inputClasses}
+                    />
+                  </div>
+
+                  <div>
+                    <label className="ml-1 text-[11px] font-bold uppercase tracking-wider text-slate-500">Ordre</label>
+                    <input
+                      type="number"
+                      min={0}
+                      value={form.order}
+                      onChange={(e) => setForm({ ...form, order: e.target.value })}
                       className={inputClasses}
                     />
                   </div>

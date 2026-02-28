@@ -1,4 +1,5 @@
 import type { ReactNode } from 'react'
+import type { Metadata } from 'next'
 import { Geist } from 'next/font/google'
 
 import { OrderNotificationsListener } from '@/components/admin/order-notifications'
@@ -6,6 +7,10 @@ import Sidebar from '@/components/admin/sidebar'
 import { requireAdmin } from '@/lib/auth'
 
 const geist = Geist({ subsets: ['latin'] })
+
+export const metadata: Metadata = {
+  title: 'Update Design | Tableau de bord',
+}
 
 export default async function AdminLayout({
   children,

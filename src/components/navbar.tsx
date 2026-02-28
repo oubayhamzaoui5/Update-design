@@ -21,12 +21,12 @@ import {
   Package as PackageIcon,
   CreditCard,
 } from "lucide-react"
-import { getPb } from "@/lib/pb"
 
 type Category = {
   id: string
   name: string
   slug: string
+  order?: number
   parent?: string | string[] | null
   description?: string | null
 }
@@ -56,7 +56,7 @@ type CartItem = {
   id: string
   quantity: number
   product: CartProduct | null
-  source?: "pb" | "guest"
+  source?: "server" | "guest"
 }
 
 interface NavbarProps {
@@ -65,6 +65,7 @@ interface NavbarProps {
 
 type AuthUser = {
   id: string
+  surname?: string
   name?: string
   email?: string
   role?: string
@@ -72,6 +73,7 @@ type AuthUser = {
 
 const GUEST_CART_KEY = "guest_cart"
 const SIGNUP_PROMO_DISMISSED_KEY = "signup_promo_dismissed_v1"
+const SIGNUP_PROMO_DISMISS_TTL_MS = 60 * 60 * 1000
 
 type GuestCartItem = {
   productId: string
@@ -114,12 +116,20 @@ function escapeFilterValue(v: string) {
   return v.replace(/\\/g, "\\\\").replace(/"/g, '\\"')
 }
 
+function compareCategoryOrder(a: Category, b: Category) {
+  const aOrder = typeof a.order === "number" && Number.isFinite(a.order) ? a.order : 0
+  const bOrder = typeof b.order === "number" && Number.isFinite(b.order) ? b.order : 0
+  if (aOrder !== bOrder) return aOrder - bOrder
+  return a.name.localeCompare(b.name)
+}
+
 export function Navbar(props: NavbarProps) {
   const router = useRouter()
   const pathname = usePathname()
   const categoriesProp = props.categories ?? []
 
   const [isMenuOpen, setIsMenuOpen] = useState(false)
+  const [isDesktopMenuOpen, setIsDesktopMenuOpen] = useState(false)
   const [expandedCategories, setExpandedCategories] = useState<Set<string>>(
     new Set()
   )
@@ -147,6 +157,7 @@ export function Navbar(props: NavbarProps) {
 
   // auth user (PocketBase)
   const [currentUser, setCurrentUser] = useState<AuthUser | null>(null)
+  const [isAuthResolved, setIsAuthResolved] = useState(false)
 
   // Cart state
   const [isCartOpen, setIsCartOpen] = useState(false)
@@ -155,8 +166,8 @@ export function Navbar(props: NavbarProps) {
   // for portal (avoid SSR document undefined)
   const [isMounted, setIsMounted] = useState(false)
 
-  const [isCategoriesOpen, setIsCategoriesOpen] = useState(false)
   const [showSignupPromo, setShowSignupPromo] = useState(false)
+  const [hasPassedPromoBanner, setHasPassedPromoBanner] = useState(false)
 
   const getLoginHref = () => {
     const query = typeof window !== "undefined" ? window.location.search.slice(1) : ""
@@ -170,13 +181,36 @@ export function Navbar(props: NavbarProps) {
 
   useEffect(() => {
     if (typeof window === "undefined") return
-    const dismissed = window.localStorage.getItem(SIGNUP_PROMO_DISMISSED_KEY)
-    setShowSignupPromo(dismissed !== "1")
+    const dismissedUntilRaw = window.localStorage.getItem(
+      SIGNUP_PROMO_DISMISSED_KEY
+    )
+    const dismissedUntil = dismissedUntilRaw ? Number(dismissedUntilRaw) : 0
+    const shouldShow = !dismissedUntil || Number.isNaN(dismissedUntil) || Date.now() >= dismissedUntil
+    setShowSignupPromo(shouldShow)
+
+    if (shouldShow && dismissedUntilRaw) {
+      window.localStorage.removeItem(SIGNUP_PROMO_DISMISSED_KEY)
+    }
+  }, [])
+
+  useEffect(() => {
+    const onScroll = () => {
+      // Promo banner height is h-10 (2.5rem = 40px)
+      setHasPassedPromoBanner(window.scrollY >= 40)
+    }
+
+    onScroll()
+    window.addEventListener("scroll", onScroll, { passive: true })
+    return () => window.removeEventListener("scroll", onScroll)
   }, [])
 
   const closeSignupPromo = () => {
     if (typeof window !== "undefined") {
-      window.localStorage.setItem(SIGNUP_PROMO_DISMISSED_KEY, "1")
+      const dismissedUntil = Date.now() + SIGNUP_PROMO_DISMISS_TTL_MS
+      window.localStorage.setItem(
+        SIGNUP_PROMO_DISMISSED_KEY,
+        String(dismissedUntil)
+      )
     }
     setShowSignupPromo(false)
   }
@@ -204,8 +238,6 @@ export function Navbar(props: NavbarProps) {
       // ignore server logout errors and still clear client state
     }
 
-    const pb = getPb(true)
-    pb.authStore.clear()
     setCurrentUser(null)
     setIsProfileOpen(false)
     router.push("/")
@@ -213,9 +245,7 @@ export function Navbar(props: NavbarProps) {
 
   // Wishlist behavior (desktop + mobile)
   const handleWishlistClick = () => {
-    const pb = getPb(true)
-
-    if (!pb.authStore.isValid) {
+    if (!currentUser) {
       // no user logged in -> go to login
       router.push(getLoginHref())
       return
@@ -248,31 +278,37 @@ export function Navbar(props: NavbarProps) {
 
 
 
-  // read PocketBase auth on mount
+  // read auth session on mount
   useEffect(() => {
-    if (typeof window === "undefined") return
-    const pb = getPb(true)
-    if (pb.authStore.isValid) {
-      const model = pb.authStore.model as AuthUser
-      setCurrentUser(model)
+    let cancelled = false
 
-      // Keep server cookie auth in sync for server-rendered protected pages.
-      fetch("/api/auth/sync", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          token: pb.authStore.token,
-          user: model,
-        }),
-      }).catch(() => {
-        // ignore sync errors here; protected pages will still enforce auth server-side
-      })
+    const loadSession = async () => {
+      try {
+        const res = await fetch("/api/auth/session", { cache: "no-store" })
+        if (!res.ok) {
+          if (!cancelled) setCurrentUser(null)
+          return
+        }
+
+        const data = await res.json()
+        if (!cancelled) {
+          setCurrentUser((data?.user as AuthUser) ?? null)
+        }
+      } catch {
+        if (!cancelled) setCurrentUser(null)
+      } finally {
+        if (!cancelled) setIsAuthResolved(true)
+      }
+    }
+
+    loadSession()
+    return () => {
+      cancelled = true
     }
   }, [])
 
-  // Load cart items on mount (PB if logged, localStorage if guest)
+  // Load cart items on mount and auth state changes
 useEffect(() => {
-  const pb = getPb(true)
   const PB_URL = process.env.NEXT_PUBLIC_PB_URL
   if (!PB_URL) return
 
@@ -280,23 +316,20 @@ useEffect(() => {
 
   const loadCart = async () => {
     try {
-      const isLogged = pb.authStore.isValid
-      const userId = pb.authStore.model?.id
+      if (currentUser) {
+        const res = await fetch("/api/shop/cart", { cache: "no-store" })
+        if (!res.ok) {
+          if (!cancelled) setCartItems([])
+          return
+        }
 
-      // Logged-in: load from PocketBase
-      if (isLogged && userId) {
-        const items = await pb.collection("cart_items").getFullList(200, {
-          filter: `user="${userId}"`,
-          expand: "product",
-        })
-
-        if (cancelled) return
-
+        const data = await res.json()
+        const items = Array.isArray(data?.items) ? data.items : []
         const mapped: CartItem[] = items.map((it: any) => {
-          const prod = it.expand?.product
+          const prod = it?.product
           const product: CartProduct | null = prod
             ? {
-                id: prod.id,
+                id: prod.id ?? "",
                 slug: prod.slug ?? "",
                 name: prod.name ?? "",
                 sku: prod.sku ?? "",
@@ -312,14 +345,14 @@ useEffect(() => {
             : null
 
           return {
-            id: it.id,
+            id: it.id ?? "",
             quantity: Number(it.quantity ?? 1),
             product,
-            source: "pb",
+            source: "server",
           }
         })
 
-        setCartItems(mapped)
+        if (!cancelled) setCartItems(mapped)
         return
       }
 
@@ -380,7 +413,7 @@ useEffect(() => {
   }
 
   const onCartOpen = () => {
-    setIsCartOpen(true)       // open the cart drawer when product page says so
+    setIsCartOpen(true) // open the cart drawer when product page says so
   }
 
   if (typeof window !== "undefined") {
@@ -395,10 +428,10 @@ useEffect(() => {
       window.removeEventListener("cart:open", onCartOpen)
     }
   }
-}, [])
+}, [currentUser])
 
 
-  // Update quantity (PB or guest)
+  // Update quantity (server or guest)
   const handleUpdateQuantity = async (itemId: string, newQty: number) => {
     if (newQty < 1) {
       await handleRemoveItem(itemId)
@@ -406,13 +439,14 @@ useEffect(() => {
     }
 
     try {
-      const pb = getPb(true)
-      const isLogged = pb.authStore.isValid
-      const userId = pb.authStore.model?.id
-
-      if (isLogged && userId) {
-        // PocketBase cart
-        await pb.collection("cart_items").update(itemId, { quantity: newQty })
+      if (currentUser) {
+        // Server cart
+        const res = await fetch("/api/shop/cart", {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ itemId, quantity: newQty }),
+        })
+        if (!res.ok) return
 
         setCartItems((prev) =>
           prev.map((item) =>
@@ -443,7 +477,7 @@ useEffect(() => {
     }
   }
 
-  // Remove item (PB or guest)
+  // Remove item (server or guest)
   const handleRemoveItem = async (itemId: string) => {
     if (typeof window !== "undefined") {
       const ok = window.confirm("Supprimer cet article du panier ?")
@@ -451,13 +485,13 @@ useEffect(() => {
     }
 
     try {
-      const pb = getPb(true)
-      const isLogged = pb.authStore.isValid
-      const userId = pb.authStore.model?.id
-
-      if (isLogged && userId) {
-        // PocketBase
-        await pb.collection("cart_items").delete(itemId)
+      if (currentUser) {
+        // Server cart
+        const res = await fetch(
+          `/api/shop/cart?itemId=${encodeURIComponent(itemId)}`,
+          { method: "DELETE" }
+        )
+        if (!res.ok) return
       } else {
         // Guest: remove from localStorage
         const current = getGuestCart()
@@ -478,7 +512,7 @@ useEffect(() => {
   // sync props -> state & fetch once if no categories were passed
   useEffect(() => {
     if (categoriesProp.length > 0) {
-      setInternalCategories(categoriesProp)
+      setInternalCategories(categoriesProp.slice().sort(compareCategoryOrder))
       return
     }
 
@@ -490,7 +524,7 @@ useEffect(() => {
     const load = async () => {
       try {
         const res = await fetch(
-          `${PB_URL}/api/collections/categories/records?perPage=200&sort=name`,
+          `${PB_URL}/api/collections/categories/records?perPage=200&sort=order,name`,
           { cache: "no-store", signal: controller.signal }
         )
         const data = await res.json()
@@ -500,11 +534,12 @@ useEffect(() => {
           id: c.id,
           name: c.name ?? "",
           slug: c.slug ?? "",
+          order: Number(c.order ?? 0),
           parent: c.parent ?? null,
           description: c.desc ?? c.description ?? null,
         }))
 
-        setInternalCategories(mapped)
+        setInternalCategories(mapped.sort(compareCategoryOrder))
       } catch (err: any) {
         if (err?.name !== "AbortError") {
           console.error("Failed to fetch navbar categories", err)
@@ -555,14 +590,14 @@ useEffect(() => {
   const rootCategories = internalCategories.filter((cat) => {
     if (Array.isArray(cat.parent)) return cat.parent.length === 0
     return !cat.parent
-  })
+  }).sort(compareCategoryOrder)
 
   // children
   const getCategoryChildren = (parentId: string) =>
     internalCategories.filter((cat) => {
       if (Array.isArray(cat.parent)) return cat.parent.includes(parentId)
       return cat.parent === parentId
-    })
+    }).sort(compareCategoryOrder)
 
   // toggle category expansion
   const toggleCategory = (id: string, e?: React.MouseEvent) => {
@@ -656,7 +691,7 @@ useEffect(() => {
                 <button
                   type="button"
                   onClick={(e) => toggleCategory(category.id, e)}
-                  className="inline-flex h-10 w-10 items-center justify-center rounded transition-colors hover:bg-black/5"
+                  className="inline-flex h-6 w-6 items-center justify-center rounded transition-colors hover:bg-black/5"
                   aria-label="Afficher les sous-catégories"
                 >
                   <ChevronRight
@@ -675,40 +710,6 @@ useEffect(() => {
           </div>
         )
       })}
-    </div>
-  )
-
-  const DesktopDropdown = () => (
-    <div
-      className="relative"
-      onMouseEnter={() => setIsCategoriesOpen(true)}
-      onMouseLeave={() => setIsCategoriesOpen(false)}
-    >
-      {/* Bouton d'ouverture - clic = aller a /shop, survol = ouvrir le menu */}
-      <button
-        type="button"
-        onClick={() => router.push("/shop")}
-        className="flex items-center gap-1 py-2 text-sm font-extrabold transition-colors hover:opacity-70 cursor-pointer"
-      >
-        Boutique
-        <ChevronRight
-          size={16}
-          className={`transition-transform ${
-            isCategoriesOpen ? "rotate-90" : ""
-          }`}
-        />
-      </button>
-
-      {isCategoriesOpen && (
-        <div className="absolute left-0 top-full pt-2 z-50">
-          <div
-            className="rounded-lg border border-black/10 bg-white p-4 text-black min-w-56 max-h-96 overflow-y-auto transition-colors"
-            onMouseDown={(e) => e.preventDefault()}
-          >
-            <CategoryList items={rootCategories} />
-          </div>
-        </div>
-      )}
     </div>
   )
 
@@ -731,8 +732,10 @@ useEffect(() => {
     productResults.length === 0
 
   const displayName =
-    currentUser?.name || currentUser?.email || "Mon compte"
-  const shouldShowSignupPromo = !currentUser && showSignupPromo
+    [currentUser?.surname, currentUser?.name].filter(Boolean).join(" ") ||
+    currentUser?.email ||
+    "Mon compte"
+  const shouldShowSignupPromo = isAuthResolved && !currentUser && showSignupPromo
 
   // ðŸ§® Number of distinct products in cart (badge)
   const cartCount = cartItems.length
@@ -942,9 +945,9 @@ useEffect(() => {
   return (
     <>
       {shouldShowSignupPromo && (
-        <div className="fixed left-0 right-0 top-0 z-50 border-b border-red-700 bg-red-600 text-white">
+        <div className="absolute left-0 right-0 top-0 z-50 border-b border-red-700 bg-red-600 text-white">
           <div className="mx-auto flex h-10 max-w-7xl items-center justify-center px-4">
-            <p className="pr-8 text-center text-xs font-medium md:text-sm">
+            <p className="pr-8 text-center text-[9px] font-medium whitespace-nowrap md:text-sm">
               <Link href="/inscription" className="underline underline-offset-2">
                 Créez un compte
               </Link>{' '}
@@ -963,48 +966,48 @@ useEffect(() => {
       )}
 
       <nav
-        className={`fixed left-0 right-0 z-40 border-b border-black/10 bg-white text-black backdrop-blur-md ${
-          shouldShowSignupPromo ? "top-10" : "top-0"
+        className={`left-0 right-0 z-40 border-b border-black/10 bg-white text-black backdrop-blur-md ${
+          isDesktopMenuOpen ? "md:border-b-0" : ""
+        } ${
+          shouldShowSignupPromo
+            ? hasPassedPromoBanner
+              ? "fixed top-0"
+              : "absolute top-10"
+            : "fixed top-0"
         }`}
       >
         {/* Desktop */}
         <div className="hidden md:flex items-center justify-between px-0 py-0.5 max-w-7xl mx-auto">
-          <div className="flex items-center gap-8 flex-shrink-0">
+          <div className="flex items-center gap-3 flex-shrink-0">
+            <button
+              type="button"
+              onClick={() => setIsDesktopMenuOpen((prev) => !prev)}
+              className="inline-flex h-10 w-10 items-center justify-center rounded-md transition-colors hover:bg-black/5"
+              aria-label="Ouvrir le menu desktop"
+              aria-expanded={isDesktopMenuOpen}
+            >
+              <span className="relative block h-4 w-5">
+                <span
+                  className={`absolute left-0 top-0 h-0.5 w-5 origin-center bg-accent transition-all duration-300   ${
+                    isDesktopMenuOpen ? "translate-y-[7px] rotate-45" : ""
+                  }`}
+                />
+                <span
+                  className={`absolute left-0 top-[7px] h-0.5 w-5 bg-accent transition-all duration-300 ${
+                    isDesktopMenuOpen ? "opacity-0" : "opacity-100"
+                  }`}
+                />
+                <span
+                  className={`absolute left-0 top-[14px] h-0.5 w-5 origin-center bg-accent transition-all duration-300 ${
+                    isDesktopMenuOpen ? "-translate-y-[7px] -rotate-45" : ""
+                  }`}
+                />
+              </span>
+            </button>
+
             <Link href="/" className="flex items-center gap-3">
               <LogoSwap size={70} />
-            
             </Link>
-
-            <div className="flex items-center gap-6">
-         
-
-              <DesktopDropdown />
-
-              <Link
-                href="/Nouveautes"
-                className="text-sm font-extrabold hover:opacity-70 transition-opacity"
-              >
-                Nouveautés
-              </Link>
-
-              <Link
-                href="/Promotions"
-                className="text-sm font-extrabold text-red-600 transition-colors hover:text-red-700"
-              >
-                Promotions
-              </Link>
-
-        
-              <Link
-                href="/contact"
-                className="text-sm font-extrabold hover:opacity-70 transition-opacity"
-              >
-                Contact
-              </Link>
-
-       
-
-            </div>
           </div>
 
           {/* Search desktop */}
@@ -1128,15 +1131,17 @@ useEffect(() => {
 
           {/* Icons desktop */}
           <div className="flex items-center gap-4 flex-shrink-0">
-            {/* Wishlist button with auth logic */}
-            <button
-              type="button"
-              className="p-2 hover:opacity-70 transition-opacity cursor-pointer"
-              aria-label="Favoris"
-              onClick={handleWishlistClick}
-            >
-              <Heart size={20} />
-            </button>
+            {/* Wishlist button visible only for logged-in users */}
+            {currentUser && (
+              <button
+                type="button"
+                className="p-2 hover:opacity-70 transition-opacity cursor-pointer"
+                aria-label="Favoris"
+                onClick={handleWishlistClick}
+              >
+                <Heart size={20} />
+              </button>
+            )}
 
             {/* Cart with badge */}
             <button
@@ -1184,7 +1189,7 @@ useEffect(() => {
                     <div className="space-y-1">
                       {/* Full name / Profile */}
 <Link
-  href={currentUser?.role === "admin" ? "/admin" : "/profil"}
+  href={currentUser?.role === "admin" ? "/admin" : "/commandes"}
   className="flex items-center justify-between rounded-md px-3 py-2 text-sm transition-colors hover:bg-black/5"
   onClick={() => setIsProfileOpen(false)}
 >
@@ -1212,7 +1217,7 @@ useEffect(() => {
 
                       {/* Settings */}
                       <Link
-                        href="/parametres"
+                        href={currentUser?.role === "admin" ? "/admin" : "/commandes"}
                         className="flex items-center justify-between rounded-md px-3 py-2 text-sm transition-colors hover:bg-black/5"
                         onClick={() => setIsProfileOpen(false)}
                       >
@@ -1259,150 +1264,214 @@ useEffect(() => {
             </div>
           </div>
         </div>
-
-        {/* Mobile */}
-        <div className="md:hidden flex items-center justify-between px-4 py-3">
-          <Link href="/" className="flex items-center gap-2 flex-shrink-0">
-            <LogoSwap size={36} />
-            <span className="text-sm font-extrabold tracking-tight text-black">
-              UPDATE DESIGN
-            </span>
-          </Link>
-
-          <button
-            onClick={() => setIsMenuOpen(!isMenuOpen)}
-            className="p-2 hover:opacity-70 transition-opacity"
-            aria-label="Toggle menu"
-          >
-            {isMenuOpen ? <X size={24} /> : <Menu size={24} />}
-          </button>
-        </div>
-
-        {/* Mobile panel */}
-        {isMenuOpen && (
-          <div className="max-h-[calc(100vh-80px)] overflow-y-auto border-t border-black/10 bg-white p-4 text-black transition-colors md:hidden">
-            {/* Search mobile */}
-            <div className="relative mb-6" ref={searchWrapRef}>
-              <div
-                className="flex items-center gap-2 rounded-lg border border-gray-300 bg-gray-100 px-4 py-2 transition-colors"
+        <div
+          className={`hidden md:block overflow-hidden bg-white transition-all duration-300 ease-out ${
+            isDesktopMenuOpen ? "max-h-20 opacity-100" : "max-h-0 opacity-0"
+          }`}
+          aria-hidden={!isDesktopMenuOpen}
+        >
+          <div className="mx-auto flex max-w-7xl items-center gap-6 overflow-x-auto whitespace-nowrap px-0 py-4">
+            {rootCategories.map((category) => (
+              <Link
+                key={category.id}
+                href={`/boutique/categorie/${category.slug}`}
+                className="text-sm font-extrabold hover:opacity-70 transition-opacity"
               >
-                <Search size={18} className="opacity-70" />
-                <input
-                  type="text"
-                  placeholder="Rechercher par categorie, produit"
-                  value={searchValue}
-                  onChange={(e) => setSearchValue(e.target.value)}
-                  onFocus={() => searchValue.trim() && setSearchOpen(true)}
-                  className="flex-1 bg-transparent text-sm text-black outline-none placeholder-gray-600 placeholder-opacity-70"
-                />
-              </div>
+                {category.name}
+              </Link>
+            ))}
 
-              {searchOpen && (
-                <div
-                  className="absolute left-0 right-0 mt-2 overflow-hidden rounded-xl border border-black/10 bg-white text-black transition-colors"
-                >
-                  <div className="max-h-80 overflow-y-auto px-2 py-2">
-                    {categoryResults.length > 0 && (
-                      <div className="mb-2">
-                        <div className="px-2 py-1 text-xs uppercase tracking-wider opacity-60">
-                          Catégories
-                        </div>
-                        <div className="space-y-1">
-                          {categoryResults.map((c) => (
+            <Link
+              href="/Nouveautes"
+              className="text-sm font-extrabold hover:opacity-70 transition-opacity"
+            >
+              Nouveautés
+            </Link>
+
+            <Link
+              href="/Promotions"
+              className="text-sm font-extrabold text-red-600 transition-colors hover:text-red-700"
+            >
+              Promotions
+            </Link>
+
+            <Link
+              href="/contact"
+              className="text-sm font-extrabold hover:opacity-70 transition-opacity"
+            >
+              Contact
+            </Link>
+          </div>
+        </div>
+        {/* Mobile */}
+        <div className="md:hidden flex items-center gap-1 px-2 py-3">
+          <Link href="/" className="flex items-center flex-shrink-0" aria-label="Accueil">
+            <LogoSwap size={36} />
+          </Link>
+               <button
+            type="button"
+            className="p-1 hover:opacity-70 transition-opacity"
+            aria-label="Compte"
+            onClick={() => {
+              if (currentUser?.role === "admin") {
+                router.push("/admin")
+                return
+              }
+              setIsProfileOpen((v) => !v)
+            }}
+          >
+            <User size={20} />
+          </button>
+
+      
+
+            <div className="relative flex-1" ref={searchWrapRef}>
+            <div className="flex items-center gap-2 rounded-lg border border-gray-300 bg-gray-100 px-3 py-1.5 transition-colors">
+              <Search size={16} className="opacity-70" />
+              <input
+                type="text"
+                placeholder="Rechercher..."
+                value={searchValue}
+                onChange={(e) => setSearchValue(e.target.value)}
+                onFocus={() => searchValue.trim() && setSearchOpen(true)}
+                className="w-full bg-transparent text-xs text-black outline-none placeholder-gray-600 placeholder-opacity-70"
+              />
+            </div>
+
+            {searchOpen && (
+              <div className="absolute left-0 right-0 z-50 mt-2 overflow-hidden rounded-xl border border-black/10 bg-white text-black transition-colors">
+                <div className="max-h-80 overflow-y-auto px-2 py-2">
+                  {categoryResults.length > 0 && (
+                    <div className="mb-2">
+                      <div className="px-2 py-1 text-xs uppercase tracking-wider opacity-60">
+                        CatÃ©gories
+                      </div>
+                      <div className="space-y-1">
+                        {categoryResults.map((c) => (
+                          <Link
+                            key={c.id}
+                            href={`/boutique/categorie/${c.slug}`}
+                            onClick={() => {
+                              setSearchOpen(false)
+                              setIsMenuOpen(false)
+                            }}
+                            className="flex items-center gap-3 rounded-lg px-2 py-2 transition hover:opacity-80 hover:bg-black/5"
+                          >
+                            <div className="flex h-9 w-9 items-center justify-center rounded-md bg-foreground/5">
+                              <LayoutGrid className="h-4 w-4 opacity-80" />
+                            </div>
+                            <div className="min-w-0">
+                              <div className="text-sm font-medium truncate">
+                                {c.name}
+                              </div>
+                              <div className="text-xs opacity-60">
+                                CatÃ©gorie
+                              </div>
+                            </div>
+                          </Link>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {productResults.length > 0 && (
+                    <div className="mb-1">
+                      <div className="px-2 py-1 text-xs uppercase tracking-wider opacity-60">
+                        Produits
+                      </div>
+                      <div className="space-y-1">
+                        {productResults.map((p) => {
+                          const firstImg =
+                            Array.isArray(p.images) && p.images.length > 0
+                              ? pbFileUrl(p.id, p.images[0]!)
+                              : "/placeholder-square.webp"
+
+                          return (
                             <Link
-                              key={c.id}
-                              href={`/boutique/categorie/${c.slug}`}
+                              key={p.id}
+                              href={`/shop/${p.slug}`}
                               onClick={() => {
                                 setSearchOpen(false)
                                 setIsMenuOpen(false)
                               }}
-                              className="flex items-center gap-3 rounded-lg px-2 py-2 transition hover:opacity-80 hover:bg-black/5"
+                              className="flex items-start gap-3 rounded-lg px-2 py-2 transition hover:opacity-80 hover:bg-foreground/5"
                             >
-                              <div
-                                className="flex h-9 w-9 items-center justify-center rounded-md bg-foreground/5"
-                              >
-                                <LayoutGrid className="h-4 w-4 opacity-80" />
+                              <div className="relative h-12 w-12 overflow-hidden rounded-md flex-shrink-0">
+                                <Image
+                                  src={firstImg}
+                                  alt={p.name}
+                                  fill
+                                  sizes="48px"
+                                  className="object-cover"
+                                />
                               </div>
+
                               <div className="min-w-0">
                                 <div className="text-sm font-medium truncate">
-                                  {c.name}
+                                  {p.name}
                                 </div>
-                                <div className="text-xs opacity-60">
-                                  Catégorie
+                                <div className="text-xs opacity-70 truncate">
+                                  Reference: {p.sku}
                                 </div>
+                                {p.description && (
+                                  <div className="text-xs opacity-70 line-clamp-2">
+                                    {p.description}
+                                  </div>
+                                )}
                               </div>
                             </Link>
-                          ))}
-                        </div>
+                          )
+                        })}
                       </div>
-                    )}
+                    </div>
+                  )}
 
-                    {productResults.length > 0 && (
-                      <div className="mb-1">
-                        <div className="px-2 py-1 text-xs uppercase tracking-wider opacity-60">
-                          Produits
-                        </div>
-                        <div className="space-y-1">
-                          {productResults.map((p) => {
-                            const firstImg =
-                              Array.isArray(p.images) && p.images.length > 0
-                                ? pbFileUrl(p.id, p.images[0]!)
-                                : "/placeholder-square.webp"
-
-                            return (
-                              <Link
-                                key={p.id}
-                                href={`/shop/${p.slug}`}
-                                onClick={() => {
-                                  setSearchOpen(false)
-                                  setIsMenuOpen(false)
-                                }}
-                                className="flex items-start gap-3 rounded-lg px-2 py-2 transition hover:opacity-80 hover:bg-foreground/5"
-                              >
-                                <div className="relative h-12 w-12 overflow-hidden rounded-md flex-shrink-0">
-                                  <Image
-                                    src={firstImg}
-                                    alt={p.name}
-                                    fill
-                                    sizes="48px"
-                                    className="object-cover"
-                                  />
-                                </div>
-
-                                <div className="min-w-0">
-                                  <div className="text-sm font-medium truncate">
-                                    {p.name}
-                                  </div>
-                                    <div className="text-xs opacity-70 truncate">
-                                    Reference: {p.sku}
-                                    </div>
-                                  {p.description && (
-                                    <div className="text-xs opacity-70 line-clamp-2">
-                                      {p.description}
-                                    </div>
-                                  )}
-                                </div>
-                              </Link>
-                            )
-                          })}
-                        </div>
+                  {hasNoResults && (
+                    <div className="flex items-center gap-3 rounded-lg bg-foreground/5 px-3 py-4">
+                      <div className="flex h-9 w-9 items-center justify-center rounded-md bg-foreground/5">
+                        <PackageOpen className="h-5 w-5 opacity-70" />
                       </div>
-                    )}
-
-                    {hasNoResults && (
-                      <div className="flex items-center gap-3 rounded-lg bg-foreground/5 px-3 py-4">
-                        <div className="flex h-9 w-9 items-center justify-center rounded-md bg-foreground/5">
-                          <PackageOpen className="h-5 w-5 opacity-70" />
-                        </div>
-                        <div className="text-sm opacity-70">
-                          Aucun résultat trouvé.
-                        </div>
+                      <div className="text-sm opacity-70">
+                        Aucun rÃ©sultat trouvÃ©.
                       </div>
-                    )}
-                  </div>
+                    </div>
+                  )}
                 </div>
-              )}
-            </div>
+              </div>
+            )}
+          </div>
+
+          <button
+            type="button"
+            onClick={handleCartClick}
+            aria-label="Panier"
+            className="relative p-1 hover:opacity-70 transition-opacity"
+          >
+            <ShoppingCart size={20} />
+            {cartCount > 0 && (
+              <span className="absolute -top-1 -right-2 inline-flex items-center justify-center h-5 min-w-[1.25rem] rounded-full bg-accent text-white text-[10px] font-semibold px-1">
+                {cartCount > 99 ? "99+" : cartCount}
+              </span>
+            )}
+          </button>
+    <button
+            onClick={() => setIsMenuOpen(!isMenuOpen)}
+            className={`p-2 transition-all duration-300 hover:opacity-70 ${isMenuOpen ? "rotate-90" : "rotate-0"}`}
+            aria-label="Toggle menu"
+          >
+            {isMenuOpen ? <X size={22} /> : <Menu size={22} />}
+          </button>
+     
+        </div>
+
+        {/* Mobile panel */}
+        <div
+          className={`border-t border-black/10 bg-white text-black transition-all duration-300 ease-out md:hidden ${
+            isMenuOpen ? "max-h-[calc(100vh-80px)] opacity-100" : "max-h-0 opacity-0 pointer-events-none"
+          }`}
+          aria-hidden={!isMenuOpen}
+        >
+          <div className="overflow-y-auto p-4">
 
             {/* Mobile links */}
             <div className="space-y-4">
@@ -1489,61 +1558,15 @@ useEffect(() => {
               </div>
             </div>
 
-            {/* Mobile icons */}
-            <div className="mt-6 flex items-center gap-6 border-t border-foreground/10 pt-6 transition-colors">
-              {/* Mobile wishlist uses same logic */}
-              <button
-                type="button"
-                onClick={() => {
-                  handleWishlistClick()
-                  setIsMenuOpen(false)
-                }}
-                aria-label="Favoris"
-              >
-                <Heart size={20} />
-              </button>
-
-              {/* Mobile cart icon with badge */}
-              <button
-                type="button"
-                onClick={() => {
-                  handleCartClick()
-                  setIsMenuOpen(false)
-                }}
-                aria-label="Panier"
-                className="relative"
-              >
-                <ShoppingCart size={20} />
-                {cartCount > 0 && (
-                  <span className="absolute -top-1 -right-2 inline-flex items-center justify-center h-5 min-w-[1.25rem] rounded-full bg-accent text-white text-[10px] font-semibold px-1">
-                    {cartCount > 99 ? "99+" : cartCount}
-                  </span>
-                )}
-              </button>
-
-              <button
-  type="button"
-  className="p-2 hover:opacity-70 transition-opacity"
-  aria-label="Compte"
-  onClick={() => {
-    if (currentUser?.role === "admin") {
-      router.push("/admin");
-      return;
-    }
-    setIsProfileOpen((v) => !v);
-  }}
->
-  <User size={20} />
-</button>
-            </div>
           </div>
-        )}
+        </div>
       </nav>
 
       {cartOverlay}
     </>
   )
 }
+
 
 
 

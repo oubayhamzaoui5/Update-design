@@ -109,6 +109,7 @@ export function useAuth() {
     email: string
     password: string
     passwordConfirm: string
+    surname: string
     name: string
     username: string
   }) => {
