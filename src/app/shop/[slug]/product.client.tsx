@@ -10,9 +10,11 @@ import Button from '@/components/admin/button'
 import Card from '@/components/admin/card'
 import Footer from '@/components/footer'
 import { Navbar } from '@/components/navbar'
+import InstallationSteps from '@/components/shop/installation-steps'
 import ProductGallery from '@/components/shop/product-gallery.client'
 import ShopProductCard from '@/app/shop/_components/shop-product-card'
 import { getPb } from '@/lib/pb'
+import { hasInstallationStepsCategory } from '@/lib/shop/product-category-match'
 import type { ProductListItem, ShopCategory } from '@/lib/services/product.service'
 import {
   addToCartForUser,
@@ -198,6 +200,11 @@ export default function ProductClient({
     if (!product.categories || product.categories.length === 0) return null
     return categories.find((c) => c.id === product.categories?.[0]) ?? null
   }, [categories, product.categories])
+
+  const shouldRenderInstallationSteps = useMemo(
+    () => hasInstallationStepsCategory(product, categories),
+    [product, categories]
+  )
 
   const fromPromotions = searchParams.get('promotions') === '1'
   const fromNouveautes = searchParams.get('nouveautes') === '1'
@@ -649,6 +656,8 @@ export default function ProductClient({
           </Card>
         </div>
       </div>
+
+      {shouldRenderInstallationSteps ? <InstallationSteps /> : null}
 
       {relatedProducts.length > 0 && (
         <div className="mx-auto max-w-7xl border-t border-border px-4 py-10">
