@@ -110,7 +110,7 @@ export default function HomeCategoriesSection({ categories }: HomeCategoriesSect
                 <h3 className="text-xl font-bold tracking-wide text-white transition-transform duration-300 group-hover:-translate-y-0.5">
                   {item.name}
                 </h3>
-                <span className="inline-block text-sm font-semibold text-[#c19a2f] transition-transform duration-300 group-hover:translate-x-1">
+                <span className="inline-block translate-y-1 text-sm font-semibold text-[#c19a2f] opacity-0 transition-all duration-300 group-hover:translate-y-0 group-hover:opacity-100 group-hover:translate-x-1 group-focus-visible:translate-y-0 group-focus-visible:opacity-100 group-focus-visible:translate-x-1">
                   Explorer -&gt;
                 </span>
               </div>

@@ -19,7 +19,7 @@ import type { ProductListItem } from '@/lib/services/product.service'
 const roomCategories = [
   {
     name: 'PROFILE MURAL D\u00c9CORATIF',
-    image: '/c2.webp',
+    image: '/c2-v2.webp',
     href: '/boutique/categorie/effet-bois-d-interieur',
     spanTwoColumns: true,
   },

@@ -20,7 +20,7 @@ export default function CategorySelector() {
     <section className="w-full h-[80vh] flex flex-col md:flex-row gap-4 overflow-hidden py-16 px-6">
       {/* LEFT - PROFILÉ MURAL */}
       <div className="relative h-full w-full md:w-1/2 overflow-hidden group">
-        <div className="absolute inset-0 bg-cover bg-center transition-transform duration-700  " style={{ backgroundImage: "url('/c2.webp')" }} />
+        <div className="absolute inset-0 bg-cover bg-center transition-transform duration-700  " style={{ backgroundImage: "url('/c2-v2.webp')" }} />
         <div className="absolute inset-0  bg-black/80" />
 
         <motion.div 

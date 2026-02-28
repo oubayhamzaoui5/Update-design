@@ -325,6 +325,13 @@ export function useProducts({
           .filter((item) => item.label || item.value)
       )
     )
+    if (form.categories.length === 0) {
+      fd.set('category', '')
+    } else {
+      for (const categoryId of form.categories) {
+        fd.append('category', categoryId)
+      }
+    }
 
     if (form.slug) fd.set('slug', form.slug)
     if (isVariant) fd.set('isVariant', 'true')
