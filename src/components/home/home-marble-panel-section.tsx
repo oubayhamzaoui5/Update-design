@@ -15,14 +15,14 @@ export default function HomeMarblePanelSection() {
           </div>
         </div>
 
-        <div className="flex-1 px-1 lg:px-0">
-          <h2 className="mb-4 text-4xl font-bold">Panneau Effet Marbre</h2>
-          <p className="mb-3 text-lg leading-relaxed text-slate-600">
+        <div className="flex-1 px-4 lg:px-0">
+          <h2 className="mb-4 text-2xl font-bold lg:text-4xl">Panneau Effet Marbre</h2>
+          <p className="mb-3 text-sm leading-relaxed text-slate-600 lg:text-lg">
             Le panneau effet marbre apporte une finition elegante et moderne a vos murs, sans les
             contraintes du marbre naturel. Il reproduit l aspect noble de la pierre tout en restant
             plus leger, plus simple a manipuler et rapide a poser.
           </p>
-          <p className="mb-6 text-lg leading-relaxed text-slate-600">
+          <p className="mb-6 text-sm leading-relaxed text-slate-600 lg:text-lg">
             Ideal pour salon, chambre, cuisine ou espace commercial, ce panneau PVC combine style
             haut de gamme et praticite au quotidien. Il resiste a l humidite, se nettoie facilement
             et transforme votre interieur avec un rendu visuel premium.
@@ -37,20 +37,20 @@ export default function HomeMarblePanelSection() {
 
           <div className="grid grid-cols-3 gap-8 border-t border-[#c19a2f]/20 pt-4">
             <div>
-              <p className="mb-1 text-3xl font-bold text-[#c19a2f]">100%</p>
-              <p className="text-xs font-semibold uppercase tracking-widest text-slate-400">
+              <p className="mb-1 text-2xl font-bold text-[#c19a2f] lg:text-3xl">100%</p>
+              <p className="text-[10px] font-semibold uppercase tracking-widest text-slate-400 lg:text-xs">
                 Effet premium
               </p>
             </div>
             <div>
-              <p className="mb-1 text-3xl font-bold text-[#c19a2f]">Facile</p>
-              <p className="text-xs font-semibold uppercase tracking-widest text-slate-400">
+              <p className="mb-1 text-2xl font-bold text-[#c19a2f] lg:text-3xl">Facile</p>
+              <p className="text-[10px] font-semibold uppercase tracking-widest text-slate-400 lg:text-xs">
                 Pose rapide
               </p>
             </div>
             <div>
-              <p className="mb-1 text-3xl font-bold text-[#c19a2f]">Durable</p>
-              <p className="text-xs font-semibold uppercase tracking-widest text-slate-400">
+              <p className="mb-1 text-2xl font-bold text-[#c19a2f] lg:text-3xl">Durable</p>
+              <p className="text-[10px] font-semibold uppercase tracking-widest text-slate-400 lg:text-xs">
                 Entretien simple
               </p>
             </div>
@@ -60,3 +60,4 @@ export default function HomeMarblePanelSection() {
     </section>
   )
 }
+

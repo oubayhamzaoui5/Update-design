@@ -12,14 +12,14 @@ export default function HomeWoodProfileSection() {
           />
         </div>
 
-        <div className="flex-1 px-1 lg:px-0">
-          <h2 className="mb-4 text-4xl font-bold">Profile Effet Bois</h2>
-          <p className="mb-3 text-lg leading-relaxed text-slate-600">
+        <div className="flex-1 px-4 lg:px-0">
+          <h2 className="mb-4 text-2xl font-bold lg:text-4xl">Profile Effet Bois</h2>
+          <p className="mb-3 text-sm leading-relaxed text-slate-600 lg:text-lg">
             Le profile effet bois apporte chaleur et caractere a votre interieur avec un rendu
             naturel et contemporain. Il valorise les murs, les cloisons et les zones decoratives
             tout en restant leger et facile a integrer dans tous les styles.
           </p>
-          <p className="mb-6 text-lg leading-relaxed text-slate-600">
+          <p className="mb-6 text-sm leading-relaxed text-slate-600 lg:text-lg">
             Concu pour une installation propre et rapide, il offre une excellente resistance dans le
             temps et un entretien simple au quotidien. C est une solution ideale pour creer une
             ambiance elegante, cosy et moderne sans gros travaux.
@@ -34,20 +34,20 @@ export default function HomeWoodProfileSection() {
 
           <div className="grid grid-cols-3 gap-8 border-t border-[#c19a2f]/20 pt-4">
             <div>
-              <p className="mb-1 text-3xl font-bold text-[#c19a2f]">Naturel</p>
-              <p className="text-xs font-semibold uppercase tracking-widest text-slate-400">
+              <p className="mb-1 text-2xl font-bold text-[#c19a2f] lg:text-3xl">Naturel</p>
+              <p className="text-[10px] font-semibold uppercase tracking-widest text-slate-400 lg:text-xs">
                 Rendu bois
               </p>
             </div>
             <div>
-              <p className="mb-1 text-3xl font-bold text-[#c19a2f]">Rapide</p>
-              <p className="text-xs font-semibold uppercase tracking-widest text-slate-400">
+              <p className="mb-1 text-2xl font-bold text-[#c19a2f] lg:text-3xl">Rapide</p>
+              <p className="text-[10px] font-semibold uppercase tracking-widest text-slate-400 lg:text-xs">
                 Installation
               </p>
             </div>
             <div>
-              <p className="mb-1 text-3xl font-bold text-[#c19a2f]">Propre</p>
-              <p className="text-xs font-semibold uppercase tracking-widest text-slate-400">
+              <p className="mb-1 text-2xl font-bold text-[#c19a2f] lg:text-3xl">Propre</p>
+              <p className="text-[10px] font-semibold uppercase tracking-widest text-slate-400 lg:text-xs">
                 Entretien simple
               </p>
             </div>
@@ -57,3 +57,4 @@ export default function HomeWoodProfileSection() {
     </section>
   )
 }
+

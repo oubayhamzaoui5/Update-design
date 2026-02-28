@@ -32,7 +32,7 @@ export default function Hero() {
   }, [])
 
   return (
-    <section className="relative flex h-[72vh] lg:h-screen flex-col items-stretch pt-24 lg:flex-row">
+    <section className="relative flex h-[60vh] lg:h-screen flex-col items-stretch pt-24 lg:flex-row">
       <div className="relative z-10 flex flex-1 flex-col justify-start bg-transparent px-4 pb-3 pt-0 lg:h-screen lg:min-h-0 lg:flex-[1.1] lg:px-24 lg:py-16">
         <div className="mx-auto max-w-xl pt-24 lg:pt-8 text-center text-white lg:mx-0  lg:text-left">
           <span className="mb-0 block text-base font-bold uppercase tracking-[0.3em]">
