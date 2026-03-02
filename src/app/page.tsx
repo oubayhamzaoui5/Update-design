@@ -117,7 +117,6 @@ async function getHomeBestSellerProducts(): Promise<ProductListItem[]> {
 
       const mapped = mapRecordToHomeProduct(expanded)
       if (!mapped.id) continue
-      if (!mapped.isActive || !mapped.inView || !mapped.inStock) continue
       if (selected.has(mapped.id)) continue
       selected.set(mapped.id, mapped)
       if (selected.size >= HOME_PRODUCTS_LIMIT) break
