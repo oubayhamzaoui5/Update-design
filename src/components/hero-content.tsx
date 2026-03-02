@@ -10,9 +10,29 @@ const atmospheriqueFont = Playfair_Display({
   style: ['italic'],
 })
 const HERO_IMAGES = ['hero1.webp', 'hero2.webp', 'hero3.webp', 'hero4.webp', 'hero5.webp', 'hero6.webp']
+const SIGNUP_PROMO_DISMISSED_KEY = 'signup_promo_dismissed_v1'
 
 export default function Hero() {
   const [currentBgIndex, setCurrentBgIndex] = useState(0)
+  const [isSignupPromoActive, setIsSignupPromoActive] = useState(false)
+
+  useEffect(() => {
+    const refreshSignupPromoState = () => {
+      if (typeof window === 'undefined') return
+      const dismissedUntilRaw = window.localStorage.getItem(SIGNUP_PROMO_DISMISSED_KEY)
+      const dismissedUntil = dismissedUntilRaw ? Number(dismissedUntilRaw) : 0
+      const shouldShow =
+        !dismissedUntilRaw || Number.isNaN(dismissedUntil) || Date.now() >= dismissedUntil
+      setIsSignupPromoActive(shouldShow)
+    }
+
+    refreshSignupPromoState()
+    window.addEventListener('signup-promo:visibility-change', refreshSignupPromoState)
+    return () => {
+      window.removeEventListener('signup-promo:visibility-change', refreshSignupPromoState)
+    }
+  }, [])
+
   useEffect(() => {
     const intervalId = window.setInterval(() => {
       setCurrentBgIndex((prev) => (prev + 1) % HERO_IMAGES.length)
@@ -22,14 +42,18 @@ export default function Hero() {
   }, [])
 
   return (
-    <section className="relative flex h-[50vh] lg:h-screen flex-col items-stretch pt-24 lg:flex-row">
+    <section
+      className={`relative flex aspect-[16/9] w-full flex-col items-stretch ${
+        isSignupPromoActive ? 'pt-28' : 'pt-20'
+      } lg:h-screen lg:aspect-auto lg:flex-row lg:pt-24`}
+    >
       <div className="relative z-10 flex flex-1 flex-col justify-start bg-transparent px-4 pb-3 pt-0 lg:h-screen lg:min-h-0 lg:flex-[1.1] lg:px-24 lg:py-16">
-       <div className="mx-auto max-w-xl pt-24 lg:pt-8 text-center text-white lg:mx-0 lg:text-left">
-  <span className="mb-0 lg:mb-2 block text-sm lg:text-base font-bold uppercase tracking-[0.3em]">
+       <div className="max-w-xs pt-10 text-left text-white sm:max-w-sm lg:mx-0 lg:max-w-xl lg:pt-8">
+  <span className="mb-0 block text-[10px] font-bold uppercase tracking-[0.22em] lg:mb-2 lg:text-base lg:tracking-[0.3em]">
     Collection 2026
   </span>
 
-  <h1 className="mb-6 lg:mb-2 text-4xl font-extrabold leading-[1.1] lg:text-7xl">
+  <h1 className="mb-3 text-2xl font-extrabold leading-[1.1] lg:mb-2 lg:text-7xl">
     Élégance
     <span>
       <span> pour {' '} <br /><span> votre intérieur</span></span>{' '}
@@ -45,19 +69,14 @@ export default function Hero() {
     Découvrez notre univers de décoration d’intérieur en Tunisie : profilés muraux décoratifs, panneaux muraux en PVC, panneaux en MDF et solutions modernes pour sublimer votre salon, chambre, cuisine et même salle de bain avec style et caractère.
   </p>
 
-  <div className="flex flex-row items-center justify-center gap-3 lg:justify-start">
+  <div className="flex flex-row items-center justify-start gap-3">
     <Link
       href="/boutique"
       className="relative isolate cursor-pointer overflow-hidden rounded-lg bg-[#c19a2f] px-4 py-3 text-center text-[10px] font-bold uppercase tracking-wider whitespace-nowrap text-white transition-transform duration-300 before:absolute before:inset-y-0 before:left-[-40%] before:w-[35%] before:skew-x-[-20deg] before:bg-gradient-to-r before:from-transparent before:via-white/50 before:to-transparent before:translate-x-[-180%] before:transition-transform before:duration-700 before:content-[''] hover:before:translate-x-[420%] hover:scale-[1.01] active:scale-95 lg:px-6 lg:text-sm lg:tracking-widest"
     >
       Découvrir nos collections
     </Link>
-    <Link
-      href="#home-categories"
-      className="relative cursor-pointer px-4 py-3 text-[10px] font-extrabold uppercase tracking-wider whitespace-nowrap transition-colors duration-300 lg:px-6 lg:text-sm lg:tracking-widest after:absolute after:bottom-2 after:left-4 after:right-4 after:h-[2px] after:origin-left after:scale-x-0 after:bg-current after:transition-transform after:duration-300 after:ease-out after:content-[''] hover:after:scale-x-100"
-    >
-      Explorer nos catégories
-    </Link>
+
   </div>
 </div>
       </div>
@@ -83,4 +102,3 @@ export default function Hero() {
     </section>
   )
 }
-

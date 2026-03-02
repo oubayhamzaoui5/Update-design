@@ -35,6 +35,7 @@ export default function ProductsClient({
   parent,
 }: ProductsClientProps) {
   const {
+    products,
     pageItems,
     query,
     setQuery,
@@ -87,6 +88,16 @@ export default function ProductsClient({
     for (const c of allCategories) m.set(c.id, c)
     return m
   }, [allCategories])
+
+  const relatedProductOptions = useMemo(() => {
+    return products
+      .filter((product) => product.isParent || !product.isVariant)
+      .map((product) => ({
+        id: product.id,
+        name: product.name,
+        sku: product.sku,
+      }))
+  }, [products])
 
   return (
     <div className="space-y-6 p-6 md:p-8">
@@ -219,6 +230,7 @@ export default function ProductsClient({
           hideCollectionToggle={Boolean(parent)}
           submitProduct={submitProduct}
           adding={adding}
+          relatedProductOptions={relatedProductOptions}
         />
       )}
     </div>

@@ -168,6 +168,8 @@ export function Navbar(props: NavbarProps) {
 
   const [showSignupPromo, setShowSignupPromo] = useState(false)
   const [hasPassedPromoBanner, setHasPassedPromoBanner] = useState(false)
+  const [isMobileNavVisible, setIsMobileNavVisible] = useState(true)
+  const lastScrollYRef = useRef(0)
 
   const getLoginHref = () => {
     const query = typeof window !== "undefined" ? window.location.search.slice(1) : ""
@@ -187,6 +189,7 @@ export function Navbar(props: NavbarProps) {
     const dismissedUntil = dismissedUntilRaw ? Number(dismissedUntilRaw) : 0
     const shouldShow = !dismissedUntil || Number.isNaN(dismissedUntil) || Date.now() >= dismissedUntil
     setShowSignupPromo(shouldShow)
+    window.dispatchEvent(new Event("signup-promo:visibility-change"))
 
     if (shouldShow && dismissedUntilRaw) {
       window.localStorage.removeItem(SIGNUP_PROMO_DISMISSED_KEY)
@@ -204,6 +207,51 @@ export function Navbar(props: NavbarProps) {
     return () => window.removeEventListener("scroll", onScroll)
   }, [])
 
+  useEffect(() => {
+    if (typeof window === "undefined") return
+
+    const scrollThreshold = 8
+
+    const updateMobileNavVisibility = () => {
+      const currentScrollY = window.scrollY
+      const isMobileViewport = window.innerWidth < 768
+
+      if (!isMobileViewport) {
+        setIsMobileNavVisible(true)
+        lastScrollYRef.current = currentScrollY
+        return
+      }
+
+      if (isMenuOpen || searchOpen || isProfileOpen || isCartOpen) {
+        setIsMobileNavVisible(true)
+        lastScrollYRef.current = currentScrollY
+        return
+      }
+
+      const delta = currentScrollY - lastScrollYRef.current
+
+      if (currentScrollY <= 10) {
+        setIsMobileNavVisible(true)
+      } else if (delta > scrollThreshold) {
+        setIsMobileNavVisible(false)
+      } else if (delta < -scrollThreshold) {
+        setIsMobileNavVisible(true)
+      }
+
+      lastScrollYRef.current = currentScrollY
+    }
+
+    lastScrollYRef.current = window.scrollY
+    updateMobileNavVisibility()
+
+    window.addEventListener("scroll", updateMobileNavVisibility, { passive: true })
+    window.addEventListener("resize", updateMobileNavVisibility)
+    return () => {
+      window.removeEventListener("scroll", updateMobileNavVisibility)
+      window.removeEventListener("resize", updateMobileNavVisibility)
+    }
+  }, [isMenuOpen, searchOpen, isProfileOpen, isCartOpen])
+
   const closeSignupPromo = () => {
     if (typeof window !== "undefined") {
       const dismissedUntil = Date.now() + SIGNUP_PROMO_DISMISS_TTL_MS
@@ -211,6 +259,7 @@ export function Navbar(props: NavbarProps) {
         SIGNUP_PROMO_DISMISSED_KEY,
         String(dismissedUntil)
       )
+      window.dispatchEvent(new Event("signup-promo:visibility-change"))
     }
     setShowSignupPromo(false)
   }
@@ -966,7 +1015,9 @@ useEffect(() => {
       )}
 
       <nav
-        className={`left-0 right-0 z-40 border-b border-black/10 bg-white text-black backdrop-blur-md ${
+        className={`left-0 right-0 z-40 border-b border-black/10 bg-white text-black backdrop-blur-md transition-transform duration-300 md:translate-y-0 ${
+          isMobileNavVisible ? "translate-y-0" : "-translate-y-full"
+        } ${
           isDesktopMenuOpen ? "md:border-b-0" : ""
         } ${
           shouldShowSignupPromo

@@ -37,6 +37,7 @@ export default async function ProductPage({
       imageUrls={data.imageUrls}
       categoryName={data.categoryName}
       categories={data.categories}
+      explicitRelatedProducts={data.explicitRelatedProducts}
       relatedProducts={data.relatedProducts}
       availability={data.availability}
       variants={data.variants}

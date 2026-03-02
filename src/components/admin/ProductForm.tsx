@@ -23,6 +23,7 @@ type ProductFormProps = {
     files: File[]
     categories: string[]
     details: ProductDetail[]
+    relatedProducts: string[]
   }
   setForm: React.Dispatch<
     React.SetStateAction<{
@@ -39,6 +40,7 @@ type ProductFormProps = {
       files: File[]
       categories: string[]
       details: ProductDetail[]
+      relatedProducts: string[]
     }>
   >
   allCategories: CategoryOption[]
@@ -59,6 +61,11 @@ type ProductFormProps = {
   hideCollectionToggle?: boolean
   submitProduct: () => Promise<void>
   adding: boolean
+  relatedProductOptions: Array<{
+    id: string
+    name: string
+    sku: string
+  }>
 }
 
 type PromoMode = "percent" | "price"
@@ -131,10 +138,12 @@ export default function ProductForm({
   hideCollectionToggle = false,
   submitProduct,
   adding,
+  relatedProductOptions,
 }: ProductFormProps) {
   const fileInputRef = useRef<HTMLInputElement>(null)
   const [promoMode, setPromoMode] = useState<PromoMode>("percent")
   const [thumbOrder, setThumbOrder] = useState<string[]>([])
+  const [relatedSearch, setRelatedSearch] = useState("")
 
   const thumbItems = useMemo(() => {
     const existingItems = form.existing.map((filename) => ({
@@ -241,6 +250,38 @@ export default function ProductForm({
   function closeCategoryDropdown() {
     setCategoryDropdownOpen(false)
     setCategorySearch("")
+  }
+
+  const selectedRelatedProducts = useMemo(
+    () =>
+      form.relatedProducts
+        .map((id) => relatedProductOptions.find((product) => product.id === id))
+        .filter((product): product is (typeof relatedProductOptions)[number] => !!product),
+    [form.relatedProducts, relatedProductOptions]
+  )
+
+  const filteredRelatedOptions = useMemo(() => {
+    const query = relatedSearch.trim().toLowerCase()
+    return relatedProductOptions.filter((product) => {
+      if (editState.mode === "edit" && editState.id && product.id === editState.id) return false
+      if (!query) return true
+      return (
+        product.name.toLowerCase().includes(query) ||
+        product.sku.toLowerCase().includes(query)
+      )
+    })
+  }, [editState.id, editState.mode, relatedProductOptions, relatedSearch])
+
+  function toggleRelatedProduct(id: string) {
+    setForm((prev) => {
+      const exists = prev.relatedProducts.includes(id)
+      return {
+        ...prev,
+        relatedProducts: exists
+          ? prev.relatedProducts.filter((productId) => productId !== id)
+          : [...prev.relatedProducts, id],
+      }
+    })
   }
 
   const promoInputValue =
@@ -549,6 +590,67 @@ export default function ProductForm({
                 </div>
               </div>
             )}
+          </div>
+
+          <div className="space-y-2">
+            <label className="text-[11px] font-bold uppercase tracking-wider text-slate-500 ml-1">
+              Produits lies
+            </label>
+            <div className="rounded-xl border border-slate-200 bg-slate-50/30 p-3">
+              <div className="mb-2 flex flex-wrap gap-2">
+                {selectedRelatedProducts.length === 0 ? (
+                  <p className="text-xs italic text-slate-400">Aucun produit lie.</p>
+                ) : (
+                  selectedRelatedProducts.map((product) => (
+                    <button
+                      key={product.id}
+                      type="button"
+                      onClick={() => toggleRelatedProduct(product.id)}
+                      className="inline-flex items-center gap-1 rounded-full border border-slate-200 bg-white px-2.5 py-1 text-xs font-semibold text-slate-700 transition-colors hover:border-red-200 hover:text-red-600"
+                    >
+                      <span className="max-w-[180px] truncate">{product.name}</span>
+                      <X className="h-3 w-3" />
+                    </button>
+                  ))
+                )}
+              </div>
+
+              <div className="flex items-center gap-2 rounded-lg border border-slate-200 bg-white px-3 py-2">
+                <Search className="h-4 w-4 text-slate-400" />
+                <input
+                  type="text"
+                  value={relatedSearch}
+                  onChange={(e) => setRelatedSearch(e.target.value)}
+                  placeholder="Rechercher par nom ou reference..."
+                  className="w-full bg-transparent text-sm outline-none placeholder:text-slate-400"
+                />
+              </div>
+
+              <div className="mt-2 max-h-40 space-y-1 overflow-y-auto">
+                {filteredRelatedOptions.length === 0 ? (
+                  <p className="px-2 py-2 text-xs text-slate-400">Aucun resultat.</p>
+                ) : (
+                  filteredRelatedOptions.map((product) => {
+                    const checked = form.relatedProducts.includes(product.id)
+                    return (
+                      <button
+                        key={product.id}
+                        type="button"
+                        onClick={() => toggleRelatedProduct(product.id)}
+                        className={`flex w-full items-center justify-between rounded-lg px-3 py-2 text-left transition-colors ${
+                          checked
+                            ? "bg-blue-50 text-blue-700"
+                            : "text-slate-700 hover:bg-slate-100"
+                        }`}
+                      >
+                        <span className="truncate text-sm font-medium">{product.name}</span>
+                        <span className="ml-3 shrink-0 text-xs text-slate-500">{product.sku}</span>
+                      </button>
+                    )
+                  })
+                )}
+              </div>
+            </div>
           </div>
 
           <ProductVariantsEditor

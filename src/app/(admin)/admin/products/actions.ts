@@ -63,7 +63,6 @@ type ProductRecordLike = {
   description?: string
   images?: unknown
   currency?: string
-  expand?: { category?: unknown } | null
   category?: unknown
   inView?: boolean
   isVariant?: boolean
@@ -71,6 +70,8 @@ type ProductRecordLike = {
   parent?: string | null
   variantKey?: unknown
   details?: unknown
+  related_products?: unknown
+  expand?: { category?: unknown; related_products?: unknown } | null
 }
 
 function toProduct(record: ProductRecordLike): Product {
@@ -114,6 +115,7 @@ function toProduct(record: ProductRecordLike): Product {
         ? record.variantKey
         : null,
     details,
+    relatedProducts: normalizeRelationIds(record.related_products ?? record.expand?.related_products),
   }
 }
 

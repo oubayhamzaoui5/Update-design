@@ -22,26 +22,26 @@ export default function Footer() {
               </li>
               <li>
                 <Link
-                  href="/boutique?category=chandeliers"
+                  href="/boutique/categorie/panneau-mural-effet-marbre"
                   className="text-foreground/80 transition-colors hover:text-accent"
                 >
-                  Lustres
+                  Panneau Mural Effet Marbre
                 </Link>
               </li>
               <li>
                 <Link
-                  href="/boutique?category=lighting"
+                  href="/boutique/categorie/profile-mural-effet-bois-d-interieur"
                   className="text-foreground/80 transition-colors hover:text-accent"
                 >
-                  Eclairage
+                  Profile Mural Effet Bois D'intérieur
                 </Link>
               </li>
               <li>
                 <Link
-                  href="/boutique?category=decor"
+                  href="/boutique/categorie/profile-mural-effet-bois-d-exterieur"
                   className="text-foreground/80 transition-colors hover:text-accent"
                 >
-                  Decoration
+                  Profile Mural Effet Bois D'extérieur
                 </Link>
               </li>
             </ul>
@@ -51,22 +51,22 @@ export default function Footer() {
             <h3 className="mb-4 font-semibold text-foreground">Assistance</h3>
             <ul className="space-y-3 text-sm">
               <li>
-                <Link href="/contact" className="text-foreground/80 transition-colors hover:text-accent">
+                <Link href="/#contact" className="text-foreground/80 transition-colors hover:text-accent">
                   Contactez-nous
                 </Link>
               </li>
               <li>
-                <Link href="/contact" className="text-foreground/80 transition-colors hover:text-accent">
+                <Link href="/#faq" className="text-foreground/80 transition-colors hover:text-accent">
                   Informations de livraison
                 </Link>
               </li>
               <li>
-                <Link href="/contact" className="text-foreground/80 transition-colors hover:text-accent">
+                <Link href="/#faq" className="text-foreground/80 transition-colors hover:text-accent">
                   Retours
                 </Link>
               </li>
               <li>
-                <Link href="/contact" className="text-foreground/80 transition-colors hover:text-accent">
+                <Link href="/#faq" className="text-foreground/80 transition-colors hover:text-accent">
                   Questions frequentes
                 </Link>
               </li>
@@ -77,17 +77,17 @@ export default function Footer() {
             <h3 className="mb-4 font-semibold text-foreground">Entreprise</h3>
             <ul className="space-y-3 text-sm">
               <li>
-                <Link href="/a-propos" className="text-foreground/80 transition-colors hover:text-accent">
+                <Link href="/#about" className="text-foreground/80 transition-colors hover:text-accent">
                   A propos
                 </Link>
               </li>
               <li>
-                <Link href="/" className="text-foreground/80 transition-colors hover:text-accent">
+                <Link href="/#faq" className="text-foreground/80 transition-colors hover:text-accent">
                   Politique de confidentialite
                 </Link>
               </li>
               <li>
-                <Link href="/" className="text-foreground/80 transition-colors hover:text-accent">
+                <Link href="/#faq" className="text-foreground/80 transition-colors hover:text-accent">
                   Conditions generales
                 </Link>
               </li>

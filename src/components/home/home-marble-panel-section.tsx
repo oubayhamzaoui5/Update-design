@@ -1,18 +1,28 @@
-import Link from 'next/link'
+"use client"; // Required for Framer Motion in Next.js App Router
+
+import Link from 'next/link';
+import { motion } from 'framer-motion';
 
 export default function HomeMarblePanelSection() {
   return (
-    <section className="bg-white py-12 lg:py-18">
+    <section className="bg-white py-12 lg:py-18 overflow-hidden">
       <div className="mx-auto flex max-w-7xl flex-col items-center gap-6 lg:gap-6 lg:flex-row-reverse">
+        
+        {/* Animated Image Container */}
         <div className="flex w-full flex-1 justify-center p-2 lg:justify-start lg:p-0">
-          <div className="relative w-full max-w-xl">
+          <motion.div 
+            initial={{ opacity: 0, y: -40 }} // Starts 40px above
+            whileInView={{ opacity: 1, y: 0 }} // Glides down to original position
+            viewport={{ once: true, margin: "-100px" }} // Triggers once when 100px into view
+            transition={{ duration: 0.8, ease: [0.21, 0.47, 0.32, 0.98] }} // Modern "cubic-bezier" ease
+            className="relative w-full max-w-xl"
+          >
             <img
               alt="Panneau mural effet marbre"
-              className="w-full"
+              className="w-full rounded-lg " // Added subtle shadow for depth
               src="/pvc_marbre.webp"
             />
-       
-          </div>
+          </motion.div>
         </div>
 
         <div className="flex-1 px-4 lg:px-0">
@@ -58,6 +68,5 @@ export default function HomeMarblePanelSection() {
         </div>
       </div>
     </section>
-  )
+  );
 }
-

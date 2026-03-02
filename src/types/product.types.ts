@@ -22,6 +22,7 @@ export type Product = {
   parent: string | null
   variantKey: Record<string, any> | null
   details: ProductDetail[]
+  relatedProducts: string[]
   expand?: {
     category?: any
     parent?: any

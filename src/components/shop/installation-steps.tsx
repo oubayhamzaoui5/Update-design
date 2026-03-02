@@ -1,4 +1,6 @@
-﻿import Image from 'next/image'
+import { useEffect, useMemo, useRef, useState } from 'react'
+import Image from 'next/image'
+import { AnimatePresence, motion } from 'framer-motion'
 
 const STEPS = [
   {
@@ -18,52 +20,194 @@ const STEPS = [
   },
 ]
 
-export default function InstallationSteps() {
+type InstallationStepsProps = {
+  step3Image?: string
+}
+
+export default function InstallationSteps({ step3Image = '/step3.webp' }: InstallationStepsProps) {
+  const steps = useMemo(
+    () =>
+      STEPS.map((step, index) =>
+        index === 2
+          ? {
+              ...step,
+              image: step3Image,
+            }
+          : step
+      ),
+    [step3Image]
+  )
+  const [activeStep, setActiveStep] = useState(0)
+  const [progress, setProgress] = useState(0)
+  const [hasStarted, setHasStarted] = useState(false)
+  const [mobileCardHeight, setMobileCardHeight] = useState<number>(0)
+  const sectionRef = useRef<HTMLElement | null>(null)
+  const measureCardRefs = useRef<Array<HTMLElement | null>>([])
+
+  useEffect(() => {
+    const section = sectionRef.current
+    if (!section || hasStarted) return
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        const isVisible = entries.some((entry) => entry.isIntersecting)
+        if (isVisible) {
+          setHasStarted(true)
+          observer.disconnect()
+        }
+      },
+      { threshold: 0.25 }
+    )
+
+    observer.observe(section)
+    return () => observer.disconnect()
+  }, [hasStarted])
+
+  useEffect(() => {
+    const computeHeight = () => {
+      const maxHeight = measureCardRefs.current.reduce((acc, node) => {
+        if (!node) return acc
+        return Math.max(acc, node.offsetHeight)
+      }, 0)
+      if (maxHeight > 0) setMobileCardHeight(maxHeight)
+    }
+
+    computeHeight()
+    window.addEventListener('resize', computeHeight)
+    return () => window.removeEventListener('resize', computeHeight)
+  }, [steps])
+
+  useEffect(() => {
+    if (!hasStarted) return
+    const durationMs = 4000
+    const tickMs = 50
+    let currentStep = 0
+    let startedAt = Date.now()
+
+    const timer = window.setInterval(() => {
+      const elapsed = Date.now() - startedAt
+      const nextProgress = Math.min(100, (elapsed / durationMs) * 100)
+      setProgress(nextProgress)
+
+      if (elapsed >= durationMs) {
+        currentStep = (currentStep + 1) % steps.length
+        setActiveStep(currentStep)
+        setProgress(0)
+        startedAt = Date.now()
+      }
+    }, tickMs)
+
+    return () => window.clearInterval(timer)
+  }, [hasStarted, steps.length])
+
   return (
-    <section aria-labelledby="installation-steps-heading" className="mx-auto max-w-7xl px-4 py-10">
+    <section
+      ref={sectionRef}
+      aria-labelledby="installation-steps-heading"
+      className="relative mx-auto max-w-[1400px] px-4 py-4 lg:py-6"
+    >
       <h2 id="installation-steps-heading" className="mb-6 text-2xl font-bold tracking-tight md:text-3xl">
         {'Installation Facile en 3 Étapes'}
       </h2>
 
-      {/* 1. The grid now handles the row alignment for children via subgrid */}
-      <ol className="grid grid-cols-1 gap-10 lg:grid-cols-3">
-  {STEPS.map((step, index) => (
-    <li key={step.title} className="flex flex-col h-full">
-      <article className="flex flex-col h-full overflow-hidden rounded-2xl border border-border bg-card">
-        
-        {/* 1. Image stays fixed aspect ratio */}
-        <div className="relative aspect-[16/10] w-full">
-          <Image
-            src={step.image}
-            alt={`Étape ${index + 1} - ${step.title}`}
-            fill
-            className="object-cover"
-            sizes="(max-width: 1024px) 100vw, 33vw"
-          />
-        </div>
+      <ol className="grid grid-cols-1 gap-10 lg:grid-cols-3 max-md:hidden">
+        {steps.map((step, index) => (
+          <li key={step.title} className="flex h-full flex-col">
+            <article className="flex h-full flex-col overflow-hidden rounded-2xl border border-border bg-card">
+              <div className="relative aspect-[16/10] w-full">
+                <Image
+                  src={step.image}
+                  alt={`Étape ${index + 1} - ${step.title}`}
+                  fill
+                  className="object-cover"
+                  sizes="(max-width: 1024px) 100vw, 33vw"
+                />
+              </div>
 
-        <div className="flex flex-col flex-grow p-6">
-          {/* 2. Step Label */}
-          <p className="mb-2 text-sm font-bold uppercase tracking-wider text-accent">
-            Étape {index + 1}
-          </p>
+              <div className="flex flex-grow flex-col p-6">
+                <p className="mb-2 text-sm font-bold uppercase tracking-wider text-accent">
+                  Étape {index + 1}
+                </p>
+                <h3 className="mb-2 min-h-[2rem] text-lg font-semibold leading-tight">{step.title}</h3>
+                <p className="text-sm leading-relaxed text-muted-foreground">{step.text}</p>
+              </div>
+            </article>
+          </li>
+        ))}
+      </ol>
 
-          {/* 3. Title with min-height forces alignment of the text below */}
-          {/* min-h-[3.5rem] is roughly 2 lines of text. Adjust as needed. */}
-          <h3 className="mb-2 min-h-[2rem] text-lg font-semibold leading-tight">
-            {step.title}
-          </h3>
+      <div className="md:hidden">
+        <article
+          className="overflow-hidden rounded-2xl border border-border bg-card"
+          style={mobileCardHeight > 0 ? { height: `${mobileCardHeight}px` } : undefined}
+        >
+          <div className="relative h-[calc(100%-6px)]">
+            <AnimatePresence mode="wait">
+              <motion.div
+                key={activeStep}
+                initial={{ opacity: 0, x: 12, scale: 0.985 }}
+                animate={{ opacity: 1, x: 0, scale: 1 }}
+                exit={{ opacity: 0, x: -12, scale: 0.985 }}
+                transition={{ duration: 0.45, ease: [0.22, 1, 0.36, 1] }}
+                className="absolute inset-0 flex flex-col"
+              >
+                <div className="relative aspect-[16/10] w-full">
+                  <Image
+                    src={steps[activeStep].image}
+                    alt={`Étape ${activeStep + 1} - ${steps[activeStep].title}`}
+                    fill
+                    className="object-cover"
+                    sizes="100vw"
+                  />
+                </div>
 
-          {/* 4. Description */}
-          <p className="text-sm leading-relaxed text-muted-foreground">
-            {step.text}
-          </p>
-        </div>
+                <div className="flex flex-grow flex-col p-6 pb-4">
+                  <p className="mb-2 text-sm font-bold uppercase tracking-wider text-accent">
+                    Étape {activeStep + 1}
+                  </p>
+                  <h3 className="mb-2 text-lg font-semibold leading-tight">{steps[activeStep].title}</h3>
+                  <p className="text-sm leading-relaxed text-muted-foreground">{steps[activeStep].text}</p>
+                </div>
+              </motion.div>
+            </AnimatePresence>
+          </div>
 
-      </article>
-    </li>
-  ))}
-</ol>
+          <div className="h-1.5 w-full bg-muted/70">
+            <div
+              className="h-full bg-accent transition-[width] duration-100 ease-linear"
+              style={{ width: `${progress}%` }}
+            />
+          </div>
+        </article>
+      </div>
+
+      <div className="pointer-events-none absolute inset-x-4 top-0 -z-10 opacity-0 md:hidden" aria-hidden="true">
+        {steps.map((step, index) => (
+          <article
+            key={`measure-${step.title}`}
+            ref={(node) => {
+              measureCardRefs.current[index] = node
+            }}
+            className="mb-3 overflow-hidden rounded-2xl border border-border bg-card"
+          >
+            <div className="relative aspect-[16/10] w-full">
+              <Image
+                src={step.image}
+                alt=""
+                fill
+                className="object-cover"
+                sizes="100vw"
+              />
+            </div>
+            <div className="p-6 pb-4">
+              <p className="mb-2 text-sm font-bold uppercase tracking-wider text-accent">Étape {index + 1}</p>
+              <h3 className="mb-2 text-lg font-semibold leading-tight">{step.title}</h3>
+              <p className="text-sm leading-relaxed text-muted-foreground">{step.text}</p>
+            </div>
+            <div className="h-1.5 w-full bg-muted/70" />
+          </article>
+        ))}
+      </div>
     </section>
   )
 }

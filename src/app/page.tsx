@@ -51,7 +51,7 @@ const roomCategories = [
   },
 ]
 
-const HOME_PRODUCTS_LIMIT = 8
+const HOME_PRODUCTS_LIMIT = 6
 
 function getPbBaseUrl(): string {
   return process.env.NEXT_PUBLIC_PB_URL ?? process.env.POCKETBASE_URL ?? 'http://127.0.0.1:8090'
@@ -98,6 +98,37 @@ async function getHomeBestSellerProducts(): Promise<ProductListItem[]> {
   const ordered: ProductListItem[] = []
   const pb = getPb()
   const baseFilter = 'isActive=true && (inView=true || inView=null) && stock > 0'
+
+  try {
+    const vedettesRes = await pb.collection('vedettes').getList(1, HOME_PRODUCTS_LIMIT, {
+      sort: 'created',
+      expand: 'product',
+      fields:
+        'id,product,expand.product.id,expand.product.slug,expand.product.sku,expand.product.name,expand.product.price,expand.product.promoPrice,expand.product.isActive,expand.product.inView,expand.product.description,expand.product.images,expand.product.currency,expand.product.categories,expand.product.category,expand.product.isNew,expand.product.isVariant,expand.product.stock',
+      requestKey: null,
+    })
+
+    const selected = new Map<string, ProductListItem>()
+    for (const item of vedettesRes.items) {
+      const expanded = Array.isArray((item as any)?.expand?.product)
+        ? (item as any).expand.product[0]
+        : (item as any)?.expand?.product
+      if (!expanded) continue
+
+      const mapped = mapRecordToHomeProduct(expanded)
+      if (!mapped.id) continue
+      if (!mapped.isActive || !mapped.inView || !mapped.inStock) continue
+      if (selected.has(mapped.id)) continue
+      selected.set(mapped.id, mapped)
+      if (selected.size >= HOME_PRODUCTS_LIMIT) break
+    }
+
+    if (selected.size > 0) {
+      return Array.from(selected.values())
+    }
+  } catch {
+    // fallback to computed best sellers
+  }
 
   try {
     const bestSellerRes = await pb.collection('products').getList(1, HOME_PRODUCTS_LIMIT, {

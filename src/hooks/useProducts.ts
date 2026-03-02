@@ -99,6 +99,7 @@ export function useProducts({
     files: [] as File[],
     categories: [] as string[],
     details: [] as ProductDetail[],
+    relatedProducts: [] as string[],
   })
 
   const [isVariant, setIsVariant] = useState(false)
@@ -122,6 +123,7 @@ export function useProducts({
       files: [],
       categories: [],
       details: [],
+      relatedProducts: [],
     })
     setIsVariant(false)
     setIsParent(false)
@@ -153,6 +155,7 @@ export function useProducts({
         details: Array.isArray(parent.details)
           ? parent.details.map((item) => ({ label: item.label ?? '', value: item.value ?? '' }))
           : [],
+        relatedProducts: Array.isArray(parent.relatedProducts) ? parent.relatedProducts.slice() : [],
       })
       setParentId(parent.id)
       setIsVariant(true)
@@ -185,6 +188,7 @@ export function useProducts({
       details: Array.isArray(p.details)
         ? p.details.map((item) => ({ label: item.label ?? '', value: item.value ?? '' }))
         : [],
+      relatedProducts: Array.isArray(p.relatedProducts) ? p.relatedProducts.slice() : [],
     })
     setIsVariant(p.isVariant ?? false)
     setIsParent(p.isParent ?? (!p.isVariant && !p.parent))
@@ -195,7 +199,7 @@ export function useProducts({
 
   // Create product
   const create = useCallback(
-    async (fd: FormData, categories: string[]) => {
+    async (fd: FormData, categories: string[], relatedProducts: string[]) => {
       setAdding(true)
       try {
         const rec = await createProductAction(fd)
@@ -204,6 +208,7 @@ export function useProducts({
         const normalized: Product = {
           ...rec,
           categories,
+          relatedProducts,
         }
 
         setProducts((prev) => [normalized, ...prev])
@@ -222,7 +227,7 @@ export function useProducts({
 
   // Update product
   const update = useCallback(
-    async (id: ID, fd: FormData, updatedCategories: string[]) => {
+    async (id: ID, fd: FormData, updatedCategories: string[], updatedRelatedProducts: string[]) => {
       setAdding(true)
       try {
         const rec = await updateProductAction(id, fd)
@@ -233,6 +238,7 @@ export function useProducts({
               ? {
                   ...rec,
                   categories: updatedCategories,
+                  relatedProducts: updatedRelatedProducts,
                 }
               : p
           )
@@ -332,6 +338,14 @@ export function useProducts({
         fd.append('category', categoryId)
       }
     }
+    fd.delete('related_products')
+    if (form.relatedProducts.length === 0) {
+      fd.set('related_products', '')
+    } else {
+      for (const relatedId of form.relatedProducts) {
+        fd.append('related_products', relatedId)
+      }
+    }
 
     if (form.slug) fd.set('slug', form.slug)
     if (isVariant) fd.set('isVariant', 'true')
@@ -346,11 +360,11 @@ export function useProducts({
     }
 
     if (editState.mode === 'create') {
-      await create(fd, form.categories)
+      await create(fd, form.categories, form.relatedProducts)
       return
     }
 
-    await update(editState.id, fd, form.categories)
+    await update(editState.id, fd, form.categories, form.relatedProducts)
   }, [
     create,
     editState,

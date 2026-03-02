@@ -12,7 +12,7 @@ const SLUG_REGEX = /^[a-z0-9]+(?:-[a-z0-9]+)*$/i
 
 const SHOP_PAGE_SIZE_DEFAULT = 24
 const SHOP_PAGE_SIZE_MAX = 48
-const SHOP_RELATED_LIMIT = 4
+const SHOP_RELATED_LIMIT = 8
 
 const shopListQuerySchema = z.object({
   page: z.coerce.number().int().min(1).default(1),
@@ -114,6 +114,7 @@ export type ProductDetailsResult = {
   variants: Array<ProductListItem & { image: string }>
   variantUrlMap: Record<string, string>
   variantValuesMap: Record<string, ProductVariantValue[]>
+  explicitRelatedProducts: ProductListItem[]
   relatedProducts: ProductListItem[]
 }
 
@@ -126,6 +127,19 @@ function normalizeCategoryIds(record: PocketBaseRecord): string[] {
   if (Array.isArray(raw)) return raw.map(String).filter(Boolean)
   if (!raw) return []
   return [String(raw)]
+}
+
+function normalizeRelationIds(record: PocketBaseRecord, key: string): string[] {
+  const raw = record[key]
+  if (!raw) return []
+  if (Array.isArray(raw)) {
+    return raw
+      .map((item) => (typeof item === 'string' ? item : String((item as { id?: unknown })?.id ?? '')))
+      .filter(Boolean)
+  }
+  if (typeof raw === 'string') return [raw]
+  if (typeof raw === 'object' && raw && 'id' in raw) return [String((raw as { id: unknown }).id ?? '')]
+  return []
 }
 
 function getPbBaseUrl(): string {
@@ -577,7 +591,8 @@ async function getVariantsAndValues(
 
 async function getRelatedProducts(
   current: ProductListItem,
-  categoriesById: Map<string, ShopCategory>
+  categoriesById: Map<string, ShopCategory>,
+  preferredIds: string[] = []
 ): Promise<ProductListItem[]> {
   const pb = createServerPb()
   const baseFilter = 'isActive=true && (inView=true || inView=null) && stock>0'
@@ -595,6 +610,33 @@ async function getRelatedProducts(
   const buildExcludeFilter = () => {
     const existing = [current.id, ...Array.from(relatedById.keys())]
     return existing.map((id) => `id!="${escapePbString(id)}"`).join(' && ')
+  }
+
+  const preferred = Array.from(
+    new Set(preferredIds.filter((id) => PB_ID_REGEX.test(id) && id !== current.id))
+  )
+
+  if (preferred.length > 0) {
+    const preferredFilter = preferred.map((id) => `id="${escapePbString(id)}"`).join(' || ')
+    const preferredResult = await pb
+      .collection('products')
+      .getList(1, Math.max(preferred.length, 1), {
+        filter: `${baseFilter} && (${preferredFilter})`,
+        sort: '-created',
+        fields:
+          'id,slug,sku,name,price,promoPrice,isActive,inView,description,images,currency,categories,category,isNew,isVariant,isParent,variantKey,stock',
+        requestKey: null,
+      })
+      .catch(() => null)
+
+    if (preferredResult?.items) {
+      const ranked = (preferredResult.items as unknown as PocketBaseRecord[]).sort((a, b) => {
+        const aId = String(a.id ?? '')
+        const bId = String(b.id ?? '')
+        return preferred.indexOf(aId) - preferred.indexOf(bId)
+      })
+      addRecords(ranked)
+    }
   }
 
   if (current.categories.length > 0) {
@@ -637,6 +679,40 @@ async function getRelatedProducts(
   return trimmed.map((r) => mapProduct(r, categoriesById))
 }
 
+async function getExplicitRelatedProducts(
+  current: ProductListItem,
+  preferredIds: string[],
+  categoriesById: Map<string, ShopCategory>
+): Promise<ProductListItem[]> {
+  const preferred = Array.from(
+    new Set(preferredIds.filter((id) => PB_ID_REGEX.test(id) && id !== current.id))
+  )
+  if (preferred.length === 0) return []
+
+  const pb = createServerPb()
+  const preferredFilter = preferred.map((id) => `id="${escapePbString(id)}"`).join(' || ')
+  const result = await pb
+    .collection('products')
+    .getList(1, preferred.length, {
+      filter: `isActive=true && (inView=true || inView=null) && (${preferredFilter})`,
+      sort: '-created',
+      fields:
+        'id,slug,sku,name,price,promoPrice,isActive,inView,description,images,currency,categories,category,isNew,isVariant,isParent,variantKey,stock',
+      requestKey: null,
+    })
+    .catch(() => null)
+
+  if (!result?.items) return []
+
+  const ranked = (result.items as unknown as PocketBaseRecord[]).sort((a, b) => {
+    const aId = String(a.id ?? '')
+    const bId = String(b.id ?? '')
+    return preferred.indexOf(aId) - preferred.indexOf(bId)
+  })
+
+  return ranked.map((item) => mapProduct(item, categoriesById))
+}
+
 export async function getProductDetailsBySlug(rawSlug: string): Promise<ProductDetailsResult | null> {
   const slug = productSlugSchema.safeParse(rawSlug)
   if (!slug.success) return null
@@ -650,7 +726,7 @@ export async function getProductDetailsBySlug(rawSlug: string): Promise<ProductD
       `slug="${escapedSlug}" && isActive=true && (inView=true || inView=null)`,
       {
         fields:
-          'id,slug,sku,name,price,promoPrice,isActive,inView,description,images,currency,categories,category,isNew,isVariant,isParent,parent,variantKey,details,stock',
+          'id,slug,sku,name,price,promoPrice,isActive,inView,description,images,currency,categories,category,isNew,isVariant,isParent,parent,variantKey,details,stock,related_products',
         requestKey: null,
       }
     )
@@ -685,8 +761,10 @@ export async function getProductDetailsBySlug(rawSlug: string): Promise<ProductD
       ? categories.find((cat) => base.categories.includes(cat.id))?.name ?? ''
       : ''
 
+  const preferredRelatedIds = normalizeRelationIds(record, 'related_products')
   const { variants, variantUrlMap, variantValuesMap } = await getVariantsAndValues(record, categoriesById)
-  const relatedProducts = await getRelatedProducts(base, categoriesById)
+  const explicitRelatedProducts = await getExplicitRelatedProducts(base, preferredRelatedIds, categoriesById)
+  const relatedProducts = await getRelatedProducts(base, categoriesById, preferredRelatedIds)
 
   return {
     product: {
@@ -701,6 +779,7 @@ export async function getProductDetailsBySlug(rawSlug: string): Promise<ProductD
     variants,
     variantUrlMap,
     variantValuesMap,
+    explicitRelatedProducts,
     relatedProducts,
   }
 }

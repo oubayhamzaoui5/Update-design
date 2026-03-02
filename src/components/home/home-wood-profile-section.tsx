@@ -1,11 +1,23 @@
-import Link from 'next/link'
+"use client";
+
+import Link from 'next/link';
+import { motion } from 'framer-motion';
 
 export default function HomeWoodProfileSection() {
   return (
-    <section className="bg-white py-12 lg:py-18">
+    <section className="bg-white py-12 lg:py-18 overflow-hidden">
       <div className="mx-auto flex max-w-7xl flex-col items-center gap-6 lg:gap-6 lg:flex-row">
+        
+        {/* Animated Image */}
         <div className="flex w-full flex-1 justify-center p-2 lg:justify-start lg:p-0">
-          <img
+          <motion.img
+            initial={{ opacity: 0, x: -60, scale: 0.95 }} // Starts to the left, slightly smaller
+            whileInView={{ opacity: 1, x: 0, scale: 1 }} // Slides into place
+            viewport={{ once: true, margin: "-50px" }}
+            transition={{ 
+              duration: 0.9, 
+              ease: [0.22, 1, 0.36, 1] // A smooth "out-expo" curve
+            }}
             alt="Profile mural effet bois"
             className="w-full max-w-xl rounded-2xl"
             src="/pvc_bois.webp"
@@ -57,4 +69,3 @@ export default function HomeWoodProfileSection() {
     </section>
   )
 }
-

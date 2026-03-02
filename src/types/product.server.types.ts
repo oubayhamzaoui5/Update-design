@@ -89,9 +89,13 @@ export const ProductRecordSchema = z.object({
       .optional()
       .default([])
   ),
+  related_products: z
+    .union([z.string(), z.array(z.string()), z.array(z.object({ id: z.string() }))])
+    .optional(),
   expand: z.object({
     category: z.any().optional(),
     parent: z.any().optional(),
+    related_products: z.any().optional(),
   }).optional(),
   created: z.string().optional(),
   updated: z.string().optional(),

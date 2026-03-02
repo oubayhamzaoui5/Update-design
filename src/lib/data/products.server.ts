@@ -117,6 +117,7 @@ function normalizeProduct(
           }))
           .filter((item) => item.label || item.value)
       : [],
+    relatedProducts: normalizeRelationIds(r.related_products ?? r.expand?.related_products),
   }
 }
 

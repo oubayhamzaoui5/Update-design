@@ -1,6 +1,6 @@
 export default function HomeContactSection() {
   return (
-    <section className="bg-white py-8 lg:py-18">
+    <section id="contact" className="bg-white py-8 lg:py-18">
       <div className="mx-auto max-w-7xl px-2">
         <div className="mb-12 lg:mb-14 text-center">
           <p className="mb-1 lg:mb-2 text-xs font-semibold uppercase tracking-[0.25em] text-[#c19a2f]">Entrer en contact</p>

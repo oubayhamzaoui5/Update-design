@@ -10,6 +10,7 @@ import {
   LogOut,
   Sliders,
   FileText,
+  Star,
 } from "lucide-react"
 import { useRouter } from "next/navigation"
 import Image from "next/image"
@@ -68,6 +69,7 @@ export default function Sidebar() {
         <NavLink href="/admin/products" icon={Package} label="Produits" />
         <NavLink href="/admin/categories" icon={FolderTree} label="Categories" />
         <NavLink href="/admin/variables" icon={Sliders} label="Variables" />
+        <NavLink href="/admin/vedettes" icon={Star} label="Vedettes" />
         <NavLink href="/admin/orders" icon={ShoppingCart} label="Commandes" badge={pendingCount} />
         <NavLink href="/admin/inventory" icon={Boxes} label="Inventaire" />
                 <NavLink href="/admin/blog" icon={FileText} label="Blog" />

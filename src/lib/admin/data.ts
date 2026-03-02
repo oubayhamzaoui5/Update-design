@@ -32,6 +32,25 @@ export type AdminInventoryProductStock = {
   categories?: string[]
 }
 
+export type AdminVedetteProductOption = {
+  id: string
+  name: string
+  slug: string
+  sku: string
+  price: number
+  promoPrice: number | null
+  imageUrl?: string
+  isActive: boolean
+  inView: boolean
+  stock: number
+}
+
+export type AdminVedetteRecord = {
+  id: string
+  productId: string
+  product: AdminVedetteProductOption | null
+}
+
 function normalizeParentIds(p: unknown): string[] {
   if (!p) return []
   if (Array.isArray(p)) {
@@ -56,6 +75,38 @@ function buildVariableImageUrl(id: string, image?: string) {
     process.env.POCKETBASE_URL ??
     'http://127.0.0.1:8090'
   return `${base}/api/files/variables/${id}/${image}`
+}
+
+function getPbBaseUrl() {
+  return (
+    process.env.NEXT_PUBLIC_PB_URL ??
+    process.env.POCKETBASE_URL ??
+    'http://127.0.0.1:8090'
+  )
+}
+
+function buildProductImageUrl(id: string, image?: string) {
+  if (!image || !image.trim()) return undefined
+  return `${getPbBaseUrl()}/api/files/products/${id}/${encodeURIComponent(image)}`
+}
+
+function mapAdminVedetteProduct(record: any): AdminVedetteProductOption {
+  const images = Array.isArray(record?.images) ? record.images.map(String) : []
+  return {
+    id: String(record?.id ?? ''),
+    name: String(record?.name ?? ''),
+    slug: String(record?.slug ?? ''),
+    sku: String(record?.sku ?? ''),
+    price: Number(record?.price ?? 0),
+    promoPrice:
+      record?.promoPrice === undefined || record?.promoPrice === null
+        ? null
+        : Number(record.promoPrice),
+    imageUrl: buildProductImageUrl(String(record?.id ?? ''), images[0]),
+    isActive: Boolean(record?.isActive),
+    inView: record?.inView === undefined || record?.inView === null ? true : Boolean(record.inView),
+    stock: Number(record?.stock ?? 0),
+  }
 }
 
 async function createAdminPb() {
@@ -127,6 +178,51 @@ export async function getAdminInventoryData(): Promise<{
   }))
 
   return { products, allCategories }
+}
+
+export async function getAdminVedettesData(): Promise<{
+  vedettes: AdminVedetteRecord[]
+  products: AdminVedetteProductOption[]
+}> {
+  const pb = await createAdminPb()
+
+  const [vedettesRes, productRecords] = await Promise.all([
+    pb.collection('vedettes').getList(1, 200, {
+      sort: 'created',
+      expand: 'product',
+      fields:
+        'id,product,expand.product.id,expand.product.name,expand.product.slug,expand.product.sku,expand.product.price,expand.product.promoPrice,expand.product.images,expand.product.isActive,expand.product.inView,expand.product.stock',
+      requestKey: null,
+    }),
+    pb.collection('products').getFullList(1000, {
+      sort: 'name',
+      fields: 'id,name,slug,sku,price,promoPrice,images,isActive,inView,stock',
+      requestKey: null,
+    }),
+  ])
+
+  const products = productRecords.map((record: any) => mapAdminVedetteProduct(record))
+
+  const deduped = new Set<string>()
+  const vedettes: AdminVedetteRecord[] = []
+
+  for (const item of vedettesRes.items as any[]) {
+    const productId = String(item?.product ?? '')
+    if (!productId || deduped.has(productId)) continue
+    deduped.add(productId)
+
+    const expanded = Array.isArray(item?.expand?.product)
+      ? item.expand.product[0]
+      : item?.expand?.product
+
+    vedettes.push({
+      id: String(item?.id ?? ''),
+      productId,
+      product: expanded ? mapAdminVedetteProduct(expanded) : null,
+    })
+  }
+
+  return { vedettes, products }
 }
 
 const allowedStatuses: OrderStatus[] = [
