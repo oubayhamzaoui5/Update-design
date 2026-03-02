@@ -15,7 +15,7 @@ export default function HomeMarblePanelSection() {
             whileInView={{ opacity: 1, y: 0 }} // Glides down to original position
             viewport={{ once: true, margin: "-100px" }} // Triggers once when 100px into view
             transition={{ duration: 0.8, 
-              delay: 0.5,
+              delay: 0.2,
               ease: [0.21, 0.47, 0.32, 0.98] }} // Modern "cubic-bezier" ease
             className="relative w-full max-w-xl"
           >

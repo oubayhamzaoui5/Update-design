@@ -16,7 +16,7 @@ export default function HomeWoodProfileSection() {
             viewport={{ once: true, margin: "-50px" }}
             transition={{ 
               duration: 0.9, 
-              delay: 0.5,
+              delay: 0.2,
               ease: [0.22, 1, 0.36, 1] // A smooth "out-expo" curve
             }}
             alt="Profile mural effet bois"
