@@ -14,7 +14,9 @@ export default function HomeMarblePanelSection() {
             initial={{ opacity: 0, y: -40 }} // Starts 40px above
             whileInView={{ opacity: 1, y: 0 }} // Glides down to original position
             viewport={{ once: true, margin: "-100px" }} // Triggers once when 100px into view
-            transition={{ duration: 0.8, ease: [0.21, 0.47, 0.32, 0.98] }} // Modern "cubic-bezier" ease
+            transition={{ duration: 0.8, 
+              delay: 0.5,
+              ease: [0.21, 0.47, 0.32, 0.98] }} // Modern "cubic-bezier" ease
             className="relative w-full max-w-xl"
           >
             <img
@@ -39,7 +41,7 @@ export default function HomeMarblePanelSection() {
           </p>
 
           <Link
-            href="/shop"
+            href="/boutique/categorie/panneau-mural-effet-marbre"
             className="relative isolate mb-6 inline-block cursor-pointer overflow-hidden rounded-lg bg-[#c19a2f] px-4 py-3 text-center text-[10px] font-bold uppercase tracking-wider whitespace-nowrap text-white transition-transform duration-300 before:absolute before:inset-y-0 before:left-[-40%] before:w-[35%] before:skew-x-[-20deg] before:bg-gradient-to-r before:from-transparent before:via-white/50 before:to-transparent before:translate-x-[-180%] before:transition-transform before:duration-700 before:content-[''] hover:before:translate-x-[420%] hover:scale-[1.01] active:scale-95 lg:px-6 lg:text-sm lg:tracking-widest"
           >
             Decouvrir

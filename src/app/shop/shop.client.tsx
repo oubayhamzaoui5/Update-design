@@ -1,11 +1,12 @@
 'use client'
 
 import dynamic from 'next/dynamic'
+import { SlidersHorizontal } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 
-import EmptyState from '@/components/admin/empty-state'
 import { Navbar } from '@/components/navbar'
+import ShopEmptyState from '@/components/shop/shop-empty-state'
 import { Button } from '@/components/ui/button'
 import { getPb } from '@/lib/pb'
 import { detectShopPreset, getShopPresetPath, stripPresetParams } from '@/lib/shop-presets'
@@ -108,10 +109,14 @@ export default function ShopClient({
   const [loadMoreError, setLoadMoreError] = useState<string | null>(null)
   const [hasSignupPromoBanner, setHasSignupPromoBanner] = useState(false)
   const [isSignedIn, setIsSignedIn] = useState(false)
+  const [isMobileViewport, setIsMobileViewport] = useState(false)
+  const [isMobileNavVisible, setIsMobileNavVisible] = useState(true)
+  const [isMobileFiltersOpen, setIsMobileFiltersOpen] = useState(false)
   const [wishlistIds, setWishlistIds] = useState<Set<string>>(new Set())
   const sentinelRef = useRef<HTMLDivElement | null>(null)
   const isFetchingRef = useRef(false)
   const lastLoadAtRef = useRef(0)
+  const lastScrollYRef = useRef(0)
 
   if (data.activeCategory && !currentQuery.category) {
     currentQuery.category = data.activeCategory.slug
@@ -162,6 +167,48 @@ export default function ShopClient({
       cancelled = true
     }
   }, [isSignedIn])
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return
+
+    const onResize = () => {
+      const mobile = window.innerWidth < 768
+      setIsMobileViewport(mobile)
+      if (!mobile) {
+        setIsMobileNavVisible(true)
+      }
+    }
+
+    onResize()
+    window.addEventListener('resize', onResize)
+    return () => window.removeEventListener('resize', onResize)
+  }, [])
+
+  useEffect(() => {
+    if (typeof window === 'undefined' || !isMobileViewport) return
+
+    const scrollThreshold = 8
+    lastScrollYRef.current = window.scrollY
+
+    const onScroll = () => {
+      const currentScrollY = window.scrollY
+      const delta = currentScrollY - lastScrollYRef.current
+
+      if (currentScrollY <= 10) {
+        setIsMobileNavVisible(true)
+      } else if (delta > scrollThreshold) {
+        setIsMobileNavVisible(false)
+      } else if (delta < -scrollThreshold) {
+        setIsMobileNavVisible(true)
+      }
+
+      lastScrollYRef.current = currentScrollY
+    }
+
+    onScroll()
+    window.addEventListener('scroll', onScroll, { passive: true })
+    return () => window.removeEventListener('scroll', onScroll)
+  }, [isMobileViewport])
 
   const originQuery = useMemo(() => {
     const params = new URLSearchParams(currentQuery)
@@ -285,11 +332,18 @@ export default function ShopClient({
     router.push(buildShopHref(currentQuery, updates))
   }
 
-  const navOffset = hasSignupPromoBanner ? 116 : 76
-  const stickyOffset = hasSignupPromoBanner ? 76 : 56
+  const navOffsetClass = hasSignupPromoBanner
+    ? 'pt-[100px] md:pt-[112px]'
+    : 'pt-[60px] md:pt-[72px]'
+  const stickyOffset = hasSignupPromoBanner ? 56 : 56
+  const effectiveStickyOffset = isMobileViewport
+    ? isMobileNavVisible
+      ? stickyOffset
+      : 8
+    : stickyOffset
 
   return (
-    <div className="relative min-h-screen bg-background" style={{ paddingTop: navOffset }}>
+    <div className={`relative min-h-screen bg-background ${navOffsetClass}`}>
       <Navbar categories={data.categories} />
 
       <main id="main-content">
@@ -309,23 +363,36 @@ export default function ShopClient({
           </div>
         </section>
 
-<div className="sticky z-20 px-8 py-6" style={{ top: stickyOffset }}> 
-  <div className="mx-auto w-fit rounded-xl border border-border/40 bg-background/95 p-1.5 shadow-sm backdrop-blur-xl md:rounded-full">
-    <div className="flex flex-wrap items-center justify-center gap-1.5 md:gap-2">
+<div className="sticky z-20 px-4 py-4 md:px-8 md:py-6" style={{ top: effectiveStickyOffset }}>
+  <div className="mx-auto max-w-[1400px]">
+    <div
+      className={`rounded-xl border border-border/40 bg-background/95 p-1.5 shadow-sm backdrop-blur-xl md:w-fit md:rounded-full ${
+        isMobileFiltersOpen ? 'w-full' : 'w-fit'
+      }`}
+    >
+      <div className="flex items-start gap-2">
+        <button
+          type="button"
+          className="inline-flex h-10 shrink-0 items-center gap-2 rounded-lg bg-accent px-4 text-sm font-semibold text-white md:hidden"
+          onClick={() => setIsMobileFiltersOpen((prev) => !prev)}
+          aria-expanded={isMobileFiltersOpen}
+          aria-controls="shop-filters-row"
+        >
+          <SlidersHorizontal size={16} />
+          Filtres
+        </button>
+        <div id="shop-filters-row" className={`${isMobileFiltersOpen ? 'block' : 'hidden'} min-w-0 flex-1 md:block`}>
+    <div className="flex flex-nowrap items-center justify-start gap-1.5 overflow-x-auto whitespace-nowrap md:flex-wrap md:justify-center md:gap-2 md:overflow-visible">
       
       {/* Category Select - Compact h-10 */}
-      <div className="group relative">
+      <div className="group relative shrink-0">
         <select
           id="shop-category"
           value={currentQuery.category ?? ''}
           onChange={(event) =>
             pushQuery({ category: event.target.value || null, query: null })
           }
-          className={`h-10 cursor-pointer appearance-none rounded-lg md:rounded-full border px-4 pr-9 text-sm font-medium transition-all focus:outline-none ${
-            currentQuery.category 
-              ? 'border-accent/50 bg-accent/5 text-accent' 
-              : 'border-transparent bg-secondary/40 text-foreground/80 hover:bg-secondary/60'
-          }`}
+          className="h-10 cursor-pointer appearance-none rounded-lg md:rounded-full border border-transparent bg-secondary/40 px-4 pr-9 text-sm font-medium text-foreground/80 transition-all hover:bg-secondary/60 focus:outline-none"
         >
           <option value="">Tous les Catégories</option>
           {data.categories.map((category) => (
@@ -338,16 +405,12 @@ export default function ShopClient({
       </div>
 
       {/* Price Select */}
-      <div className="group relative">
+      <div className="group relative shrink-0">
         <select
           id="shop-price"
           value={selectedPriceRange}
           onChange={(event) => pushQuery({ priceRange: event.target.value })}
-          className={`h-10 cursor-pointer appearance-none rounded-lg md:rounded-full border px-4 pr-9 text-sm font-medium transition-all focus:outline-none ${
-            selectedPriceRange !== 'all'
-              ? 'border-accent/50 bg-accent/5 text-accent'
-              : 'border-transparent bg-secondary/40 text-foreground/80 hover:bg-secondary/60'
-          }`}
+          className="h-10 cursor-pointer appearance-none rounded-lg md:rounded-full border border-transparent bg-secondary/40 px-4 pr-9 text-sm font-medium text-foreground/80 transition-all hover:bg-secondary/60 focus:outline-none"
         >
           <option value="all">Prix</option>
           <option value="0-100">0-100 DT</option>
@@ -361,13 +424,13 @@ export default function ShopClient({
       <div className="mx-0.5 hidden h-5 w-px bg-border/40 md:block" />
 
       {/* Checkboxes - Solid Accent when active */}
-      {[
+      {[ 
         { id: 'promotions', label: 'Promotions', checked: data.applied.promotions, key: 'promotions' },
         { id: 'inStock', label: 'En Stock', checked: inStockOnly, key: 'inStock' },
       ].map((item) => (
         <label
           key={item.id}
-          className={`flex h-10 cursor-pointer select-none items-center gap-2 rounded-lg md:rounded-full border px-4 text-sm font-medium transition-all ${
+          className={`flex h-10 shrink-0 cursor-pointer select-none items-center gap-2 rounded-lg md:rounded-full border px-4 text-sm font-medium transition-all ${
             item.checked
               ? 'border-accent bg-accent text-white'
               : 'border-transparent bg-secondary/40 text-foreground/70 hover:bg-secondary/60'
@@ -386,7 +449,7 @@ export default function ShopClient({
       <div className="mx-0.5 hidden h-5 w-px bg-border/40 md:block" />
 
       {/* Sort Select */}
-      <div className="group relative">
+      <div className="group relative shrink-0">
         <select
           id="shop-sort"
           value={data.applied.sort}
@@ -401,18 +464,21 @@ export default function ShopClient({
         <ChevronDownIcon />
       </div>
     </div>
-  </div>
+      </div>
+</div>
+</div>
+</div>
 </div>
 
         <div className="mx-auto max-w-[1400px] px-4 py-2 ">
-          <div className="space-y-5">
+          <div className="min-h-[80vh] space-y-5">
             {filteredProducts.length === 0 ? (
-              <EmptyState
+              <ShopEmptyState
                 title="Aucun produit trouve"
                 description="Essayez de modifier vos filtres ou votre recherche."
               />
             ) : (
-              <div className="grid grid-cols-1 gap-4 min-[420px]:grid-cols-2 sm:gap-6 lg:grid-cols-3 xl:grid-cols-4">
+              <div className="grid grid-cols-2 gap-4 sm:gap-6 lg:grid-cols-3 xl:grid-cols-4">
                 {filteredProducts.map((product, idx) => {
                   const productHref = originQuery
                     ? `/produit/${product.slug}?${originQuery}`

@@ -192,7 +192,7 @@ export default async function HomePage() {
 
   return (
     <div className="bg-white text-slate-900">
-      <Navbar />
+      <Navbar reserveSpace />
 
       <main>
         <HeroContent />

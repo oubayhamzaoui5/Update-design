@@ -16,6 +16,7 @@ export default function HomeWoodProfileSection() {
             viewport={{ once: true, margin: "-50px" }}
             transition={{ 
               duration: 0.9, 
+              delay: 0.5,
               ease: [0.22, 1, 0.36, 1] // A smooth "out-expo" curve
             }}
             alt="Profile mural effet bois"
@@ -38,7 +39,7 @@ export default function HomeWoodProfileSection() {
           </p>
 
           <Link
-            href="/shop"
+            href="/boutique/categorie/profile-mural-effet-bois-d-interieur"
             className="relative isolate mb-6 inline-block cursor-pointer overflow-hidden rounded-lg bg-[#c19a2f] px-4 py-3 text-center text-[10px] font-bold uppercase tracking-wider whitespace-nowrap text-white transition-transform duration-300 before:absolute before:inset-y-0 before:left-[-40%] before:w-[35%] before:skew-x-[-20deg] before:bg-gradient-to-r before:from-transparent before:via-white/50 before:to-transparent before:translate-x-[-180%] before:transition-transform before:duration-700 before:content-[''] hover:before:translate-x-[420%] hover:scale-[1.01] active:scale-95 lg:px-6 lg:text-sm lg:tracking-widest"
           >
             Decouvrir

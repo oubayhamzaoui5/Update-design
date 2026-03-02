@@ -67,9 +67,9 @@ export default function Sidebar() {
       <nav className="flex-1 space-y-2 px-3 py-0">
         <NavLink href="/admin" icon={LayoutDashboard} label="Tableau de bord" />
         <NavLink href="/admin/products" icon={Package} label="Produits" />
+                <NavLink href="/admin/vedettes" icon={Star} label="Vedettes" />
         <NavLink href="/admin/categories" icon={FolderTree} label="Categories" />
         <NavLink href="/admin/variables" icon={Sliders} label="Variables" />
-        <NavLink href="/admin/vedettes" icon={Star} label="Vedettes" />
         <NavLink href="/admin/orders" icon={ShoppingCart} label="Commandes" badge={pendingCount} />
         <NavLink href="/admin/inventory" icon={Boxes} label="Inventaire" />
                 <NavLink href="/admin/blog" icon={FileText} label="Blog" />

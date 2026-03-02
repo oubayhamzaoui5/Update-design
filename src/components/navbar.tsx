@@ -61,6 +61,7 @@ type CartItem = {
 
 interface NavbarProps {
   categories?: Category[]
+  reserveSpace?: boolean
 }
 
 type AuthUser = {
@@ -127,6 +128,7 @@ export function Navbar(props: NavbarProps) {
   const router = useRouter()
   const pathname = usePathname()
   const categoriesProp = props.categories ?? []
+  const reserveSpace = props.reserveSpace ?? false
 
   const [isMenuOpen, setIsMenuOpen] = useState(false)
   const [isDesktopMenuOpen, setIsDesktopMenuOpen] = useState(false)
@@ -991,6 +993,12 @@ useEffect(() => {
       document.body
     )
 
+  const navSpacerClass = reserveSpace
+    ? shouldShowSignupPromo
+      ? "h-[100px] md:h-[112px]"
+      : "h-[60px] md:h-[72px]"
+    : null
+
   return (
     <>
       {shouldShowSignupPromo && (
@@ -1612,6 +1620,8 @@ useEffect(() => {
           </div>
         </div>
       </nav>
+
+      {navSpacerClass ? <div aria-hidden className={navSpacerClass} /> : null}
 
       {cartOverlay}
     </>
