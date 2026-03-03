@@ -13,6 +13,9 @@ export type AdminCategoryRecord = {
   desc?: string | null
   promo: number
   activeAll: boolean
+  coverImage?: string | null
+  coverImageUrl?: string
+  features: string[]
 }
 
 export type AdminVariableRecord = {
@@ -90,6 +93,31 @@ function buildProductImageUrl(id: string, image?: string) {
   return `${getPbBaseUrl()}/api/files/products/${id}/${encodeURIComponent(image)}`
 }
 
+function buildCategoryCoverImageUrl(id: string, image?: string) {
+  if (!image || !image.trim()) return undefined
+  return `${getPbBaseUrl()}/api/files/categories/${id}/${encodeURIComponent(image)}`
+}
+
+function normalizeFeatures(raw: unknown): string[] {
+  if (Array.isArray(raw)) {
+    return raw.map((item) => String(item).trim()).filter(Boolean)
+  }
+  if (typeof raw === 'string') {
+    const trimmed = raw.trim()
+    if (!trimmed) return []
+    try {
+      const parsed = JSON.parse(trimmed)
+      if (Array.isArray(parsed)) {
+        return parsed.map((item) => String(item).trim()).filter(Boolean)
+      }
+    } catch {
+      return [trimmed]
+    }
+    return []
+  }
+  return []
+}
+
 function mapAdminVedetteProduct(record: any): AdminVedetteProductOption {
   const images = Array.isArray(record?.images) ? record.images.map(String) : []
   return {
@@ -133,6 +161,9 @@ export async function getAdminCategories(): Promise<AdminCategoryRecord[]> {
     desc: r.desc ?? '',
     promo: Number(r.promo ?? 0),
     activeAll: Boolean(r.activeAll),
+    coverImage: r.coverImage ?? null,
+    coverImageUrl: buildCategoryCoverImageUrl(r.id, r.coverImage),
+    features: normalizeFeatures(r.features),
   }))
 }
 

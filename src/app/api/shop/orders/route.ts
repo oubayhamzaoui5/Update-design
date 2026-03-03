@@ -50,7 +50,7 @@ export async function POST(request: NextRequest) {
     const notes = asText(body.notes)
     const currency = asText(body.currency) || "DT"
 
-    if (!firstName || !lastName || !email || !phone || !address || !city) {
+    if (!firstName || !lastName || !phone || !address || !city) {
       return NextResponse.json({ message: "Données de commande incomplètes." }, { status: 400 })
     }
 

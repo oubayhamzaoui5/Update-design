@@ -15,7 +15,8 @@ function firstParam(value: string | string[] | undefined): string | undefined {
 }
 
 function formatMetaDescription(value?: string | null): string {
-  const raw = value?.trim() || DEFAULT_SHOP_DESCRIPTION
+  const text = (value ?? '').replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim()
+  const raw = text || DEFAULT_SHOP_DESCRIPTION
   if (raw.length <= SHOP_META_DESCRIPTION_MAX) return raw
   return `${raw.slice(0, SHOP_META_DESCRIPTION_MAX - 3).trimEnd()}...`
 }

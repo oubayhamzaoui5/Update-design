@@ -1,6 +1,7 @@
 'use server'
 
 import { revalidatePath, revalidateTag } from 'next/cache'
+import DOMPurify from 'isomorphic-dompurify'
 import { slugify } from '@/utils/slug'
 
 import { getAdminPbForAction } from '@/lib/admin/actions'
@@ -14,6 +15,17 @@ type UpsertCategoryInput = {
   promo?: number
   activeAll?: boolean
   order?: number
+  features?: string[]
+  coverImage?: File | null
+}
+
+function sanitizeCategoryDescription(value: unknown): string {
+  const raw = typeof value === 'string' ? value.trim() : ''
+  if (!raw) return ''
+  return DOMPurify.sanitize(raw, {
+    ALLOWED_TAGS: ['h1', 'h2', 'p', 'strong', 'b', 'ul', 'li', 'br'],
+    ALLOWED_ATTR: [],
+  })
 }
 
 function normalizePayload(input: UpsertCategoryInput) {
@@ -31,15 +43,22 @@ function normalizePayload(input: UpsertCategoryInput) {
     typeof input.order === 'number' && Number.isFinite(input.order)
       ? Math.max(0, input.order)
       : 0
+  const features = Array.isArray(input.features)
+    ? input.features.map((value) => String(value).trim()).filter(Boolean)
+    : []
 
   return {
     name,
     slug,
     parent: input.parentIds.length ? input.parentIds : null,
-    desc: input.desc?.trim() ?? '',
+    desc: sanitizeCategoryDescription(input.desc),
     promo,
     activeAll: Boolean(input.activeAll),
     order,
+    features,
+    ...(input.coverImage instanceof File && input.coverImage.size > 0
+      ? { coverImage: input.coverImage }
+      : {}),
   }
 }
 

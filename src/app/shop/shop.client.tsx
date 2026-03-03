@@ -1,14 +1,13 @@
 'use client'
 
 import dynamic from 'next/dynamic'
-import { SlidersHorizontal } from 'lucide-react'
+import { ArrowUpDown, Check, SlidersHorizontal, Tag, TicketPercent, Wallet } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 
 import { Navbar } from '@/components/navbar'
 import ShopEmptyState from '@/components/shop/shop-empty-state'
 import { Button } from '@/components/ui/button'
-import { getPb } from '@/lib/pb'
 import { detectShopPreset, getShopPresetPath, stripPresetParams } from '@/lib/shop-presets'
 import { fetchWishlistIds } from '@/lib/shop/client-api'
 import type { ShopListResult } from '@/lib/services/product.service'
@@ -26,7 +25,7 @@ const SIGNUP_PROMO_DISMISSED_KEY = 'signup_promo_dismissed_v1'
 function ChevronDownIcon() {
   return (
     <svg
-      className="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 text-foreground/40 transition-transform group-hover:text-foreground/60"
+      className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-black/60 transition-transform group-hover:text-black/80"
       width="12" height="12" viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg"
     >
       <path d="M2.5 4.5L6 8L9.5 4.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
@@ -133,13 +132,45 @@ export default function ShopClient({
 
   useEffect(() => {
     if (typeof window === 'undefined') return
-    const dismissedUntilRaw = window.localStorage.getItem(SIGNUP_PROMO_DISMISSED_KEY)
-    const dismissedUntil = dismissedUntilRaw ? Number(dismissedUntilRaw) : 0
-    const isDismissed =
-      !!dismissedUntilRaw && Number.isFinite(dismissedUntil) && Date.now() < dismissedUntil
-    const signedIn = getPb(true).authStore.isValid
-    setIsSignedIn(signedIn)
-    setHasSignupPromoBanner(!signedIn && !isDismissed)
+    let cancelled = false
+
+    const resolvePromoVisibility = async () => {
+      const dismissedUntilRaw = window.localStorage.getItem(SIGNUP_PROMO_DISMISSED_KEY)
+      const dismissedUntil = dismissedUntilRaw ? Number(dismissedUntilRaw) : 0
+      const isDismissed =
+        !!dismissedUntilRaw && Number.isFinite(dismissedUntil) && Date.now() < dismissedUntil
+
+      let signedIn = false
+      try {
+        const response = await fetch('/api/auth/session', { cache: 'no-store' })
+        signedIn = response.ok
+      } catch {
+        signedIn = false
+      }
+
+      if (cancelled) return
+      setIsSignedIn(signedIn)
+      setHasSignupPromoBanner(!signedIn && !isDismissed)
+    }
+
+    const onStorage = (event: StorageEvent) => {
+      if (event.key !== SIGNUP_PROMO_DISMISSED_KEY) return
+      void resolvePromoVisibility()
+    }
+
+    const onVisibilityChange = () => {
+      void resolvePromoVisibility()
+    }
+
+    void resolvePromoVisibility()
+    window.addEventListener('storage', onStorage)
+    window.addEventListener('signup-promo:visibility-change', onVisibilityChange)
+
+    return () => {
+      cancelled = true
+      window.removeEventListener('storage', onStorage)
+      window.removeEventListener('signup-promo:visibility-change', onVisibilityChange)
+    }
   }, [])
 
   useEffect(() => {
@@ -354,45 +385,100 @@ export default function ShopClient({
           </div>
 
           <div className="relative mx-auto max-w-[1400px] px-4">
-            <h1 className="text-4xl font-extrabold tracking-tight md:text-5xl">
-              {data.activeCategory?.name ?? heroContent.title}
-            </h1>
-            <p className="mt-4 max-w-3xl text-lg leading-relaxed text-foreground/70">
-              {data.activeCategory?.description ?? heroContent.description}
-            </p>
+            {data.activeCategory ? (
+              <div className="grid items-center gap-8 md:grid-cols-2">
+                <div>
+                  <p className="text-sm font-medium text-foreground/60">
+                    Accueil &gt; Collection &gt; {data.activeCategory.name}
+                  </p>
+                  <h1 className="mt-3 text-4xl font-extrabold tracking-tight md:text-5xl">
+                    {data.activeCategory.name}
+                  </h1>
+                  <p className="mt-3 text-xs font-semibold uppercase tracking-[0.24em] text-foreground/60">
+                    COLLECTION UPDATE DESIGN
+                  </p>
+                  {data.activeCategory.description ? (
+                    <div
+                      className="mt-4 space-y-2 text-sm leading-relaxed text-foreground/80 [&_h1]:mb-2 [&_h1]:text-2xl [&_h1]:font-bold [&_h1]:text-accent [&_h2]:mb-2 [&_h2]:text-xl [&_h2]:font-semibold [&_h2]:text-black [&_p]:mb-2 [&_strong]:font-semibold [&_b]:font-semibold [&_ul]:ml-6 [&_ul]:list-disc [&_ul]:space-y-1"
+                      dangerouslySetInnerHTML={{ __html: data.activeCategory.description }}
+                    />
+                  ) : null}
+                  {data.activeCategory.features.length > 0 && (
+                    <ul className="mt-5 space-y-2.5">
+                      {data.activeCategory.features.map((feature, index) => (
+                        <li key={`${feature}-${index}`} className="flex items-start gap-2.5 text-sm text-foreground/80">
+                          <Check className="mt-0.5 h-4 w-4 shrink-0 text-accent" />
+                          <span>{feature}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  )}
+                </div>
+
+                <div className="overflow-hidden rounded-2xl border border-border/50 bg-muted/20 shadow-sm">
+                  <div className="aspect-video">
+                    {data.activeCategory.coverImageUrl ? (
+                      <img
+                        src={data.activeCategory.coverImageUrl}
+                        alt={data.activeCategory.name}
+                        className="h-full w-full object-cover"
+                      />
+                    ) : (
+                      <div className="flex h-full w-full items-center justify-center text-sm font-medium text-foreground/50">
+                        {data.activeCategory.name}
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </div>
+            ) : (
+              <>
+                <h1 className="text-4xl font-extrabold tracking-tight md:text-5xl">
+                  {heroContent.title}
+                </h1>
+                <p className="mt-4 max-w-3xl text-lg leading-relaxed text-foreground/70">
+                  {heroContent.description}
+                </p>
+              </>
+            )}
           </div>
         </section>
 
 <div className="sticky z-20 px-4 py-4 md:px-8 md:py-6" style={{ top: effectiveStickyOffset }}>
   <div className="mx-auto max-w-[1400px]">
     <div
-      className={`rounded-xl border border-border/40 bg-background/95 p-1.5 shadow-sm backdrop-blur-xl md:w-fit md:rounded-full ${
+      className={`rounded-xl border border-accent/70 bg-accent p-1.5 opacity-85 shadow-sm backdrop-blur-xl transition-opacity hover:opacity-100 md:mx-auto md:w-fit md:rounded-full ${
         isMobileFiltersOpen ? 'w-full' : 'w-fit'
       }`}
     >
       <div className="flex items-start gap-2">
         <button
           type="button"
-          className="inline-flex h-10 shrink-0 items-center gap-2 rounded-lg bg-accent px-4 text-sm font-semibold text-white md:hidden"
+          className="inline-flex h-10 shrink-0 items-center gap-2 rounded-lg bg-white px-4 text-sm font-semibold text-black md:hidden"
           onClick={() => setIsMobileFiltersOpen((prev) => !prev)}
           aria-expanded={isMobileFiltersOpen}
           aria-controls="shop-filters-row"
         >
-          <SlidersHorizontal size={16} />
+          <SlidersHorizontal size={16} className="text-black" />
           Filtres
         </button>
         <div id="shop-filters-row" className={`${isMobileFiltersOpen ? 'block' : 'hidden'} min-w-0 flex-1 md:block`}>
     <div className="flex flex-nowrap items-center justify-start gap-1.5 overflow-x-auto whitespace-nowrap md:flex-wrap md:justify-center md:gap-2 md:overflow-visible">
+      <div className="hidden h-10 shrink-0 items-center gap-2 rounded-full bg-white px-4 text-sm font-semibold text-black md:inline-flex">
+        <SlidersHorizontal size={14} className="text-black" />
+        Filtres
+      </div>
       
       {/* Category Select - Compact h-10 */}
       <div className="group relative shrink-0">
+        <Tag size={14} className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-black" />
         <select
           id="shop-category"
           value={currentQuery.category ?? ''}
           onChange={(event) =>
             pushQuery({ category: event.target.value || null, query: null })
           }
-          className="h-10 cursor-pointer appearance-none rounded-lg md:rounded-full border border-transparent bg-secondary/40 px-4 pr-9 text-sm font-medium text-foreground/80 transition-all hover:bg-secondary/60 focus:outline-none"
+          className="h-10 cursor-pointer appearance-none rounded-lg md:rounded-full border border-transparent bg-white pl-9 pr-9 text-sm font-medium text-black transition-all hover:bg-white/90 focus:outline-none"
         >
           <option value="">Tous les Catégories</option>
           {data.categories.map((category) => (
@@ -406,11 +492,12 @@ export default function ShopClient({
 
       {/* Price Select */}
       <div className="group relative shrink-0">
+        <Wallet size={14} className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-black" />
         <select
           id="shop-price"
           value={selectedPriceRange}
           onChange={(event) => pushQuery({ priceRange: event.target.value })}
-          className="h-10 cursor-pointer appearance-none rounded-lg md:rounded-full border border-transparent bg-secondary/40 px-4 pr-9 text-sm font-medium text-foreground/80 transition-all hover:bg-secondary/60 focus:outline-none"
+          className="h-10 cursor-pointer appearance-none rounded-lg md:rounded-full border border-transparent bg-white pl-9 pr-9 text-sm font-medium text-black transition-all hover:bg-white/90 focus:outline-none"
         >
           <option value="all">Prix</option>
           <option value="0-100">0-100 DT</option>
@@ -425,15 +512,15 @@ export default function ShopClient({
 
       {/* Checkboxes - Solid Accent when active */}
       {[ 
-        { id: 'promotions', label: 'Promotions', checked: data.applied.promotions, key: 'promotions' },
-        { id: 'inStock', label: 'En Stock', checked: inStockOnly, key: 'inStock' },
+        { id: 'promotions', label: 'Promotions', checked: data.applied.promotions, key: 'promotions', Icon: TicketPercent },
+        { id: 'inStock', label: 'En Stock', checked: inStockOnly, key: 'inStock', Icon: Check },
       ].map((item) => (
         <label
           key={item.id}
           className={`flex h-10 shrink-0 cursor-pointer select-none items-center gap-2 rounded-lg md:rounded-full border px-4 text-sm font-medium transition-all ${
             item.checked
-              ? 'border-accent bg-accent text-white'
-              : 'border-transparent bg-secondary/40 text-foreground/70 hover:bg-secondary/60'
+              ? 'border-black/70 bg-white text-black'
+              : 'border-black/20 bg-white text-black hover:bg-white/90'
           }`}
         >
           <input
@@ -442,6 +529,7 @@ export default function ShopClient({
             checked={item.checked}
             onChange={(event) => pushQuery({ [item.key]: event.target.checked ? '1' : null })}
           />
+          <item.Icon size={14} className="text-black" />
           {item.label}
         </label>
       ))}
@@ -450,11 +538,12 @@ export default function ShopClient({
 
       {/* Sort Select */}
       <div className="group relative shrink-0">
+        <ArrowUpDown size={14} className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-black" />
         <select
           id="shop-sort"
           value={data.applied.sort}
           onChange={(event) => pushQuery({ sort: event.target.value })}
-          className="h-10 cursor-pointer appearance-none rounded-lg md:rounded-full border border-transparent bg-secondary/40 px-4 pr-9 text-sm font-medium text-foreground/80 transition-all hover:bg-secondary/60 focus:outline-none"
+          className="h-10 cursor-pointer appearance-none rounded-lg md:rounded-full border border-transparent bg-white pl-9 pr-9 text-sm font-medium text-black transition-all hover:bg-white/90 focus:outline-none"
         >
           <option value="name">Trier par Nom</option>
           <option value="latest">Nouveautés</option>
@@ -471,7 +560,7 @@ export default function ShopClient({
 </div>
 
         <div className="mx-auto max-w-[1400px] px-4 py-2 ">
-          <div className="min-h-[80vh] space-y-5">
+          <div className="min-h-[40vh] space-y-5">
             {filteredProducts.length === 0 ? (
               <ShopEmptyState
                 title="Aucun produit trouve"

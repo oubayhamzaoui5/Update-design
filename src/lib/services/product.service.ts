@@ -1,6 +1,7 @@
 import 'server-only'
 
 import { unstable_cache } from 'next/cache'
+import DOMPurify from 'isomorphic-dompurify'
 import { z } from 'zod'
 
 import { getSession } from '@/lib/auth/server'
@@ -44,6 +45,9 @@ export type ShopCategory = {
   description: string | null
   promo: number
   activeAll: boolean
+  coverImage: string | null
+  coverImageUrl: string | null
+  features: string[]
 }
 
 export type ProductListItem = {
@@ -154,16 +158,54 @@ function fileUrl(collection: string, id: string, filename: string): string {
   return `${getPbBaseUrl()}/api/files/${collection}/${id}/${encodeURIComponent(filename)}`
 }
 
+function sanitizeCategoryDescription(value: unknown): string {
+  const raw = typeof value === 'string' ? value.trim() : ''
+  if (!raw) return ''
+  return DOMPurify.sanitize(raw, {
+    ALLOWED_TAGS: ['h1', 'h2', 'p', 'strong', 'b', 'ul', 'li', 'br'],
+    ALLOWED_ATTR: [],
+  })
+}
+
 function mapCategory(record: PocketBaseRecord): ShopCategory {
+  const id = String(record.id ?? '')
+  const rawCover = record.coverImage
+  const coverImage =
+    typeof rawCover === 'string'
+      ? rawCover.trim() || null
+      : Array.isArray(rawCover) && rawCover.length > 0
+        ? String(rawCover[0]).trim() || null
+        : null
+  const rawFeatures = record.features
+  const features = Array.isArray(rawFeatures)
+    ? rawFeatures.map((item) => String(item).trim()).filter(Boolean)
+    : typeof rawFeatures === 'string'
+      ? (() => {
+          const trimmed = rawFeatures.trim()
+          if (!trimmed) return []
+          try {
+            const parsed = JSON.parse(trimmed)
+            return Array.isArray(parsed)
+              ? parsed.map((item) => String(item).trim()).filter(Boolean)
+              : []
+          } catch {
+            return [trimmed]
+          }
+        })()
+      : []
+
   return {
-    id: String(record.id ?? ''),
+    id,
     name: String(record.name ?? ''),
     slug: String(record.slug ?? ''),
     order: Number(record.order ?? 0),
     parent: (record.parent as string | string[] | null | undefined) ?? null,
-    description: String(record.desc ?? record.description ?? '') || null,
+    description: sanitizeCategoryDescription(record.desc ?? record.description) || null,
     promo: Number(record.promo ?? 0),
     activeAll: Boolean(record.activeAll),
+    coverImage,
+    coverImageUrl: coverImage ? fileUrl('categories', id, coverImage) : null,
+    features,
   }
 }
 
@@ -246,7 +288,7 @@ const getCachedCategories = unstable_cache(
     const pb = createServerPb()
     const records = await pb.collection('categories').getFullList(500, {
       sort: 'order,name',
-      fields: 'id,name,slug,order,parent,desc,description,promo,activeAll',
+      fields: 'id,name,slug,order,parent,desc,description,promo,activeAll,coverImage,features',
       requestKey: null,
     })
     return records.map((c) => mapCategory(c as PocketBaseRecord))

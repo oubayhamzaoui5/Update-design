@@ -40,7 +40,7 @@ type Product = {
   images?: string[]
 }
 
-// ðŸ⬝¹ Product type for cart (minimal)
+// Ã°Å¸â¬Â¹ Product type for cart (minimal)
 type CartProduct = {
   id: string
   slug: string
@@ -407,7 +407,7 @@ useEffect(() => {
         return
       }
 
-      // ðŸ§¾ Guest: load from localStorage
+      // Ã°Å¸Â§Â¾ Guest: load from localStorage
       const guest = getGuestCart()
       if (guest.length === 0) {
         if (!cancelled) setCartItems([])
@@ -743,7 +743,7 @@ useEffect(() => {
                   type="button"
                   onClick={(e) => toggleCategory(category.id, e)}
                   className="inline-flex h-6 w-6 items-center justify-center rounded transition-colors hover:bg-black/5"
-                  aria-label="Afficher les sous-catégories"
+                  aria-label="Afficher les sous-catÃ©gories"
                 >
                   <ChevronRight
                     size={16}
@@ -788,14 +788,14 @@ useEffect(() => {
     "Mon compte"
   const shouldShowSignupPromo = isAuthResolved && !currentUser && showSignupPromo
 
-  // ðŸ§® Number of distinct products in cart (badge)
+  // Ã°Å¸Â§Â® Number of distinct products in cart (badge)
   const cartCount = cartItems.length
 
-  // ðŸ§® Cart currency (first found or "DT")
+  // Ã°Å¸Â§Â® Cart currency (first found or "DT")
   const cartCurrency =
     cartItems.find((item) => item.product?.currency)?.product?.currency ?? "DT"
 
-  // ðŸ§® Cart total (with promo logic)
+  // Ã°Å¸Â§Â® Cart total (with promo logic)
   const cartTotal = cartItems.reduce((sum, item) => {
     const prod = item.product
     if (!prod) return sum
@@ -926,7 +926,7 @@ useEffect(() => {
                                   item.quantity - 1
                                 )
                               }
-                              aria-label="Diminuer la quantité"
+                              aria-label="Diminuer la quantitÃ©"
                             >
                               -
                             </button>
@@ -942,7 +942,7 @@ useEffect(() => {
                                   item.quantity + 1
                                 )
                               }
-                              aria-label="Augmenter la quantité"
+                              aria-label="Augmenter la quantitÃ©"
                             >
                               +
                             </button>
@@ -984,7 +984,7 @@ useEffect(() => {
             >
               <CreditCard size={18} />
               <span>
-                Procéder au paiement - {cartTotal.toFixed(2)} {cartCurrency}
+                ProcÃ©der au paiement - {cartTotal.toFixed(2)} {cartCurrency}
               </span>
             </button>
           </div>
@@ -1006,9 +1006,9 @@ useEffect(() => {
           <div className="mx-auto flex h-10 max-w-7xl items-center justify-center px-4">
             <p className="pr-8 text-center text-[9px] font-medium whitespace-nowrap md:text-sm">
               <Link href="/inscription" className="underline underline-offset-2">
-                Créez un compte
+                CrÃ©ez un compte
               </Link>{' '}
-              et obtenez 10% de réduction sur votre première commande.
+              et obtenez 10% de rÃ©duction sur votre premiÃ¨re commande.
             </p>
             <button
               type="button"
@@ -1094,7 +1094,7 @@ useEffect(() => {
                     {categoryResults.length > 0 && (
                       <div className="mb-2">
                         <div className="px-2 py-1 text-xs uppercase tracking-wider opacity-60">
-                          Catégories
+                          CatÃ©gories
                         </div>
                         <div className="space-y-1">
                           {categoryResults.map((c) => (
@@ -1114,7 +1114,7 @@ useEffect(() => {
                                   {c.name}
                                 </div>
                                 <div className="text-xs opacity-60">
-                                  Catégorie
+                                  CatÃ©gorie
                                 </div>
                               </div>
                             </Link>
@@ -1178,7 +1178,7 @@ useEffect(() => {
                           <PackageOpen className="h-5 w-5 opacity-70" />
                         </div>
                         <div className="text-sm opacity-70">
-                          Aucun résultat trouvé.
+                          Aucun rÃ©sultat trouvÃ©.
                         </div>
                       </div>
                     )}
@@ -1282,7 +1282,7 @@ useEffect(() => {
                       >
                         <div className="flex items-center gap-2">
                           <Settings className="h-4 w-4 opacity-80" />
-                          <span>Paramètres</span>
+                          <span>ParamÃ¨tres</span>
                         </div>
                         <ChevronRight className="h-3 w-3 opacity-50" />
                       </Link>
@@ -1295,7 +1295,7 @@ useEffect(() => {
                       >
                         <div className="flex items-center gap-2">
                           <LogOut className="h-4 w-4 opacity-80 text-red-500" />
-                          <span className="text-red-500">Se déconnecter</span>
+                          <span className="text-red-500">Se dÃ©connecter</span>
                         </div>
                       </button>
                     </div>
@@ -1344,7 +1344,7 @@ useEffect(() => {
               href="/Nouveautes"
               className="text-sm font-extrabold hover:opacity-70 transition-opacity"
             >
-              Nouveautés
+              NouveautÃ©s
             </Link>
 
             <Link
@@ -1355,7 +1355,7 @@ useEffect(() => {
             </Link>
 
             <Link
-              href="/contact"
+              href="/#contact"
               className="text-sm font-extrabold hover:opacity-70 transition-opacity"
             >
               Contact
@@ -1363,164 +1363,165 @@ useEffect(() => {
           </div>
         </div>
         {/* Mobile */}
-        <div className="md:hidden flex items-center gap-1 px-2 py-3">
-          <Link href="/" className="flex items-center flex-shrink-0" aria-label="Accueil">
-            <LogoSwap size={36} />
-          </Link>
-               <button
-            type="button"
-            className="p-1 hover:opacity-70 transition-opacity"
-            aria-label="Compte"
-            onClick={() => {
-              if (currentUser?.role === "admin") {
-                router.push("/admin")
-                return
-              }
-              setIsProfileOpen((v) => !v)
-            }}
-          >
-            <User size={20} />
-          </button>
+        <div className="md:hidden relative" ref={searchWrapRef}>
+          <div className="flex items-center gap-2 px-2 py-2.5">
+            <Link href="/" className="flex items-center flex-shrink-0" aria-label="Accueil">
+              <LogoSwap size={36} />
+            </Link>
 
-      
-
-            <div className="relative flex-1" ref={searchWrapRef}>
-            <div className="flex items-center gap-2 rounded-lg border border-gray-300 bg-gray-100 px-3 py-1.5 transition-colors">
-              <Search size={16} className="opacity-70" />
-              <input
-                type="text"
-                placeholder="Rechercher..."
-                value={searchValue}
-                onChange={(e) => setSearchValue(e.target.value)}
-                onFocus={() => searchValue.trim() && setSearchOpen(true)}
-                className="w-full bg-transparent text-xs text-black outline-none placeholder-gray-600 placeholder-opacity-70"
-              />
+            <div className="flex-1">
+              <div className="flex w-full items-center gap-2 rounded-lg border border-gray-300 bg-gray-100 px-3 py-1.5 transition-colors">
+                <Search size={16} className="opacity-70" />
+                <input
+                  type="text"
+                  placeholder="Rechercher..."
+                  value={searchValue}
+                  onChange={(e) => setSearchValue(e.target.value)}
+                  onFocus={() => searchValue.trim() && setSearchOpen(true)}
+                  className="w-full bg-transparent text-xs text-black outline-none placeholder-gray-600 placeholder-opacity-70"
+                />
+              </div>
             </div>
 
-            {searchOpen && (
-              <div className="absolute left-0 right-0 z-50 mt-2 overflow-hidden rounded-xl border border-black/10 bg-white text-black transition-colors">
-                <div className="max-h-80 overflow-y-auto px-2 py-2">
-                  {categoryResults.length > 0 && (
-                    <div className="mb-2">
-                      <div className="px-2 py-1 text-xs uppercase tracking-wider opacity-60">
-                        CatÃ©gories
-                      </div>
-                      <div className="space-y-1">
-                        {categoryResults.map((c) => (
+            <button
+              type="button"
+              className="p-1 hover:opacity-70 transition-opacity"
+              aria-label="Compte"
+              onClick={() => {
+                if (currentUser?.role === "admin") {
+                  router.push("/admin")
+                  return
+                }
+                setIsProfileOpen((v) => !v)
+              }}
+            >
+              <User size={20} />
+            </button>
+
+            <button
+              type="button"
+              onClick={handleCartClick}
+              aria-label="Panier"
+              className="relative p-1 hover:opacity-70 transition-opacity"
+            >
+              <ShoppingCart size={20} />
+              {cartCount > 0 && (
+                <span className="absolute -top-1 -right-2 inline-flex items-center justify-center h-5 min-w-[1.25rem] rounded-full bg-accent text-white text-[10px] font-semibold px-1">
+                  {cartCount > 99 ? "99+" : cartCount}
+                </span>
+              )}
+            </button>
+
+            <button
+              onClick={() => setIsMenuOpen(!isMenuOpen)}
+              className={`p-2 transition-all duration-300 hover:opacity-70 ${isMenuOpen ? "rotate-90" : "rotate-0"}`}
+              aria-label="Toggle menu"
+            >
+              {isMenuOpen ? <X size={22} /> : <Menu size={22} />}
+            </button>
+          </div>
+
+          {searchOpen && (
+            <div className="absolute left-0 right-0 top-full z-50 overflow-hidden border-x border-b border-black/10 bg-white text-black transition-colors">
+              <div className="max-h-80 overflow-y-auto px-2 py-2">
+                {categoryResults.length > 0 && (
+                  <div className="mb-2">
+                    <div className="px-2 py-1 text-xs uppercase tracking-wider opacity-60">
+                      Categories
+                    </div>
+                    <div className="space-y-1">
+                      {categoryResults.map((c) => (
+                        <Link
+                          key={c.id}
+                          href={`/boutique/categorie/${c.slug}`}
+                          onClick={() => {
+                            setSearchOpen(false)
+                            setIsMenuOpen(false)
+                          }}
+                          className="flex items-center gap-3 rounded-lg px-2 py-2 transition hover:opacity-80 hover:bg-black/5"
+                        >
+                          <div className="flex h-9 w-9 items-center justify-center rounded-md bg-foreground/5">
+                            <LayoutGrid className="h-4 w-4 opacity-80" />
+                          </div>
+                          <div className="min-w-0">
+                            <div className="text-sm font-medium truncate">
+                              {c.name}
+                            </div>
+                            <div className="text-xs opacity-60">
+                              Categorie
+                            </div>
+                          </div>
+                        </Link>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {productResults.length > 0 && (
+                  <div className="mb-1">
+                    <div className="px-2 py-1 text-xs uppercase tracking-wider opacity-60">
+                      Produits
+                    </div>
+                    <div className="space-y-1">
+                      {productResults.map((p) => {
+                        const firstImg =
+                          Array.isArray(p.images) && p.images.length > 0
+                            ? pbFileUrl(p.id, p.images[0]!)
+                            : "/placeholder-square.webp"
+
+                        return (
                           <Link
-                            key={c.id}
-                            href={`/boutique/categorie/${c.slug}`}
+                            key={p.id}
+                            href={`/shop/${p.slug}`}
                             onClick={() => {
                               setSearchOpen(false)
                               setIsMenuOpen(false)
                             }}
-                            className="flex items-center gap-3 rounded-lg px-2 py-2 transition hover:opacity-80 hover:bg-black/5"
+                            className="flex items-start gap-3 rounded-lg px-2 py-2 transition hover:opacity-80 hover:bg-foreground/5"
                           >
-                            <div className="flex h-9 w-9 items-center justify-center rounded-md bg-foreground/5">
-                              <LayoutGrid className="h-4 w-4 opacity-80" />
+                            <div className="relative h-12 w-12 overflow-hidden rounded-md flex-shrink-0">
+                              <Image
+                                src={firstImg}
+                                alt={p.name}
+                                fill
+                                sizes="48px"
+                                className="object-cover"
+                              />
                             </div>
+
                             <div className="min-w-0">
                               <div className="text-sm font-medium truncate">
-                                {c.name}
+                                {p.name}
                               </div>
-                              <div className="text-xs opacity-60">
-                                CatÃ©gorie
+                              <div className="text-xs opacity-70 truncate">
+                                Reference: {p.sku}
                               </div>
+                              {p.description && (
+                                <div className="text-xs opacity-70 line-clamp-2">
+                                  {p.description}
+                                </div>
+                              )}
                             </div>
                           </Link>
-                        ))}
-                      </div>
+                        )
+                      })}
                     </div>
-                  )}
+                  </div>
+                )}
 
-                  {productResults.length > 0 && (
-                    <div className="mb-1">
-                      <div className="px-2 py-1 text-xs uppercase tracking-wider opacity-60">
-                        Produits
-                      </div>
-                      <div className="space-y-1">
-                        {productResults.map((p) => {
-                          const firstImg =
-                            Array.isArray(p.images) && p.images.length > 0
-                              ? pbFileUrl(p.id, p.images[0]!)
-                              : "/placeholder-square.webp"
-
-                          return (
-                            <Link
-                              key={p.id}
-                              href={`/shop/${p.slug}`}
-                              onClick={() => {
-                                setSearchOpen(false)
-                                setIsMenuOpen(false)
-                              }}
-                              className="flex items-start gap-3 rounded-lg px-2 py-2 transition hover:opacity-80 hover:bg-foreground/5"
-                            >
-                              <div className="relative h-12 w-12 overflow-hidden rounded-md flex-shrink-0">
-                                <Image
-                                  src={firstImg}
-                                  alt={p.name}
-                                  fill
-                                  sizes="48px"
-                                  className="object-cover"
-                                />
-                              </div>
-
-                              <div className="min-w-0">
-                                <div className="text-sm font-medium truncate">
-                                  {p.name}
-                                </div>
-                                <div className="text-xs opacity-70 truncate">
-                                  Reference: {p.sku}
-                                </div>
-                                {p.description && (
-                                  <div className="text-xs opacity-70 line-clamp-2">
-                                    {p.description}
-                                  </div>
-                                )}
-                              </div>
-                            </Link>
-                          )
-                        })}
-                      </div>
+                {hasNoResults && (
+                  <div className="flex items-center gap-3 rounded-lg bg-foreground/5 px-3 py-4">
+                    <div className="flex h-9 w-9 items-center justify-center rounded-md bg-foreground/5">
+                      <PackageOpen className="h-5 w-5 opacity-70" />
                     </div>
-                  )}
-
-                  {hasNoResults && (
-                    <div className="flex items-center gap-3 rounded-lg bg-foreground/5 px-3 py-4">
-                      <div className="flex h-9 w-9 items-center justify-center rounded-md bg-foreground/5">
-                        <PackageOpen className="h-5 w-5 opacity-70" />
-                      </div>
-                      <div className="text-sm opacity-70">
-                        Aucun rÃ©sultat trouvÃ©.
-                      </div>
+                    <div className="text-sm opacity-70">
+                      Aucun resultat trouve.
                     </div>
-                  )}
-                </div>
+                  </div>
+                )}
               </div>
-            )}
-          </div>
-
-          <button
-            type="button"
-            onClick={handleCartClick}
-            aria-label="Panier"
-            className="relative p-1 hover:opacity-70 transition-opacity"
-          >
-            <ShoppingCart size={20} />
-            {cartCount > 0 && (
-              <span className="absolute -top-1 -right-2 inline-flex items-center justify-center h-5 min-w-[1.25rem] rounded-full bg-accent text-white text-[10px] font-semibold px-1">
-                {cartCount > 99 ? "99+" : cartCount}
-              </span>
-            )}
-          </button>
-    <button
-            onClick={() => setIsMenuOpen(!isMenuOpen)}
-            className={`p-2 transition-all duration-300 hover:opacity-70 ${isMenuOpen ? "rotate-90" : "rotate-0"}`}
-            aria-label="Toggle menu"
-          >
-            {isMenuOpen ? <X size={22} /> : <Menu size={22} />}
-          </button>
-     
+            </div>
+          )}
         </div>
 
         {/* Mobile panel */}
@@ -1542,20 +1543,14 @@ useEffect(() => {
                 Accueil
               </Link>
 
-              <Link
-                href="/shop"
-                onClick={() => setIsMenuOpen(false)}
-                className="block text-sm font-medium hover:opacity-70 transition-opacity"
-              >
-                Boutique
-              </Link>
+   
 
               <Link
                 href="/Nouveautes"
                 onClick={() => setIsMenuOpen(false)}
                 className="block text-sm font-medium hover:opacity-70 transition-opacity"
               >
-                Nouveautés
+                NouveautÃ©s
               </Link>
 
               <Link
@@ -1566,28 +1561,13 @@ useEffect(() => {
                 Promotions
               </Link>
 
+     
               <Link
-                href="/a-propos"
-                onClick={() => setIsMenuOpen(false)}
-                className="block text-sm font-medium hover:opacity-70 transition-opacity"
-              >
-                ì propos
-              </Link>
-
-              <Link
-                href="/contact"
+                href="/#contact"
                 onClick={() => setIsMenuOpen(false)}
                 className="block text-sm font-medium hover:opacity-70 transition-opacity"
               >
                 Contact
-              </Link>
-
-              <Link
-                href="/blog"
-                onClick={() => setIsMenuOpen(false)}
-                className="block text-sm font-medium hover:opacity-70 transition-opacity"
-              >
-                Blog
               </Link>
 
               {/* Mobile Boutique Categories */}
@@ -1598,7 +1578,7 @@ useEffect(() => {
                   className="flex items-center gap-2 text-sm font-medium hover:opacity-70 transition-opacity w-full"
                   aria-label="Afficher ou masquer les categories"
                 >
-                  Catégories
+                  CatÃ©gories
                   <ChevronRight
                     size={16}
                     className={`transition-transform ${

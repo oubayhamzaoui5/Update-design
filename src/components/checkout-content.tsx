@@ -409,10 +409,9 @@ export function CheckoutContent() {
         phone.trim() &&
         address.trim() &&
         city.trim() &&
-        isPostalCodeValid &&
-        email.trim()
+        isPostalCodeValid
       ),
-    [firstName, lastName, phone, address, city, isPostalCodeValid, email]
+    [firstName, lastName, phone, address, city, isPostalCodeValid]
   )
 
   const handleUpdateQuantity = async (itemId: string, newQty: number) => {
@@ -540,7 +539,7 @@ export function CheckoutContent() {
   const handleConfirmOrder = async () => {
     setOrderError(null)
 
-    if (!firstName.trim() || !lastName.trim() || !email.trim() || !phone.trim()) {
+    if (!firstName.trim() || !lastName.trim() || !phone.trim()) {
       setOrderError("Veuillez remplir vos informations de contact.")
       return
     }
@@ -631,7 +630,7 @@ export function CheckoutContent() {
   const goldColor = "#D4AF37"
 
   const cardClass =
-    "rounded-3xl border border-border/40 bg-white/70  p-6 shadow-sm backdrop-blur-md"
+    "rounded-3xl border-0 bg-transparent px-3 py-4 shadow-none backdrop-blur-none md:border md:border-border/40 md:bg-white/70 md:p-6 md:shadow-sm md:backdrop-blur-md"
   const labelClass = "block text-[11px] font-bold uppercase tracking-wider text-muted-foreground mb-1.5 ml-1"
   const inputClass =
     "w-full rounded-2xl border border-border/60 bg-white  px-4 py-3 text-sm outline-none transition-all duration-200 focus:ring-2 focus:ring-accent/20 focus:border-accent"
@@ -645,7 +644,7 @@ export function CheckoutContent() {
 
       <div
         className={`mx-auto max-w-7xl px-4 ${
-          isPromoBannerVisible ? "pt-40 md:pt-44" : "pt-24 md:pt-28"
+          isPromoBannerVisible ? "pt-28 md:pt-32" : "pt-24 md:pt-28"
         }`}
       >
         <nav className="flex items-center gap-2 text-xs font-medium text-muted-foreground mb-8 overflow-x-auto whitespace-nowrap">
@@ -685,7 +684,7 @@ export function CheckoutContent() {
                   <input type="text" className={inputClass} placeholder="Gharbi" value={lastName} onChange={(e) => setLastName(e.target.value)} />
                 </div>
                 <div className="md:col-span-2 space-y-1">
-                  <label className={labelClass}>Email <span className="text-destructive">*</span></label>
+                  <label className={labelClass}>Email</label>
                   <input type="email" className={inputClass} placeholder="Ahmed.gharbi@mail.com" value={email} onChange={(e) => setEmail(e.target.value)} />
                 </div>
                 <div className="md:col-span-2 space-y-1">
@@ -809,7 +808,7 @@ export function CheckoutContent() {
             </section>
           </div>
 
-          <aside className={`lg:sticky space-y-6 ${isPromoBannerVisible ? "lg:top-40" : "lg:top-28"}`}>
+          <aside className={`lg:sticky space-y-6 ${isPromoBannerVisible ? "lg:top-32" : "lg:top-28"}`}>
             <div className="rounded-3xl border border-border/50 bg-gradient-to-b from-white to-[#f8f6ef] p-6 text-foreground shadow-xl overflow-hidden relative">
               <div className="absolute -top-10 -right-8 h-40 w-40 rounded-full bg-accent/10 blur-[50px]" />
               <div className="absolute -bottom-8 -left-8 h-28 w-28 rounded-full bg-gold/10 blur-[45px]" />

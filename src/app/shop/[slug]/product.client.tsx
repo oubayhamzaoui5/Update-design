@@ -4,7 +4,7 @@ import { useEffect, useMemo, useRef, useState } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
 import { useRouter, useSearchParams } from 'next/navigation'
-import { ChevronLeft, ChevronRight, Heart, RotateCcw, Share2, Shield, ShoppingCart, Truck } from 'lucide-react'
+import { Heart, RotateCcw, Share2, Shield, ShoppingCart, Truck } from 'lucide-react'
 
 import Card from '@/components/admin/card'
 import Footer from '@/components/footer'
