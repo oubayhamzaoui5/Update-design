@@ -61,10 +61,6 @@ const mobileCardVariants = {
     opacity: 1, 
     y: 0,
     filter: 'blur(0px)',
-    transition: {
-      duration: 0.7,
-      ease: [0.22, 1, 0.36, 1], // Quintic ease-out for smoothness
-    }
   },
 }
 
@@ -188,6 +184,7 @@ export default function HomeCategoriesSection({ categories }: HomeCategoriesSect
               key={`mobile-r1-${item.name}`}
               className="w-[85%] flex-none snap-start"
               variants={mobileCardVariants}
+              transition={{ duration: 0.7, ease: 'easeOut' }}
             >
               <Link className="group relative block overflow-hidden rounded-xl aspect-[16/9]" href={item.href}>
                 <Image src={item.image} alt={item.name} fill sizes="85vw" className="object-cover" />
@@ -210,6 +207,7 @@ export default function HomeCategoriesSection({ categories }: HomeCategoriesSect
               key={`mobile-r2-${item.name}`}
               className="w-[85%] flex-none snap-start"
               variants={mobileCardVariants}
+              transition={{ duration: 0.7, ease: 'easeOut' }}
             >
               <Link className="group relative block overflow-hidden rounded-xl aspect-[16/9]" href={item.href}>
                 <Image src={item.image} alt={item.name} fill sizes="85vw" className="object-cover" />
