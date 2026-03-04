@@ -7,37 +7,224 @@ const PB_URL =
   process.env.NEXT_PUBLIC_PB_URL ??
   process.env.POCKETBASE_URL ??
   'http://127.0.0.1:8090'
+const PB_ADMIN_EMAIL = process.env.PB_ADMIN_EMAIL ?? ''
+const PB_ADMIN_PASSWORD = process.env.PB_ADMIN_PASSWORD ?? ''
+const PHONE_PREFIX = '+216'
+const PHONE_COUNTRY_CODE = '216'
+const PHONE_LOCAL_DIGITS_COUNT = 8
 
-const loginSchema = z.object({
-  email: z.string().email("Adresse email invalide"),
-  password: z.string().min(6, 'Le mot de passe doit contenir au moins 6 caractères'),
-})
+const loginSchema = z
+  .object({
+    identifier: z.string().trim().optional(),
+    email: z.string().trim().optional(),
+    password: z.string().min(6, 'Le mot de passe doit contenir au moins 6 caracteres'),
+  })
+  .superRefine((data, ctx) => {
+    const identifier = (data.identifier ?? data.email ?? '').trim()
+    if (!identifier) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ['identifier'],
+        message: 'Email ou telephone requis',
+      })
+    }
+  })
+
+function escapePbString(value: string): string {
+  return value.replace(/\\/g, '\\\\').replace(/"/g, '\\"')
+}
+
+function normalizePhoneIdentifier(value: string): string {
+  return value.trim().replace(/[^\d+]/g, '').replace(/^00/, '+')
+}
+
+function formatPhoneDigits(value: string): string {
+  const digits = value.replace(/\D/g, '').slice(0, PHONE_LOCAL_DIGITS_COUNT)
+  if (digits.length <= 2) return digits
+  if (digits.length <= 5) return `${digits.slice(0, 2)} ${digits.slice(2)}`
+  return `${digits.slice(0, 2)} ${digits.slice(2, 5)} ${digits.slice(5)}`
+}
+
+function extractLocalPhoneDigits(value: string): string | null {
+  const digits = value.replace(/\D/g, '')
+  if (digits.length === PHONE_LOCAL_DIGITS_COUNT) return digits
+  if (
+    digits.length === PHONE_COUNTRY_CODE.length + PHONE_LOCAL_DIGITS_COUNT &&
+    digits.startsWith(PHONE_COUNTRY_CODE)
+  ) {
+    return digits.slice(PHONE_COUNTRY_CODE.length)
+  }
+  return null
+}
+
+function buildPhoneLookupVariants(identifier: string): string[] {
+  const raw = identifier.trim()
+  const normalized = normalizePhoneIdentifier(raw)
+  const digitsOnly = normalized.replace(/\D/g, '')
+  const localDigits = extractLocalPhoneDigits(raw) ?? extractLocalPhoneDigits(normalized)
+  const variants = new Set<string>()
+
+  if (raw) variants.add(raw)
+  if (normalized) variants.add(normalized)
+  if (digitsOnly) variants.add(digitsOnly)
+  if (digitsOnly) variants.add(`+${digitsOnly}`)
+
+  if (localDigits) {
+    const localFormatted = formatPhoneDigits(localDigits)
+    variants.add(localDigits)
+    variants.add(localFormatted)
+    variants.add(`${PHONE_COUNTRY_CODE}${localDigits}`)
+    variants.add(`+${PHONE_COUNTRY_CODE}${localDigits}`)
+    variants.add(`${PHONE_PREFIX}${localDigits}`)
+    variants.add(`${PHONE_PREFIX} ${localFormatted}`)
+  }
+
+  return Array.from(variants).map((v) => v.trim()).filter(Boolean)
+}
+
+function dedupeIdentities(values: string[]): string[] {
+  const seen = new Set<string>()
+  const output: string[] = []
+
+  for (const value of values) {
+    const normalized = value.trim()
+    if (!normalized) continue
+    const key = normalized.toLowerCase()
+    if (seen.has(key)) continue
+    seen.add(key)
+    output.push(normalized)
+  }
+
+  return output
+}
+
+async function createLookupPb(): Promise<PocketBase> {
+  const pb = new PocketBase(PB_URL)
+  if (!PB_ADMIN_EMAIL || !PB_ADMIN_PASSWORD) return pb
+
+  try {
+    await pb.collection('_superusers').authWithPassword(PB_ADMIN_EMAIL, PB_ADMIN_PASSWORD)
+    return pb
+  } catch {
+    // Continue and try as regular users collection credentials.
+  }
+
+  try {
+    await pb.collection('users').authWithPassword(PB_ADMIN_EMAIL, PB_ADMIN_PASSWORD)
+  } catch {
+    // Fallback to anonymous lookup if admin auth is unavailable.
+  }
+
+  return pb
+}
+
+async function resolveIdentityCandidatesForLogin(
+  pb: PocketBase,
+  identifier: string
+): Promise<string[]> {
+  const raw = identifier.trim()
+  if (raw.includes('@')) {
+    return dedupeIdentities([raw.toLowerCase(), raw])
+  }
+
+  const variants = buildPhoneLookupVariants(raw)
+  const localDigits = extractLocalPhoneDigits(raw)
+
+  let user: Record<string, unknown> | null = null
+
+  if (variants.length > 0) {
+    const exactFilter = variants
+      .map((phone) => `phone = "${escapePbString(phone)}"`)
+      .join(' || ')
+
+    user = await pb
+      .collection('users')
+      .getFirstListItem(exactFilter, {
+        fields: 'email,username,phone',
+        requestKey: null,
+      })
+      .catch((error: unknown) => {
+        const e = error as { status?: number }
+        if (e?.status === 404 || e?.status === 403) return null
+        throw error
+      })
+  }
+
+  if (!user && localDigits) {
+    const localFormatted = formatPhoneDigits(localDigits)
+    const containsFilter = [
+      `phone ~ "${escapePbString(localFormatted)}"`,
+      `phone ~ "${escapePbString(localDigits)}"`,
+    ].join(' || ')
+
+    user = await pb
+      .collection('users')
+      .getFirstListItem(containsFilter, {
+        fields: 'email,username,phone',
+        requestKey: null,
+      })
+      .catch((error: unknown) => {
+        const e = error as { status?: number }
+        if (e?.status === 404 || e?.status === 403) return null
+        throw error
+      })
+  }
+
+  const candidates: string[] = []
+  if (user) {
+    const username = String(user.username ?? '').trim()
+    if (username) candidates.push(username)
+
+    const email = String(user.email ?? '').trim()
+    if (email) candidates.push(email.toLowerCase())
+  }
+
+  return dedupeIdentities([...candidates, ...variants, raw])
+}
+
+async function authenticateWithCandidates(
+  pb: PocketBase,
+  identities: string[],
+  password: string
+) {
+  let lastAuthError: unknown = null
+
+  for (const identity of identities) {
+    try {
+      return await pb.collection('users').authWithPassword(identity, password)
+    } catch (error: any) {
+      if (error?.status === 400) {
+        lastAuthError = error
+        continue
+      }
+      throw error
+    }
+  }
+
+  if (lastAuthError) throw lastAuthError
+  throw new Error('No valid identity found for authentication.')
+}
 
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json()
-    
-    // Validate input
-    const { email, password } = loginSchema.parse(body)
-    const normalizedEmail = email.trim().toLowerCase()
 
-    // Create new PB instance for this request
+    const parsed = loginSchema.parse(body)
+    const identifier = (parsed.identifier ?? parsed.email ?? '').trim()
+    const password = parsed.password
+
     const pb = new PocketBase(PB_URL)
-
-    // Authenticate with PocketBase using the users collection
-    const authData = await pb.collection('users').authWithPassword(normalizedEmail, password)
+    const lookupPb = await createLookupPb()
+    const identities = await resolveIdentityCandidatesForLogin(lookupPb, identifier)
+    const authData = await authenticateWithCandidates(pb, identities, password)
 
     if (!authData.record) {
-      return NextResponse.json(
-        { message: 'Identifiants invalides' },
-        { status: 401 }
-      )
+      return NextResponse.json({ message: 'Identifiants invalides' }, { status: 401 })
     }
 
-    // Check if user is active
     if (authData.record.isActive === false) {
       return NextResponse.json(
-        { message: 'Ce compte est désactivé. Veuillez contacter le support.' },
+        { message: 'Ce compte est desactive. Veuillez contacter le support.' },
         { status: 403 }
       )
     }
@@ -47,7 +234,6 @@ export async function POST(request: NextRequest) {
       request.nextUrl.protocol === 'https:' ||
       process.env.NEXT_PUBLIC_SITE_URL?.startsWith('https://') === true
 
-    // Set secure HTTP-only cookie
     const cookieStore = await cookies()
     const authCookie = JSON.stringify({
       token: authData.token,
@@ -57,7 +243,7 @@ export async function POST(request: NextRequest) {
         surname: authData.record.surname,
         name: authData.record.name,
         username: authData.record.username,
-        role: authData.record.role || 'user',
+        role: authData.record.role || 'customer',
         isActive: authData.record.isActive !== false,
         verified: authData.record.verified || false,
         avatar: authData.record.avatar || undefined,
@@ -68,7 +254,7 @@ export async function POST(request: NextRequest) {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production' && isHttpsRequest,
       sameSite: 'lax',
-      maxAge: 60 * 60 * 24 * 7, // 7 days
+      maxAge: 60 * 60 * 24 * 7,
       path: '/',
     })
 
@@ -80,7 +266,7 @@ export async function POST(request: NextRequest) {
         surname: authData.record.surname,
         name: authData.record.name,
         username: authData.record.username,
-        role: authData.record.role || 'user',
+        role: authData.record.role || 'customer',
         isActive: authData.record.isActive !== false,
         verified: authData.record.verified || false,
         avatar: authData.record.avatar || undefined,
@@ -89,14 +275,26 @@ export async function POST(request: NextRequest) {
   } catch (error: any) {
     if (error instanceof z.ZodError) {
       return NextResponse.json(
-        { message: error.issues[0]?.message ?? 'Requête invalide' },
+        { message: error.issues[0]?.message ?? 'Requete invalide' },
         { status: 400 }
       )
     }
 
-    if (error.status === 400) {
+    if (error?.status === 400) {
+      const rawMessage =
+        typeof error?.data?.message === 'string'
+          ? error.data.message
+          : typeof error?.message === 'string'
+            ? error.message
+            : ''
+      const normalizedMessage = rawMessage.trim()
       return NextResponse.json(
-        { message: 'Email ou mot de passe invalide' },
+        {
+          message:
+            normalizedMessage && normalizedMessage.length > 0
+              ? normalizedMessage
+              : 'Email/telephone ou mot de passe invalide',
+        },
         { status: 401 }
       )
     }
@@ -104,7 +302,7 @@ export async function POST(request: NextRequest) {
     console.error('Login error:', error)
 
     return NextResponse.json(
-      { message: "Une erreur est survenue pendant la connexion" },
+      { message: 'Une erreur est survenue pendant la connexion' },
       { status: 500 }
     )
   }

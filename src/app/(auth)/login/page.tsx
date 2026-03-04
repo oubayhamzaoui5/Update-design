@@ -9,9 +9,20 @@ type Props = {
   searchParams: Promise<Record<string, string | string[] | undefined>>
 }
 
+function resolveRedirect(path?: string | null): string | null {
+  if (!path) return null
+  if (!path.startsWith('/')) return null
+  if (path.startsWith('//')) return null
+  return path
+}
+
 export default async function LoginRedirectPage({ searchParams }: Props) {
   const sp = await searchParams
   const next = Array.isArray(sp.next) ? sp.next[0] : sp.next
-  const target = next ? `/connexion?next=${encodeURIComponent(next)}` : '/connexion'
+  const safeNext = resolveRedirect(next)
+  const target = safeNext
+    ? `/?auth=login&next=${encodeURIComponent(safeNext)}`
+    : '/?auth=login'
+
   redirect(target)
 }

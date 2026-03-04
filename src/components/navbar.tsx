@@ -1,11 +1,11 @@
 // components/navbar.tsx
 "use client"
 
-import { useState, useEffect, useRef } from "react"
+import { useState, useEffect, useLayoutEffect, useRef } from "react"
 import Image from "next/image"
 import Link from "next/link"
-import { usePathname, useRouter } from "next/navigation"
-import { createPortal } from "react-dom"
+import { usePathname, useRouter, useSearchParams } from "next/navigation"
+import { NavbarCart } from "@/components/navbar-cart"
 import {
   Search,
   Heart,
@@ -19,7 +19,6 @@ import {
   Settings,
   LogOut,
   Package as PackageIcon,
-  CreditCard,
 } from "lucide-react"
 
 type Category = {
@@ -38,25 +37,7 @@ type Product = {
   name: string
   description?: string | null
   images?: string[]
-}
-
-// Product type for cart (minimal)
-type CartProduct = {
-  id: string
-  slug: string
-  name: string
-  sku?: string
-  images?: string[]
-  price?: number
-  promoPrice?: number | null
-  currency?: string
-}
-
-type CartItem = {
-  id: string
-  quantity: number
-  product: CartProduct | null
-  source?: "server" | "guest"
+  imageUrls?: string[]
 }
 
 interface NavbarProps {
@@ -72,49 +53,16 @@ type AuthUser = {
   role?: string
 }
 
-const GUEST_CART_KEY = "guest_cart"
 const SIGNUP_PROMO_DISMISSED_KEY = "signup_promo_dismissed_v1"
 const SIGNUP_PROMO_DISMISS_TTL_MS = 60 * 60 * 1000
+const PHONE_PREFIX = "+216"
+const PHONE_LOCAL_DIGITS_COUNT = 8
 
-type GuestCartItem = {
-  productId: string
-  quantity: number
-}
-
-function getGuestCart(): GuestCartItem[] {
-  if (typeof window === "undefined") return []
-  try {
-    const raw = window.localStorage.getItem(GUEST_CART_KEY)
-    if (!raw) return []
-    const parsed = JSON.parse(raw)
-    if (!Array.isArray(parsed)) return []
-    return parsed.filter(
-      (it) =>
-        it &&
-        typeof it.productId === "string" &&
-        typeof it.quantity === "number"
-    )
-  } catch {
-    return []
-  }
-}
-
-function setGuestCart(items: GuestCartItem[]) {
-  if (typeof window === "undefined") return
-  try {
-    window.localStorage.setItem(GUEST_CART_KEY, JSON.stringify(items))
-  } catch {
-    // ignore
-  }
-}
-
-function pbFileUrl(productId: string, filename: string) {
-  const PB_URL = process.env.NEXT_PUBLIC_PB_URL!
-  return `${PB_URL}/api/files/products/${productId}/${filename}`
-}
-
-function escapeFilterValue(v: string) {
-  return v.replace(/\\/g, "\\\\").replace(/"/g, '\\"')
+function resolveRedirectPath(path?: string | null): string | null {
+  if (!path) return null
+  if (!path.startsWith("/")) return null
+  if (path.startsWith("//")) return null
+  return path
 }
 
 function compareCategoryOrder(a: Category, b: Category) {
@@ -124,9 +72,36 @@ function compareCategoryOrder(a: Category, b: Category) {
   return a.name.localeCompare(b.name)
 }
 
+function formatPhoneDigits(value: string) {
+  const digits = value.replace(/\D/g, "").slice(0, PHONE_LOCAL_DIGITS_COUNT)
+  if (digits.length <= 2) return digits
+  if (digits.length <= 5) return `${digits.slice(0, 2)} ${digits.slice(2)}`
+  return `${digits.slice(0, 2)} ${digits.slice(2, 5)} ${digits.slice(5)}`
+}
+
+function extractLocalPhoneDigits(value: string) {
+  const trimmed = value.trim()
+  const withoutPrefix = trimmed.startsWith(PHONE_PREFIX)
+    ? trimmed.slice(PHONE_PREFIX.length)
+    : trimmed
+
+  let digits = withoutPrefix.replace(/\D/g, "")
+  if (digits.startsWith("216") && digits.length > PHONE_LOCAL_DIGITS_COUNT) {
+    digits = digits.slice(3)
+  }
+  return digits.slice(0, PHONE_LOCAL_DIGITS_COUNT)
+}
+
+function formatPhoneForStorage(value: string) {
+  const digits = extractLocalPhoneDigits(value)
+  if (digits.length !== PHONE_LOCAL_DIGITS_COUNT) return null
+  return `${PHONE_PREFIX} ${formatPhoneDigits(digits)}`
+}
+
 export function Navbar(props: NavbarProps) {
   const router = useRouter()
   const pathname = usePathname()
+  const searchParams = useSearchParams()
   const categoriesProp = props.categories ?? []
   const reserveSpace = props.reserveSpace ?? false
 
@@ -161,27 +136,27 @@ export function Navbar(props: NavbarProps) {
   const [currentUser, setCurrentUser] = useState<AuthUser | null>(null)
   const [isAuthResolved, setIsAuthResolved] = useState(false)
 
-  // Cart state
-  const [isCartOpen, setIsCartOpen] = useState(false)
-  const [cartItems, setCartItems] = useState<CartItem[]>([])
-
-  // for portal (avoid SSR document undefined)
-  const [isMounted, setIsMounted] = useState(false)
-
   const [showSignupPromo, setShowSignupPromo] = useState(false)
   const [hasPassedPromoBanner, setHasPassedPromoBanner] = useState(false)
   const [isMobileNavVisible, setIsMobileNavVisible] = useState(true)
+  const [isCartPanelOpen, setIsCartPanelOpen] = useState(false)
+  const [isAuthModalOpen, setIsAuthModalOpen] = useState(false)
+  const [authMode, setAuthMode] = useState<"login" | "signup">("login")
+  const [authEmail, setAuthEmail] = useState("")
+  const [authPassword, setAuthPassword] = useState("")
+  const [authError, setAuthError] = useState("")
+  const [isAuthSubmitting, setIsAuthSubmitting] = useState(false)
+  const [signupSurname, setSignupSurname] = useState("")
+  const [signupName, setSignupName] = useState("")
+  const [signupPhone, setSignupPhone] = useState("")
+  const [signupEmail, setSignupEmail] = useState("")
+  const [signupPassword, setSignupPassword] = useState("")
+  const [signupPasswordConfirm, setSignupPasswordConfirm] = useState("")
+  const [postLoginRedirect, setPostLoginRedirect] = useState<string | null>(null)
+  const [authPanelHeight, setAuthPanelHeight] = useState<number | null>(null)
+  const authLoginPanelRef = useRef<HTMLDivElement | null>(null)
+  const authSignupPanelRef = useRef<HTMLDivElement | null>(null)
   const lastScrollYRef = useRef(0)
-
-  const getLoginHref = () => {
-    const query = typeof window !== "undefined" ? window.location.search.slice(1) : ""
-    const currentPath = `${pathname}${query ? `?${query}` : ""}`
-    return `/connexion?next=${encodeURIComponent(currentPath)}`
-  }
-
-  useEffect(() => {
-    setIsMounted(true)
-  }, [])
 
   useEffect(() => {
     if (typeof window === "undefined") return
@@ -197,6 +172,75 @@ export function Navbar(props: NavbarProps) {
       window.localStorage.removeItem(SIGNUP_PROMO_DISMISSED_KEY)
     }
   }, [])
+
+  useEffect(() => {
+    const authParam = searchParams.get("auth")
+    if (authParam !== "login" && authParam !== "signup") return
+
+    const nextParam = resolveRedirectPath(searchParams.get("next"))
+    setPostLoginRedirect(nextParam)
+    setAuthMode(authParam)
+    setIsAuthModalOpen(true)
+    setIsProfileOpen(false)
+    setIsMenuOpen(false)
+    setAuthError("")
+    setAuthPassword("")
+
+    const url = new URL(window.location.href)
+    url.searchParams.delete("auth")
+    url.searchParams.delete("next")
+    window.history.replaceState({}, "", `${url.pathname}${url.search}${url.hash}`)
+  }, [searchParams, pathname])
+
+  useEffect(() => {
+    if (!isAuthModalOpen) return
+
+    const originalOverflow = document.body.style.overflow
+    document.body.style.overflow = "hidden"
+
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") {
+        setIsAuthModalOpen(false)
+        setAuthPassword("")
+        setAuthError("")
+      }
+    }
+
+    window.addEventListener("keydown", onKeyDown)
+    return () => {
+      document.body.style.overflow = originalOverflow
+      window.removeEventListener("keydown", onKeyDown)
+    }
+  }, [isAuthModalOpen])
+
+  useLayoutEffect(() => {
+    if (!isAuthModalOpen) {
+      setAuthPanelHeight(null)
+      return
+    }
+
+    const activePanel =
+      authMode === "login" ? authLoginPanelRef.current : authSignupPanelRef.current
+
+    if (activePanel) {
+      setAuthPanelHeight(activePanel.scrollHeight)
+    }
+  }, [isAuthModalOpen, authMode, authError, isAuthSubmitting])
+
+  useEffect(() => {
+    if (!isAuthModalOpen) return
+
+    const updateHeight = () => {
+      const activePanel =
+        authMode === "login" ? authLoginPanelRef.current : authSignupPanelRef.current
+      if (activePanel) {
+        setAuthPanelHeight(activePanel.scrollHeight)
+      }
+    }
+
+    window.addEventListener("resize", updateHeight)
+    return () => window.removeEventListener("resize", updateHeight)
+  }, [isAuthModalOpen, authMode])
 
   useEffect(() => {
     const onScroll = () => {
@@ -224,7 +268,7 @@ export function Navbar(props: NavbarProps) {
         return
       }
 
-      if (isMenuOpen || searchOpen || isProfileOpen || isCartOpen) {
+      if (isMenuOpen || searchOpen || isProfileOpen || isCartPanelOpen || isAuthModalOpen) {
         setIsMobileNavVisible(true)
         lastScrollYRef.current = currentScrollY
         return
@@ -252,7 +296,7 @@ export function Navbar(props: NavbarProps) {
       window.removeEventListener("scroll", updateMobileNavVisibility)
       window.removeEventListener("resize", updateMobileNavVisibility)
     }
-  }, [isMenuOpen, searchOpen, isProfileOpen, isCartOpen])
+  }, [isMenuOpen, searchOpen, isProfileOpen, isCartPanelOpen, isAuthModalOpen])
 
   const closeSignupPromo = () => {
     if (typeof window !== "undefined") {
@@ -267,6 +311,7 @@ export function Navbar(props: NavbarProps) {
   }
 
   const handleProfileEnter = () => {
+    if (!currentUser) return
     if (profileTimeoutRef.current) {
       window.clearTimeout(profileTimeoutRef.current)
     }
@@ -274,6 +319,7 @@ export function Navbar(props: NavbarProps) {
   }
 
   const handleProfileLeave = () => {
+    if (!currentUser) return
     if (profileTimeoutRef.current) {
       window.clearTimeout(profileTimeoutRef.current)
     }
@@ -294,40 +340,183 @@ export function Navbar(props: NavbarProps) {
     router.push("/")
   }
 
+  const openAuthModal = (
+    redirectTo?: string | null,
+    mode: "login" | "signup" = "login"
+  ) => {
+    setAuthError("")
+    setAuthMode(mode)
+    if (mode === "login") {
+      setAuthPassword("")
+    } else {
+      setSignupPassword("")
+      setSignupPasswordConfirm("")
+    }
+    setPostLoginRedirect(resolveRedirectPath(redirectTo ?? null))
+    setIsAuthModalOpen(true)
+    setIsProfileOpen(false)
+    setIsMenuOpen(false)
+  }
+
+  const closeAuthModal = () => {
+    setIsAuthModalOpen(false)
+    setAuthPassword("")
+    setSignupPassword("")
+    setSignupPasswordConfirm("")
+    setAuthError("")
+    setAuthMode("login")
+  }
+
+  const switchAuthMode = (mode: "login" | "signup") => {
+    setAuthMode(mode)
+    setAuthError("")
+    if (mode === "login") {
+      if (!authEmail) {
+        const fallbackPhone = formatPhoneForStorage(signupPhone) ?? ""
+        setAuthEmail(signupEmail || fallbackPhone)
+      }
+      setAuthPassword("")
+      return
+    }
+
+    if (!signupEmail && authEmail.includes("@")) {
+      setSignupEmail(authEmail)
+    }
+    if (!signupPhone && authEmail && !authEmail.includes("@")) {
+      setSignupPhone(formatPhoneDigits(extractLocalPhoneDigits(authEmail)))
+    }
+    setSignupPassword("")
+    setSignupPasswordConfirm("")
+  }
+
+  const handleSocialLoginClick = (provider: "google" | "facebook") => {
+    const label = provider === "google" ? "Google" : "Facebook"
+    setAuthError(`Connexion ${label} bientot disponible.`)
+  }
+
+  const handleAuthLogin = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault()
+    if (isAuthSubmitting) return
+
+    setAuthError("")
+    setIsAuthSubmitting(true)
+
+    try {
+      const res = await fetch("/api/auth/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          identifier: authEmail.trim(),
+          password: authPassword,
+        }),
+      })
+
+      const data = await res.json().catch(() => ({}))
+      if (!res.ok) {
+        setAuthError(data?.message ?? "Connexion impossible")
+        return
+      }
+
+      setCurrentUser((data?.user as AuthUser) ?? null)
+      closeAuthModal()
+      router.refresh()
+
+      const safeRedirect = resolveRedirectPath(postLoginRedirect)
+      if (safeRedirect) {
+        router.push(safeRedirect)
+        return
+      }
+
+      if ((data?.user as AuthUser | undefined)?.role === "admin") {
+        router.push("/admin/products")
+      }
+    } catch {
+      setAuthError("Une erreur est survenue.")
+    } finally {
+      setIsAuthSubmitting(false)
+    }
+  }
+
+  const handleAuthSignup = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault()
+    if (isAuthSubmitting) return
+
+    setAuthError("")
+    const formattedSignupPhone = formatPhoneForStorage(signupPhone)
+    if (!formattedSignupPhone) {
+      setAuthError("Le telephone doit etre au format +216 XX XXX XXX.")
+      return
+    }
+    setIsAuthSubmitting(true)
+
+    try {
+      const registerRes = await fetch("/api/auth/register", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          email: signupEmail.trim(),
+          phone: formattedSignupPhone,
+          password: signupPassword,
+          passwordConfirm: signupPasswordConfirm,
+          surname: signupSurname.trim(),
+          name: signupName.trim(),
+        }),
+      })
+
+      const registerData = await registerRes.json().catch(() => ({}))
+      if (!registerRes.ok) {
+        setAuthError(registerData?.message ?? "Inscription impossible")
+        return
+      }
+
+      // Auto-login after successful registration
+      const loginRes = await fetch("/api/auth/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          identifier: signupEmail.trim() || formattedSignupPhone,
+          password: signupPassword,
+        }),
+      })
+
+      const loginData = await loginRes.json().catch(() => ({}))
+      if (!loginRes.ok) {
+        setAuthError("Compte cree. Connectez-vous avec vos identifiants.")
+        switchAuthMode("login")
+        setAuthEmail(signupEmail.trim() || formattedSignupPhone)
+        return
+      }
+
+      setCurrentUser((loginData?.user as AuthUser) ?? null)
+      closeAuthModal()
+      router.refresh()
+
+      const safeRedirect = resolveRedirectPath(postLoginRedirect)
+      if (safeRedirect) {
+        router.push(safeRedirect)
+        return
+      }
+
+      if ((loginData?.user as AuthUser | undefined)?.role === "admin") {
+        router.push("/admin/products")
+      }
+    } catch {
+      setAuthError("Une erreur est survenue.")
+    } finally {
+      setIsAuthSubmitting(false)
+    }
+  }
+
   // Wishlist behavior (desktop + mobile)
   const handleWishlistClick = () => {
     if (!currentUser) {
-      // no user logged in -> go to login
-      router.push(getLoginHref())
+      openAuthModal(pathname)
       return
     }
 
     // user logged in -> go to wishlist page
     router.push("/Wishlist")
   }
-
-  // Cart icon behavior: open drawer (even if not logged in)
-  const handleCartClick = () => {
-    setIsCartOpen(true)
-  }
-
-  // Lock body scroll when cart is open
-  useEffect(() => {
-    if (typeof document === "undefined") return
-    const originalOverflow = document.body.style.overflow
-
-    if (isCartOpen) {
-      document.body.style.overflow = "hidden"
-    } else {
-      document.body.style.overflow = originalOverflow
-    }
-
-    return () => {
-      document.body.style.overflow = originalOverflow
-    }
-  }, [isCartOpen])
-
-
 
   // read auth session on mount
   useEffect(() => {
@@ -358,208 +547,6 @@ export function Navbar(props: NavbarProps) {
     }
   }, [])
 
-  // Load cart items on mount and auth state changes
-useEffect(() => {
-  const PB_URL = process.env.NEXT_PUBLIC_PB_URL
-  if (!PB_URL) return
-
-  let cancelled = false
-
-  const loadCart = async () => {
-    try {
-      if (currentUser) {
-        const res = await fetch("/api/shop/cart", { cache: "no-store" })
-        if (!res.ok) {
-          if (!cancelled) setCartItems([])
-          return
-        }
-
-        const data = await res.json()
-        const items = Array.isArray(data?.items) ? data.items : []
-        const mapped: CartItem[] = items.map((it: any) => {
-          const prod = it?.product
-          const product: CartProduct | null = prod
-            ? {
-                id: prod.id ?? "",
-                slug: prod.slug ?? "",
-                name: prod.name ?? "",
-                sku: prod.sku ?? "",
-                images: Array.isArray(prod.images) ? prod.images : [],
-                price:
-                  typeof prod.price === "number" ? prod.price : undefined,
-                promoPrice:
-                  typeof prod.promoPrice === "number"
-                    ? prod.promoPrice
-                    : null,
-                currency: prod.currency ?? "DT",
-              }
-            : null
-
-          return {
-            id: it.id ?? "",
-            quantity: Number(it.quantity ?? 1),
-            product,
-            source: "server",
-          }
-        })
-
-        if (!cancelled) setCartItems(mapped)
-        return
-      }
-
-      // Guest: load from localStorage
-      const guest = getGuestCart()
-      if (guest.length === 0) {
-        if (!cancelled) setCartItems([])
-        return
-      }
-
-      const result: CartItem[] = []
-      for (const item of guest) {
-        try {
-          const res = await fetch(
-            `${PB_URL}/api/collections/products/records/${item.productId}`,
-            { cache: "no-store" }
-          )
-          if (!res.ok) continue
-          const prod = await res.json()
-
-          const product: CartProduct = {
-            id: prod.id,
-            slug: prod.slug ?? "",
-            name: prod.name ?? "",
-            sku: prod.sku ?? "",
-            images: Array.isArray(prod.images) ? prod.images : [],
-            price: typeof prod.price === "number" ? prod.price : undefined,
-            promoPrice:
-              typeof prod.promoPrice === "number" ? prod.promoPrice : null,
-            currency: prod.currency ?? "DT",
-          }
-
-          result.push({
-            id: item.productId, // id = productId for guest
-            quantity: item.quantity,
-            product,
-            source: "guest",
-          })
-        } catch {
-          // ignore single product errors
-        }
-      }
-
-      if (!cancelled) {
-        setCartItems(result)
-      }
-    } catch (err) {
-      console.error("Failed to load cart", err)
-      if (!cancelled) setCartItems([])
-    }
-  }
-
-  loadCart()
-
-  // Listen to global events
-  const onCartUpdated = () => {
-    loadCart()
-  }
-
-  const onCartOpen = () => {
-    setIsCartOpen(true) // open the cart drawer when product page says so
-  }
-
-  if (typeof window !== "undefined") {
-    window.addEventListener("cart:updated", onCartUpdated)
-    window.addEventListener("cart:open", onCartOpen)
-  }
-
-  return () => {
-    cancelled = true
-    if (typeof window !== "undefined") {
-      window.removeEventListener("cart:updated", onCartUpdated)
-      window.removeEventListener("cart:open", onCartOpen)
-    }
-  }
-}, [currentUser])
-
-
-  // Update quantity (server or guest)
-  const handleUpdateQuantity = async (itemId: string, newQty: number) => {
-    if (newQty < 1) {
-      await handleRemoveItem(itemId)
-      return
-    }
-
-    try {
-      if (currentUser) {
-        // Server cart
-        const res = await fetch("/api/shop/cart", {
-          method: "PUT",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ itemId, quantity: newQty }),
-        })
-        if (!res.ok) return
-
-        setCartItems((prev) =>
-          prev.map((item) =>
-            item.id === itemId ? { ...item, quantity: newQty } : item
-          )
-        )
-      } else {
-        // Guest cart: update localStorage
-        const current = getGuestCart()
-        const idx = current.findIndex((it) => it.productId === itemId)
-        if (idx === -1) return
-
-        current[idx].quantity = newQty
-        setGuestCart(current)
-
-        setCartItems((prev) =>
-          prev.map((item) =>
-            item.id === itemId ? { ...item, quantity: newQty } : item
-          )
-        )
-      }
-
-      if (typeof window !== "undefined") {
-        window.dispatchEvent(new Event("cart:updated"))
-      }
-    } catch (err) {
-      console.error("Failed to update quantity", err)
-    }
-  }
-
-  // Remove item (server or guest)
-  const handleRemoveItem = async (itemId: string) => {
-    if (typeof window !== "undefined") {
-      const ok = window.confirm("Supprimer cet article du panier ?")
-      if (!ok) return
-    }
-
-    try {
-      if (currentUser) {
-        // Server cart
-        const res = await fetch(
-          `/api/shop/cart?itemId=${encodeURIComponent(itemId)}`,
-          { method: "DELETE" }
-        )
-        if (!res.ok) return
-      } else {
-        // Guest: remove from localStorage
-        const current = getGuestCart()
-        const next = current.filter((it) => it.productId !== itemId)
-        setGuestCart(next)
-      }
-
-      setCartItems((prev) => prev.filter((item) => item.id !== itemId))
-
-      if (typeof window !== "undefined") {
-        window.dispatchEvent(new Event("cart:updated"))
-      }
-    } catch (err) {
-      console.error("Failed to remove cart item", err)
-    }
-  }
-
   // sync props -> state & fetch once if no categories were passed
   useEffect(() => {
     if (categoriesProp.length > 0) {
@@ -567,19 +554,19 @@ useEffect(() => {
       return
     }
 
-    const PB_URL = process.env.NEXT_PUBLIC_PB_URL
-    if (!PB_URL) return
-
     const controller = new AbortController()
 
     const load = async () => {
       try {
-        const res = await fetch(
-          `${PB_URL}/api/collections/categories/records?perPage=200&sort=order,name`,
-          { cache: "no-store", signal: controller.signal }
-        )
+        const res = await fetch("/api/shop/categories", {
+          cache: "no-store",
+          signal: controller.signal,
+        })
+        if (!res.ok) {
+          throw new Error("Failed to fetch navbar categories")
+        }
         const data = await res.json()
-        const items = Array.isArray(data?.items) ? data.items : []
+        const items = Array.isArray(data?.categories) ? data.categories : []
 
         const mapped: Category[] = items.map((c: any) => ({
           id: c.id,
@@ -587,7 +574,7 @@ useEffect(() => {
           slug: c.slug ?? "",
           order: Number(c.order ?? 0),
           parent: c.parent ?? null,
-          description: c.desc ?? c.description ?? null,
+          description: c.description ?? null,
         }))
 
         setInternalCategories(mapped.sort(compareCategoryOrder))
@@ -658,7 +645,7 @@ useEffect(() => {
     setExpandedCategories(next)
   }
 
-  // debounced searching (products from PB + categories local)
+  // debounced searching (products from internal API + categories local)
   useEffect(() => {
     const q = searchValue.trim()
     if (!q) {
@@ -679,26 +666,25 @@ useEffect(() => {
     )
     setCategoryResults(catMatches.slice(0, 6))
 
-    // debounce PB products search
+    // debounce products search
     if (debounceRef.current) window.clearTimeout(debounceRef.current)
     debounceRef.current = window.setTimeout(async () => {
       try {
         setIsSearching(true)
-        const PB_URL = process.env.NEXT_PUBLIC_PB_URL!
-        const safeQ = escapeFilterValue(q)
-
-        const url =
-          `${PB_URL}/api/collections/products/records` +
-          `?perPage=6&filter=(name~"${safeQ}"||sku~"${safeQ}")`
-
-        const res = await fetch(url, { cache: "no-store" })
+        const params = new URLSearchParams({
+          page: "1",
+          perPage: "6",
+          query: q,
+          sort: "name",
+        })
+        const res = await fetch(`/api/shop/products?${params.toString()}`, {
+          cache: "no-store",
+        })
+        if (!res.ok) {
+          throw new Error("Navbar product search failed")
+        }
         const data = await res.json()
-
-        const items: Product[] = Array.isArray(data?.items)
-          ? data.items
-          : Array.isArray(data)
-          ? data
-          : []
+        const items: Product[] = Array.isArray(data?.products) ? data.products : []
 
         setProductResults(items)
       } catch (err) {
@@ -787,212 +773,6 @@ useEffect(() => {
     currentUser?.email ||
     "Mon compte"
   const shouldShowSignupPromo = isAuthResolved && !currentUser && showSignupPromo
-
-  // Number of distinct products in cart (badge)
-  const cartCount = cartItems.length
-
-  // Cart currency (first found or "DT")
-  const cartCurrency =
-    cartItems.find((item) => item.product?.currency)?.product?.currency ?? "DT"
-
-  // Cart total (with promo logic)
-  const cartTotal = cartItems.reduce((sum, item) => {
-    const prod = item.product
-    if (!prod) return sum
-
-    const unitPrice =
-      prod.promoPrice &&
-      typeof prod.promoPrice === "number" &&
-      typeof prod.price === "number" &&
-      prod.promoPrice < prod.price
-        ? prod.promoPrice
-        : prod.price
-
-    if (typeof unitPrice !== "number") return sum
-
-    return sum + unitPrice * item.quantity
-  }, 0)
-
-  // Cart overlay rendered via portal (outside nav)
-  const cartOverlay =
-    isMounted &&
-    createPortal(
-      <div
-        className={`fixed inset-0 z-50 flex justify-end transition-opacity duration-300 ${
-          isCartOpen
-            ? "opacity-100 pointer-events-auto"
-            : "opacity-0 pointer-events-none"
-        }`}
-      >
-        {/* Backdrop */}
-        <div
-          className="absolute inset-0 bg-black/40"
-          onClick={() => setIsCartOpen(false)}
-        />
-
-        {/* Panel */}
-        <div
-          className={`
-            relative z-10 h-full w-full max-w-md bg-white text-black border-l border-gray-200 shadow-2xl flex flex-col
-            transform transition-transform duration-300
-            ${isCartOpen ? "translate-x-0" : "translate-x-full"}
-          `}
-        >
-          {/* Header */}
-          <div className="flex items-center justify-between px-4 py-3 border-b border-gray-200">
-            <h2 className="text-lg font-semibold">Mon panier</h2>
-            <button
-              type="button"
-              className="inline-flex h-10 w-10 items-center justify-center rounded-full hover:bg-gray-100 cursor-pointer"
-              onClick={() => setIsCartOpen(false)}
-              aria-label="Fermer le panier"
-            >
-              <X size={18} className="text-gray-700" />
-            </button>
-          </div>
-
-          {/* Content */}
-          <div className="flex-1 overflow-y-auto px-4 py-3">
-            {cartItems.length === 0 ? (
-              <div className="h-full flex flex-col items-center justify-center text-center text-sm text-gray-500">
-                <ShoppingCart className="h-8 w-8 mb-2 opacity-60" />
-                <p>Votre panier est vide.</p>
-              </div>
-            ) : (
-              <div className="space-y-3">
-                {cartItems.map((item) => {
-                  const prod = item.product
-                  const imgSrc =
-                    prod &&
-                    Array.isArray(prod.images) &&
-                    prod.images.length > 0
-                      ? pbFileUrl(prod.id, prod.images[0]!)
-                                                      : "/placeholder-square.webp"
-
-
-                  const price =
-                    prod?.promoPrice &&
-                    typeof prod.promoPrice === "number" &&
-                    typeof prod.price === "number" &&
-                    prod.promoPrice < prod.price
-                      ? prod.promoPrice
-                      : prod?.price
-
-                  const currency = prod?.currency ?? "DT"
-
-                  return (
-                    <div
-                      key={item.id}
-                      className="flex gap-3 border border-gray-200 rounded-xl p-2 relative"
-                    >
-                      {/* Delete button - red X */}
-                      <button
-                        type="button"
-                        className="absolute top-2 right-2 inline-flex h-8 w-8 items-center justify-center rounded-full hover:bg-red-50 cursor-pointer"
-                        onClick={() => handleRemoveItem(item.id)}
-                        aria-label="Supprimer l'article"
-                      >
-                        <X className="h-4 w-4 text-red-500" />
-                      </button>
-
-                      <div className="relative h-16 w-16 rounded-md overflow-hidden flex-shrink-0 bg-gray-100">
-                        <Image
-                          src={imgSrc}
-                          alt={prod?.name ?? "Produit"}
-                          fill
-                          sizes="64px"
-                          className="object-cover"
-                        />
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <p className="text-sm font-medium truncate pr-6">
-                          {prod?.name ?? "Produit indisponible"}
-                        </p>
-                        {prod?.sku && (
-                            <p className="text-xs text-gray-500">
-                            Reference: {prod.sku}
-                            </p>
-                        )}
-
-                        <div className="mt-2 flex items-center justify-between">
-                          {/* Quantity controls */}
-                          <div className="flex items-center gap-2">
-                            <button
-                              type="button"
-                              className="h-7 w-7 flex items-center justify-center rounded-md border border-gray-300 text-xs hover:bg-gray-100 cursor-pointer"
-                              onClick={() =>
-                                handleUpdateQuantity(
-                                  item.id,
-                                  item.quantity - 1
-                                )
-                              }
-                              aria-label="Diminuer la quantité"
-                            >
-                              -
-                            </button>
-                            <span className="text-xs font-medium min-w-[1.5rem] text-center">
-                              {item.quantity}
-                            </span>
-                            <button
-                              type="button"
-                              className="h-7 w-7 flex items-center justify-center rounded-md border border-gray-300 text-xs hover:bg-gray-100 cursor-pointer"
-                              onClick={() =>
-                                handleUpdateQuantity(
-                                  item.id,
-                                  item.quantity + 1
-                                )
-                              }
-                              aria-label="Augmenter la quantité"
-                            >
-                              +
-                            </button>
-                          </div>
-
-                          {price != null && (
-                            <span className="text-sm font-semibold ">
-                              {(price * item.quantity).toFixed(2)} {currency}
-                            </span>
-                          )}
-                        </div>
-                      </div>
-                    </div>
-                  )
-                })}
-              </div>
-            )}
-          </div>
-
-          {/* Footer */}
-          <div className="border-t border-gray-200 px-4 py-3">
-            <button
-              type="button"
-              disabled={cartItems.length === 0}
-              className={`
-                w-full h-11 rounded-md text-white text-sm font-medium
-                flex items-center justify-center gap-2 transition-opacity
-                ${
-                  cartItems.length === 0
-                    ? "bg-accent opacity-60 cursor-not-allowed"
-                    : "bg-accent hover:opacity-90 cursor-pointer"
-                }
-              `}
-              onClick={() => {
-                if (cartItems.length === 0) return
-                setIsCartOpen(false)
-                router.push("/chekout")
-              }}
-            >
-              <CreditCard size={18} />
-              <span>
-                Procéder au paiement - {cartTotal.toFixed(2)} {cartCurrency}
-              </span>
-            </button>
-          </div>
-        </div>
-      </div>,
-      document.body
-    )
-
   const navSpacerClass = reserveSpace
     ? shouldShowSignupPromo
       ? "h-[100px] md:h-[112px]"
@@ -1013,15 +793,21 @@ useEffect(() => {
   }, [shouldShowSignupPromo])
 
   return (
+    <NavbarCart currentUser={currentUser} onOpenChange={setIsCartPanelOpen}>
+      {({ cartCount, openCart }) => (
     <>
       {shouldShowSignupPromo && (
         <div className="absolute inset-x-0 top-0 z-50 overflow-x-clip border-b border-red-700 bg-red-600 text-white">
           <div className="mx-auto flex h-10 max-w-7xl items-center justify-center px-10 sm:px-8">
             <p className="max-w-full text-center text-[12px] font-medium leading-tight whitespace-normal md:text-sm md:whitespace-nowrap">
-              <Link href="/inscription" className="underline underline-offset-2">
-                Créez un compte
-              </Link>{' '}
-              et obtenez 10% de réduction sur votre première commande.
+              <button
+                type="button"
+                onClick={() => openAuthModal(pathname)}
+                className="underline underline-offset-2"
+              >
+                Connectez-vous
+              </button>{" "}
+              et obtenez 10% de reduction sur votre premiere commande.
             </p>
             <button
               type="button"
@@ -1144,8 +930,8 @@ useEffect(() => {
                         <div className="space-y-1">
                           {productResults.map((p) => {
                             const firstImg =
-                              Array.isArray(p.images) && p.images.length > 0
-                                ? pbFileUrl(p.id, p.images[0]!)
+                              Array.isArray(p.imageUrls) && p.imageUrls.length > 0
+                                ? p.imageUrls[0]!
                                 : "/placeholder-square.webp"
 
                             return (
@@ -1220,7 +1006,7 @@ useEffect(() => {
               type="button"
               className="relative p-2 hover:opacity-70 transition-opacity cursor-pointer"
               aria-label="Panier"
-              onClick={handleCartClick}
+              onClick={openCart}
             >
               <ShoppingCart size={20} />
               {cartCount > 0 && (
@@ -1233,19 +1019,25 @@ useEffect(() => {
             {/* Profile + centered dropdown with delay */}
             <div
               className="relative"
-              onMouseEnter={handleProfileEnter}
-              onMouseLeave={handleProfileLeave}
+              onMouseEnter={currentUser ? handleProfileEnter : undefined}
+              onMouseLeave={currentUser ? handleProfileLeave : undefined}
             >
               <button
                 type="button"
-                className="p-2 hover:opacity-70 transition-opacity"
+                className="p-2 hover:opacity-70 transition-opacity cursor-pointer"
                 aria-label="Compte"
-                onClick={() => setIsProfileOpen((v) => !v)}
+                onClick={() => {
+                  if (!currentUser) {
+                    openAuthModal(pathname)
+                    return
+                  }
+                  setIsProfileOpen((v) => !v)
+                }}
               >
                 <User size={20} />
               </button>
 
-              {isProfileOpen && (
+              {currentUser && isProfileOpen && (
                 <div
                   ref={profileMenuRef}
                   className="absolute left-1/2 top-full mt-2 w-60 max-w-[calc(100vw-4rem)] space-y-3 rounded-xl border border-black/10 bg-white px-4 py-3 text-black shadow-lg"
@@ -1257,8 +1049,7 @@ useEffect(() => {
                     Mon compte
                   </div>
 
-                  {currentUser ? (
-                    <div className="space-y-1">
+                  <div className="space-y-1">
                       {/* Full name / Profile */}
 <Link
   href={currentUser?.role === "admin" ? "/admin" : "/commandes"}
@@ -1312,25 +1103,6 @@ useEffect(() => {
                         </div>
                       </button>
                     </div>
-                  ) : (
-                    <div className="space-y-2">
-                      <Link
-                        href={getLoginHref()}
-                        className="inline-block w-full cursor-pointer rounded-md border border-accent/60 bg-gray-100 px-6 py-2.5 text-center text-sm font-medium text-black transition-colors hover:bg-gray-200"
-                        onClick={() => setIsProfileOpen(false)}
-                      >
-                        Se connecter
-                      </Link>
-
-                      <Link
-                        href="/inscription"
-                        className="inline-block w-full text-sm text-center px-6 py-2.5 bg-accent text-white font-medium rounded-md hover:opacity-80 cursor-pointer transition-opacity"
-                        onClick={() => setIsProfileOpen(false)}
-                      >
-                        S&apos;inscrire
-                      </Link>
-                    </div>
-                  )}
                 </div>
               )}
             </div>
@@ -1381,6 +1153,25 @@ useEffect(() => {
             <Link href="/" className="flex items-center flex-shrink-0" aria-label="Accueil">
               <LogoSwap size={36} />
             </Link>
+                   <button
+              type="button"
+              className="p-1 hover:opacity-70 transition-opacity"
+              aria-label="Compte"
+              onClick={() => {
+                if (!currentUser) {
+                  openAuthModal(pathname)
+                  return
+                }
+                if (currentUser?.role === "admin") {
+                  router.push("/admin")
+                  return
+                }
+                setIsProfileOpen((v) => !v)
+              }}
+            >
+              <User size={20} />
+            </button>
+
 
             <div className="flex-1">
               <div className="flex w-full items-center gap-2 rounded-lg border border-gray-300 bg-gray-100 px-3 py-1.5 transition-colors">
@@ -1396,24 +1187,10 @@ useEffect(() => {
               </div>
             </div>
 
+     
             <button
               type="button"
-              className="p-1 hover:opacity-70 transition-opacity"
-              aria-label="Compte"
-              onClick={() => {
-                if (currentUser?.role === "admin") {
-                  router.push("/admin")
-                  return
-                }
-                setIsProfileOpen((v) => !v)
-              }}
-            >
-              <User size={20} />
-            </button>
-
-            <button
-              type="button"
-              onClick={handleCartClick}
+              onClick={openCart}
               aria-label="Panier"
               className="relative p-1 hover:opacity-70 transition-opacity"
             >
@@ -1478,8 +1255,8 @@ useEffect(() => {
                     <div className="space-y-1">
                       {productResults.map((p) => {
                         const firstImg =
-                          Array.isArray(p.images) && p.images.length > 0
-                            ? pbFileUrl(p.id, p.images[0]!)
+                          Array.isArray(p.imageUrls) && p.imageUrls.length > 0
+                            ? p.imageUrls[0]!
                             : "/placeholder-square.webp"
 
                         return (
@@ -1616,8 +1393,275 @@ useEffect(() => {
 
       {navSpacerClass ? <div aria-hidden className={navSpacerClass} /> : null}
 
-      {cartOverlay}
+      {isAuthModalOpen && (
+        <div className="fixed inset-0 z-[70] flex items-center justify-center p-4">
+          <div
+            className="absolute inset-0 bg-black/45 backdrop-blur-sm"
+            onClick={closeAuthModal}
+          />
+
+          <div className="relative w-full max-w-md overflow-hidden rounded-2xl border border-black/10 bg-white text-black shadow-2xl">
+            <div className="pointer-events-none absolute inset-0">
+              <div className="absolute -left-16 top-8 h-44 w-44 rounded-full bg-accent/15 blur-3xl" />
+              <div className="absolute -right-20 bottom-0 h-56 w-56 rounded-full bg-foreground/10 blur-3xl" />
+            </div>
+
+            <button
+              type="button"
+              onClick={closeAuthModal}
+              className="absolute right-3 top-3 z-10 inline-flex h-8 w-8 items-center justify-center rounded-full border border-black/10 bg-white/70 transition-colors hover:bg-white"
+              aria-label="Fermer la connexion"
+            >
+              <X size={16} />
+            </button>
+
+            <div className="relative px-6 pb-6 pt-7">
+              <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-accent">
+                Mon compte
+              </p>
+              <h2 className="mt-2 text-2xl font-bold tracking-tight">
+                {authMode === "login" ? "Connexion" : "Creer un compte"}
+              </h2>
+              <p className="mt-1 text-sm text-black/60">
+                {authMode === "login"
+                  ? "Connectez-vous pour suivre vos commandes et gerer vos favoris."
+                  : "Inscrivez-vous rapidement, puis suivez vos commandes en direct."}
+              </p>
+
+              {authError && (
+                <div className="mt-5 rounded-xl border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">
+                  {authError}
+                </div>
+              )}
+
+              <div
+                className="mt-5 relative overflow-hidden transition-[height] duration-300 ease-out"
+                style={authPanelHeight != null ? { height: `${authPanelHeight}px` } : undefined}
+              >
+                <div
+                  ref={authLoginPanelRef}
+                  className={`transition-transform duration-300 ease-out ${
+                    authMode === "login"
+                      ? "relative translate-x-0 opacity-100"
+                      : "pointer-events-none absolute inset-0 -translate-x-4 opacity-0"
+                  }`}
+                >
+                  <form className="space-y-3" onSubmit={handleAuthLogin}>
+                    <div className="space-y-1.5">
+                      <label htmlFor="auth-email" className="text-sm font-medium">
+                        Email ou telephone <span className="text-red-500">*</span>
+                      </label>
+                      <input
+                        id="auth-email"
+                        type="text"
+                        required
+                        value={authEmail}
+                        onChange={(e) => setAuthEmail(e.target.value)}
+                        className="w-full rounded-xl border border-black/15 bg-white px-3 py-2.5 text-sm outline-none transition focus:border-accent"
+                        placeholder="vous@domaine.com ou +216..."
+                      />
+                    </div>
+
+                    <div className="space-y-1.5">
+                      <label htmlFor="auth-password" className="text-sm font-medium">
+                        Mot de passe <span className="text-red-500">*</span>
+                      </label>
+                      <input
+                        id="auth-password"
+                        type="password"
+                        required
+                        value={authPassword}
+                        onChange={(e) => setAuthPassword(e.target.value)}
+                        className="w-full rounded-xl border border-black/15 bg-white px-3 py-2.5 text-sm outline-none transition focus:border-accent"
+                        placeholder="********"
+                      />
+                    </div>
+
+                    <button
+                      type="submit"
+                      disabled={isAuthSubmitting}
+                      className="mt-1 h-11 w-full rounded-xl bg-accent text-sm font-semibold text-white transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-60"
+                    >
+                      {isAuthSubmitting ? "Connexion en cours..." : "Se connecter"}
+                    </button>
+                  </form>
+
+                  <div className="mt-4 grid grid-cols-2 gap-2">
+                    <button
+                      type="button"
+                      onClick={() => handleSocialLoginClick("google")}
+                      className="inline-flex h-10 items-center justify-center gap-2 rounded-xl border border-black/15 bg-white text-sm font-medium transition-colors hover:bg-black/[0.03]"
+                    >
+                      <span className="font-bold text-[13px]">G</span>
+                      <span>Google</span>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => handleSocialLoginClick("facebook")}
+                      className="inline-flex h-10 items-center justify-center gap-2 rounded-xl border border-black/15 bg-white text-sm font-medium transition-colors hover:bg-black/[0.03]"
+                    >
+                      <span className="font-bold text-[13px]">f</span>
+                      <span>Facebook</span>
+                    </button>
+                  </div>
+
+                  <p className="mt-4 text-center text-sm text-black/60">
+                    Pas de compte ?{" "}
+                    <button
+                      type="button"
+                      onClick={() => switchAuthMode("signup")}
+                      className="font-semibold text-accent transition-opacity hover:opacity-80"
+                    >
+                      S&apos;inscrire
+                    </button>
+                  </p>
+                </div>
+
+                <div
+                  ref={authSignupPanelRef}
+                  className={`transition-transform duration-300 ease-out ${
+                    authMode === "signup"
+                      ? "relative translate-x-0 opacity-100"
+                      : "pointer-events-none absolute inset-0 translate-x-4 opacity-0"
+                  }`}
+                >
+                  <form className="space-y-3" onSubmit={handleAuthSignup}>
+                    <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                      <div className="space-y-1.5">
+                        <label htmlFor="signup-surname" className="text-sm font-medium">
+                          Prenom <span className="text-red-500">*</span>
+                        </label>
+                        <input
+                          id="signup-surname"
+                          type="text"
+                          required
+                          minLength={2}
+                          value={signupSurname}
+                          onChange={(e) => setSignupSurname(e.target.value)}
+                          className="w-full rounded-xl border border-black/15 bg-white px-3 py-2.5 text-sm outline-none transition focus:border-accent"
+                          placeholder="Votre prenom"
+                        />
+                      </div>
+
+                      <div className="space-y-1.5">
+                        <label htmlFor="signup-name" className="text-sm font-medium">
+                          Nom <span className="text-red-500">*</span>
+                        </label>
+                        <input
+                          id="signup-name"
+                          type="text"
+                          required
+                          minLength={2}
+                          value={signupName}
+                          onChange={(e) => setSignupName(e.target.value)}
+                          className="w-full rounded-xl border border-black/15 bg-white px-3 py-2.5 text-sm outline-none transition focus:border-accent"
+                          placeholder="Votre nom"
+                        />
+                      </div>
+                    </div>
+
+                    <div className="space-y-1.5">
+                      <label htmlFor="signup-phone" className="text-sm font-medium">
+                        Telephone <span className="text-red-500">*</span>
+                      </label>
+                      <div className="relative">
+                        <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 border-r border-black/15 pr-3 text-sm font-semibold text-black/60">
+                          {PHONE_PREFIX}
+                        </span>
+                        <input
+                          id="signup-phone"
+                          type="tel"
+                          inputMode="numeric"
+                          autoComplete="tel-national"
+                          required
+                          value={signupPhone}
+                          onChange={(e) =>
+                            setSignupPhone(
+                              formatPhoneDigits(extractLocalPhoneDigits(e.target.value))
+                            )
+                          }
+                          className="w-full rounded-xl border border-black/15 bg-white px-3 py-2.5 pl-16 text-sm outline-none transition focus:border-accent"
+                          placeholder="20 123 456"
+                        />
+                      </div>
+                    </div>
+
+                    <div className="space-y-1.5">
+                      <label htmlFor="signup-email" className="text-sm font-medium">
+                        Email <span className="text-black/40">(optionnel)</span>
+                      </label>
+                      <input
+                        id="signup-email"
+                        type="email"
+                        value={signupEmail}
+                        onChange={(e) => setSignupEmail(e.target.value)}
+                        className="w-full rounded-xl border border-black/15 bg-white px-3 py-2.5 text-sm outline-none transition focus:border-accent"
+                        placeholder="vous@domaine.com"
+                      />
+                    </div>
+
+                    <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                      <div className="space-y-1.5">
+                        <label htmlFor="signup-password" className="text-sm font-medium">
+                          Mot de passe <span className="text-red-500">*</span>
+                        </label>
+                        <input
+                          id="signup-password"
+                          type="password"
+                          required
+                          minLength={8}
+                          value={signupPassword}
+                          onChange={(e) => setSignupPassword(e.target.value)}
+                          className="w-full rounded-xl border border-black/15 bg-white px-3 py-2.5 text-sm outline-none transition focus:border-accent"
+                          placeholder="********"
+                        />
+                      </div>
+
+                      <div className="space-y-1.5">
+                        <label htmlFor="signup-password-confirm" className="text-sm font-medium">
+                          Confirmation <span className="text-red-500">*</span>
+                        </label>
+                        <input
+                          id="signup-password-confirm"
+                          type="password"
+                          required
+                          minLength={8}
+                          value={signupPasswordConfirm}
+                          onChange={(e) => setSignupPasswordConfirm(e.target.value)}
+                          className="w-full rounded-xl border border-black/15 bg-white px-3 py-2.5 text-sm outline-none transition focus:border-accent"
+                          placeholder="********"
+                        />
+                      </div>
+                    </div>
+
+                    <button
+                      type="submit"
+                      disabled={isAuthSubmitting}
+                      className="mt-1 h-11 w-full rounded-xl bg-accent text-sm font-semibold text-white transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-60"
+                    >
+                      {isAuthSubmitting ? "Creation en cours..." : "Creer mon compte"}
+                    </button>
+                  </form>
+
+                  <p className="mt-4 text-center text-sm text-black/60">
+                    Deja inscrit ?{" "}
+                    <button
+                      type="button"
+                      onClick={() => switchAuthMode("login")}
+                      className="font-semibold text-accent transition-opacity hover:opacity-80"
+                    >
+                      Se connecter
+                    </button>
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </>
+      )}
+    </NavbarCart>
   )
 }
 

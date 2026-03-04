@@ -1,6 +1,6 @@
 // components/navbar-with-categories.tsx
-import { getPb } from "@/lib/pb"
 import { Navbar } from "@/components/navbar"
+import { getShopCategories } from "@/lib/services/product.service"
 
 type Category = {
   id: string
@@ -11,11 +11,7 @@ type Category = {
 }
 
 export default async function NavbarWithCategories() {
-  const pb = getPb()
-
-  const catRes = await pb.collection("categories").getFullList(200, {
-    sort: "order,name",
-  })
+  const catRes = await getShopCategories()
 
   const categories: Category[] = catRes.map((c: any) => ({
     id: c.id,

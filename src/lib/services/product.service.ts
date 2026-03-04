@@ -322,6 +322,10 @@ const getCachedCategories = unstable_cache(
   { revalidate: 300, tags: ['shop-categories'] }
 )
 
+export async function getShopCategories(): Promise<ShopCategory[]> {
+  return getCachedCategories()
+}
+
 function sortToPocketBase(sort: ShopListInput['sort']): string {
   if (sort === 'priceAsc') return 'price'
   if (sort === 'priceDesc') return '-price'

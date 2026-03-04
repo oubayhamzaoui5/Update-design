@@ -98,7 +98,7 @@ export function useAuth() {
       pb.authStore.clear()
       
       setUser(null)
-      router.push('/connexion')
+      router.push('/')
       router.refresh()
     } catch (error) {
       console.error('Logout error:', error)

@@ -9,7 +9,7 @@ export type User = {
   surname: string
   name: string
   username: string
-  role: 'admin' | 'user'
+  role: 'admin' | 'customer'
   isActive: boolean
   verified: boolean
   avatar?: string
@@ -61,7 +61,7 @@ export const getSession = cache(async (): Promise<Session | null> => {
       surname: record.surname || '',
       name: record.name || '',
       username: record.username || '',
-      role: record.role || 'user',
+      role: record.role || 'customer',
       isActive: record.isActive !== false,
       verified: record.verified || false,
       avatar: record.avatar || undefined,

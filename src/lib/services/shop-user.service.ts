@@ -20,6 +20,7 @@ export type CartProductSummary = {
   name: string
   sku: string
   images: string[]
+  imageUrls: string[]
   price: number
   promoPrice: number | null
   currency: string
@@ -39,6 +40,38 @@ function getAuthedPb(auth: AuthContext) {
   const pb = createServerPb()
   pb.authStore.save(auth.token, null)
   return pb
+}
+
+function getPbBaseUrl(): string {
+  return (
+    process.env.NEXT_PUBLIC_PB_URL ??
+    process.env.POCKETBASE_URL ??
+    'http://127.0.0.1:8090'
+  )
+}
+
+function normalizeImageFilenames(raw: unknown): string[] {
+  if (Array.isArray(raw)) {
+    return raw.map((item) => String(item).trim()).filter(Boolean)
+  }
+
+  if (typeof raw === 'string') {
+    const trimmed = raw.trim()
+    if (!trimmed) return []
+
+    try {
+      const parsed = JSON.parse(trimmed)
+      if (Array.isArray(parsed)) {
+        return parsed.map((item) => String(item).trim()).filter(Boolean)
+      }
+    } catch {
+      // keep as plain filename
+    }
+
+    return [trimmed]
+  }
+
+  return []
 }
 
 export function parsePocketBaseId(raw: unknown): string {
@@ -164,6 +197,7 @@ export async function addToCart(auth: AuthContext, productId: string, quantity: 
 
 export async function getCartItems(auth: AuthContext): Promise<CartEntry[]> {
   const pb = getAuthedPb(auth)
+  const pbBaseUrl = getPbBaseUrl()
   const items = await pb.collection('cart_items').getFullList(200, {
     filter: `user="${escapePbString(auth.userId)}"`,
     expand: 'product',
@@ -172,13 +206,18 @@ export async function getCartItems(auth: AuthContext): Promise<CartEntry[]> {
 
   return items.map((it: Record<string, unknown>) => {
     const prod = (it as any).expand?.product as Record<string, unknown> | undefined
+    const imageFiles = normalizeImageFilenames(prod?.images)
+    const productId = String(prod?.id ?? '')
     const product: CartProductSummary | null = prod
       ? {
-          id: String(prod.id ?? ''),
+          id: productId,
           slug: String(prod.slug ?? ''),
           name: String(prod.name ?? ''),
           sku: String(prod.sku ?? ''),
-          images: Array.isArray(prod.images) ? prod.images.map(String) : [],
+          images: imageFiles,
+          imageUrls: imageFiles.map(
+            (file) => `${pbBaseUrl}/api/files/products/${productId}/${encodeURIComponent(file)}`
+          ),
           price: Number(prod.price ?? 0),
           promoPrice:
             prod.promoPrice == null || !Number.isFinite(Number(prod.promoPrice))

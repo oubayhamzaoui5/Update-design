@@ -9,9 +9,20 @@ type Props = {
   searchParams: Promise<Record<string, string | string[] | undefined>>
 }
 
+function resolveRedirect(path?: string | null): string | null {
+  if (!path) return null
+  if (!path.startsWith('/')) return null
+  if (path.startsWith('//')) return null
+  return path
+}
+
 export default async function RegisterRedirectPage({ searchParams }: Props) {
   const sp = await searchParams
   const next = Array.isArray(sp.next) ? sp.next[0] : sp.next
-  const target = next ? `/inscription?next=${encodeURIComponent(next)}` : '/inscription'
+  const safeNext = resolveRedirect(next)
+  const target = safeNext
+    ? `/?auth=signup&next=${encodeURIComponent(safeNext)}`
+    : '/?auth=signup'
+
   redirect(target)
 }
