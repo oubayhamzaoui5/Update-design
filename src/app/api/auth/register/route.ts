@@ -3,8 +3,8 @@ import PocketBase from 'pocketbase'
 import { z } from 'zod'
 
 const PB_URL =
-  process.env.NEXT_PUBLIC_PB_URL ??
   process.env.POCKETBASE_URL ??
+  process.env.NEXT_PUBLIC_PB_URL ??
   'http://127.0.0.1:8090'
 const PHONE_PREFIX = '+216'
 const PHONE_LOCAL_DIGITS_COUNT = 8

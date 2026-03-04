@@ -4,14 +4,25 @@ import PocketBase from 'pocketbase'
 import { z } from 'zod'
 
 const PB_URL =
-  process.env.NEXT_PUBLIC_PB_URL ??
   process.env.POCKETBASE_URL ??
+  process.env.NEXT_PUBLIC_PB_URL ??
   'http://127.0.0.1:8090'
-const PB_ADMIN_EMAIL = process.env.PB_ADMIN_EMAIL ?? ''
-const PB_ADMIN_PASSWORD = process.env.PB_ADMIN_PASSWORD ?? ''
+const PB_ADMIN_EMAIL =
+  process.env.PB_ADMIN_EMAIL ??
+  process.env.POCKETBASE_ADMIN_EMAIL ??
+  process.env.PB_SUPERUSER_EMAIL ??
+  process.env.POCKETBASE_SUPERUSER_EMAIL ??
+  ''
+const PB_ADMIN_PASSWORD =
+  process.env.PB_ADMIN_PASSWORD ??
+  process.env.POCKETBASE_ADMIN_PASSWORD ??
+  process.env.PB_SUPERUSER_PASSWORD ??
+  process.env.POCKETBASE_SUPERUSER_PASSWORD ??
+  ''
 const PHONE_PREFIX = '+216'
 const PHONE_COUNTRY_CODE = '216'
 const PHONE_LOCAL_DIGITS_COUNT = 8
+const INVALID_CREDENTIALS_MESSAGE = 'Email/telephone ou mot de passe invalide'
 
 const loginSchema = z
   .object({
@@ -121,14 +132,23 @@ async function createLookupPb(): Promise<PocketBase> {
 async function resolveIdentityCandidatesForLogin(
   pb: PocketBase,
   identifier: string
-): Promise<string[]> {
+): Promise<{
+  identities: string[]
+  lookupRestricted: boolean
+  matchedUser: boolean
+}> {
   const raw = identifier.trim()
   if (raw.includes('@')) {
-    return dedupeIdentities([raw.toLowerCase(), raw])
+    return {
+      identities: dedupeIdentities([raw.toLowerCase(), raw]),
+      lookupRestricted: false,
+      matchedUser: false,
+    }
   }
 
   const variants = buildPhoneLookupVariants(raw)
   const localDigits = extractLocalPhoneDigits(raw)
+  let lookupRestricted = false
 
   let user: Record<string, unknown> | null = null
 
@@ -145,7 +165,11 @@ async function resolveIdentityCandidatesForLogin(
       })
       .catch((error: unknown) => {
         const e = error as { status?: number }
-        if (e?.status === 404 || e?.status === 403) return null
+        if (e?.status === 404) return null
+        if (e?.status === 403) {
+          lookupRestricted = true
+          return null
+        }
         throw error
       })
   }
@@ -165,7 +189,11 @@ async function resolveIdentityCandidatesForLogin(
       })
       .catch((error: unknown) => {
         const e = error as { status?: number }
-        if (e?.status === 404 || e?.status === 403) return null
+        if (e?.status === 404) return null
+        if (e?.status === 403) {
+          lookupRestricted = true
+          return null
+        }
         throw error
       })
   }
@@ -179,7 +207,11 @@ async function resolveIdentityCandidatesForLogin(
     if (email) candidates.push(email.toLowerCase())
   }
 
-  return dedupeIdentities([...candidates, ...variants, raw])
+  return {
+    identities: dedupeIdentities([...candidates, ...variants, raw]),
+    lookupRestricted,
+    matchedUser: Boolean(user),
+  }
 }
 
 async function authenticateWithCandidates(
@@ -206,17 +238,24 @@ async function authenticateWithCandidates(
 }
 
 export async function POST(request: NextRequest) {
+  let attemptedIdentifier = ''
+  let lookupRestricted = false
+  let matchedUser = false
+
   try {
     const body = await request.json()
 
     const parsed = loginSchema.parse(body)
     const identifier = (parsed.identifier ?? parsed.email ?? '').trim()
+    attemptedIdentifier = identifier
     const password = parsed.password
 
     const pb = new PocketBase(PB_URL)
     const lookupPb = await createLookupPb()
-    const identities = await resolveIdentityCandidatesForLogin(lookupPb, identifier)
-    const authData = await authenticateWithCandidates(pb, identities, password)
+    const resolvedIdentities = await resolveIdentityCandidatesForLogin(lookupPb, identifier)
+    lookupRestricted = resolvedIdentities.lookupRestricted
+    matchedUser = resolvedIdentities.matchedUser
+    const authData = await authenticateWithCandidates(pb, resolvedIdentities.identities, password)
 
     if (!authData.record) {
       return NextResponse.json({ message: 'Identifiants invalides' }, { status: 401 })
@@ -288,12 +327,31 @@ export async function POST(request: NextRequest) {
             ? error.message
             : ''
       const normalizedMessage = rawMessage.trim()
+      const isPhoneAttempt =
+        !attemptedIdentifier.includes('@') &&
+        Boolean(extractLocalPhoneDigits(attemptedIdentifier) ?? normalizePhoneIdentifier(attemptedIdentifier))
+      const hasAdminLookupCredentials = Boolean(PB_ADMIN_EMAIL && PB_ADMIN_PASSWORD)
+      const isLookupConfigIssue =
+        isPhoneAttempt &&
+        lookupRestricted &&
+        !matchedUser &&
+        !hasAdminLookupCredentials
+      const lowerMessage = normalizedMessage.toLowerCase()
+      const isPocketBaseAuthFailure = lowerMessage.includes('failed to authenticate')
+
+      if (isLookupConfigIssue) {
+        return NextResponse.json(
+          { message: 'Connexion par telephone indisponible pour le moment. Utilisez votre email.' },
+          { status: 503 }
+        )
+      }
+
       return NextResponse.json(
         {
           message:
-            normalizedMessage && normalizedMessage.length > 0
+            normalizedMessage && normalizedMessage.length > 0 && !isPocketBaseAuthFailure
               ? normalizedMessage
-              : 'Email/telephone ou mot de passe invalide',
+              : INVALID_CREDENTIALS_MESSAGE,
         },
         { status: 401 }
       )
