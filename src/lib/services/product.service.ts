@@ -14,6 +14,14 @@ const SLUG_REGEX = /^[a-z0-9]+(?:-[a-z0-9]+)*$/i
 const SHOP_PAGE_SIZE_DEFAULT = 24
 const SHOP_PAGE_SIZE_MAX = 48
 const SHOP_RELATED_LIMIT = 8
+const HOME_PRODUCTS_LIMIT_DEFAULT = 6
+const HOME_PRODUCTS_FIELDS =
+  'id,slug,sku,name,price,promoPrice,isActive,inView,description,images,currency,categories,category,isNew,isVariant,isParent,variantKey,stock'
+const HOME_VEDETTES_FIELDS = [
+  'id',
+  'product',
+  ...HOME_PRODUCTS_FIELDS.split(',').map((field) => `expand.product.${field}`),
+].join(',')
 
 const shopListQuerySchema = z.object({
   page: z.coerce.number().int().min(1).default(1),
@@ -144,6 +152,23 @@ function normalizeRelationIds(record: PocketBaseRecord, key: string): string[] {
   if (typeof raw === 'string') return [raw]
   if (typeof raw === 'object' && raw && 'id' in raw) return [String((raw as { id: unknown }).id ?? '')]
   return []
+}
+
+function extractExpandedProduct(record: PocketBaseRecord): PocketBaseRecord | null {
+  const expand = record.expand
+  if (!expand || typeof expand !== 'object') return null
+
+  const rawProduct = (expand as { product?: unknown }).product
+  if (Array.isArray(rawProduct)) {
+    const first = rawProduct[0]
+    return first && typeof first === 'object' ? (first as PocketBaseRecord) : null
+  }
+
+  if (rawProduct && typeof rawProduct === 'object') {
+    return rawProduct as PocketBaseRecord
+  }
+
+  return null
 }
 
 function getPbBaseUrl(): string {
@@ -342,6 +367,90 @@ export async function getShopCategoryBySlug(slug: string): Promise<ShopCategory 
 
   const categories = await getCachedCategories()
   return categories.find((category) => category.slug === value) ?? null
+}
+
+export async function getHomeBestSellerProducts(
+  limit = HOME_PRODUCTS_LIMIT_DEFAULT
+): Promise<ProductListItem[]> {
+  const safeLimit = Math.max(1, Math.min(48, Math.floor(limit || HOME_PRODUCTS_LIMIT_DEFAULT)))
+  const pb = createServerPb()
+  const ordered: ProductListItem[] = []
+  const baseFilter = 'isActive=true && (inView=true || inView=null) && stock > 0'
+
+  try {
+    const vedettesRes = await pb.collection('vedettes').getList(1, safeLimit, {
+      sort: 'created',
+      expand: 'product',
+      fields: HOME_VEDETTES_FIELDS,
+      requestKey: null,
+    })
+
+    const selected = new Map<string, ProductListItem>()
+    for (const item of vedettesRes.items as unknown as PocketBaseRecord[]) {
+      const expanded = extractExpandedProduct(item)
+      if (!expanded) continue
+
+      const mapped = mapProduct(expanded)
+      if (!mapped.id || selected.has(mapped.id)) continue
+
+      selected.set(mapped.id, mapped)
+      if (selected.size >= safeLimit) break
+    }
+
+    if (selected.size > 0) {
+      return Array.from(selected.values())
+    }
+  } catch {
+    // Fallback to computed best sellers.
+  }
+
+  try {
+    const bestSellerRes = await pb.collection('products').getList(1, safeLimit, {
+      sort: '-soldCount,-created',
+      filter: baseFilter,
+      fields: HOME_PRODUCTS_FIELDS,
+      requestKey: null,
+    })
+
+    ordered.push(...(bestSellerRes.items as unknown as PocketBaseRecord[]).map((record) => mapProduct(record)))
+  } catch {
+    // Fallback when soldCount is missing or the best-seller query fails.
+    try {
+      const latestRes = await pb.collection('products').getList(1, safeLimit, {
+        sort: '-created',
+        filter: baseFilter,
+        fields: HOME_PRODUCTS_FIELDS,
+        requestKey: null,
+      })
+      ordered.push(...(latestRes.items as unknown as PocketBaseRecord[]).map((record) => mapProduct(record)))
+    } catch {
+      // Keep rendering home even if PB is unavailable.
+    }
+  }
+
+  if (ordered.length < safeLimit) {
+    try {
+      const existingIds = new Set(ordered.map((item) => item.id))
+      const fillRes = await pb.collection('products').getList(1, 48, {
+        sort: '-created',
+        filter: baseFilter,
+        fields: HOME_PRODUCTS_FIELDS,
+        requestKey: null,
+      })
+
+      for (const raw of fillRes.items as unknown as PocketBaseRecord[]) {
+        const mapped = mapProduct(raw)
+        if (existingIds.has(mapped.id)) continue
+        ordered.push(mapped)
+        existingIds.add(mapped.id)
+        if (ordered.length === safeLimit) break
+      }
+    } catch {
+      // Ignore and continue to placeholders if still needed.
+    }
+  }
+
+  return ordered.slice(0, safeLimit)
 }
 
 export async function getShopList(input: ShopListInput): Promise<ShopListResult> {

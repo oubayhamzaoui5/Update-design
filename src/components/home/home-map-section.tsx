@@ -1,6 +1,6 @@
 export default function HomeMapSection() {
   return (
-    <section className="h-[210px] w-full bg-white md:h-[420px] mt-40">
+    <section className="h-[210px] w-full bg-white md:h-[420px]">
       <iframe
         allowFullScreen
         className="h-full w-full [filter:contrast(1.2)_opacity(0.85)]"

@@ -1,6 +1,6 @@
 export default function HomeHeritageSection() {
   return (
-    <section id="about" className="bg-white py-12 lg:py-18">
+    <section id="about" className="bg-white py-12 md:py-16 lg:py-18">
       <div className="mx-auto flex max-w-7xl flex-col items-center gap-6 lg:gap-6 lg:flex-row">
         <div className="flex w-full flex-1 justify-center lg:justify-start  p-2 lg:p-0">
           <img

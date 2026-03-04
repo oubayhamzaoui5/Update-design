@@ -2,181 +2,47 @@
 
 import Footer from '@/components/footer'
 import { Navbar } from '@/components/navbar'
-import HeroContent from '@/components/hero-content'
 import HomeBestSellersSection from '@/components/home/home-best-sellers-section'
 import HomeCategoriesSection from '@/components/home/home-categories-section'
-import HomeContactSection from '@/components/home/home-contact-section'
 import HomeFaqSection from '@/components/home/home-faq-section'
 import HomeHeritageSection from '@/components/home/home-heritage-section'
 import HomeLatestBlogsSection from '@/components/home/home-latest-blogs-section'
 import HomeMarblePanelSection from '@/components/home/home-marble-panel-section'
 import HomeMapSection from '@/components/home/home-map-section'
+import HomeWhyChooseSection from '@/components/home/home-why-choose-section'
 import HomeWoodProfileSection from '@/components/home/home-wood-profile-section'
-import { getPb } from '@/lib/pb'
 import { getAllPublishedPosts } from '@/lib/services/posts.service'
-import type { ProductListItem } from '@/lib/services/product.service'
+import { getHomeBestSellerProducts } from '@/lib/services/product.service'
+import HomeTestHero from './home-test/home-test-hero'
+import categoryC1Image from '../../public/c1.webp'
+import categoryC2Image from '../../public/c2.webp'
+import categoryC3Image from '../../public/c3.webp'
+import categoryC4Image from '../../public/c4.webp'
 
 const roomCategories = [
   {
     name: 'PROFILE MURAL D\u00c9CORATIF',
-    image: '/c2-v2.webp',
+    image: categoryC2Image,
     href: '/boutique/categorie/effet-bois-d-interieur',
-    spanTwoColumns: true,
   },
   {
     name: 'PANNEAU MURAL EN PVC',
-    image: '/c1.webp',
+    image: categoryC1Image,
     href: '/boutique/categorie/effet-marbre',
-    spanTwoColumns: true,
   },
   {
-    name: 'Lighting',
-    image: '/lighting.webp',
-    href: '/boutique/categorie/lighting',
+    name: "PROFILE MURAL EFFET BOIS D'EXTERIEUR",
+    image: categoryC3Image,
+    href: '/boutique/categorie/profile-mural-effet-bois-d-exterieur',
   },
   {
-    name: 'Decoration',
-    image: '/decoration.webp',
-    href: '/boutique/categorie/decoration',
-  },
-  {
-    name: 'Suspension',
-    image: '/suspension.webp',
-    href: '/boutique/categorie/suspension',
-  },
-  {
-    name: 'Abat-jour',
-    image: '/abat-jour.webp',
-    href: '/boutique/categorie/abat-jour',
+    name: 'ACCESSOIRES',
+    image: categoryC4Image,
+    href: '/boutique/categorie/accessoires',
   },
 ]
 
 const HOME_PRODUCTS_LIMIT = 6
-
-function getPbBaseUrl(): string {
-  return process.env.NEXT_PUBLIC_PB_URL ?? process.env.POCKETBASE_URL ?? 'http://127.0.0.1:8090'
-}
-
-function mapRecordToHomeProduct(record: any): ProductListItem {
-  const images = Array.isArray(record.images) ? record.images : []
-  const imageUrls = images.map(
-    (filename: string) =>
-      `${getPbBaseUrl()}/api/files/products/${record.id}/${encodeURIComponent(filename)}`
-  )
-
-  return {
-    id: String(record.id ?? ''),
-    slug: String(record.slug ?? ''),
-    sku: String(record.sku ?? ''),
-    name: String(record.name ?? ''),
-    price: Number(record.price ?? 0),
-    promoPrice: record.promoPrice == null ? null : Number(record.promoPrice),
-    isActive: Boolean(record.isActive),
-    inView: record.inView === undefined || record.inView === null ? true : Boolean(record.inView),
-    description: String(record.description ?? ''),
-    images,
-    imageUrls,
-    currency: String(record.currency ?? 'DT'),
-    categories: Array.isArray(record.categories)
-      ? record.categories.map(String)
-      : record.category
-        ? [String(record.category)]
-        : [],
-    isNew: Boolean(record.isNew),
-    isVariant: Boolean(record.isVariant),
-    isParent: Boolean(record.isParent),
-    variantKey:
-      record.variantKey && typeof record.variantKey === 'object'
-        ? (record.variantKey as Record<string, string>)
-        : {},
-    stock: Number(record.stock ?? 0),
-    inStock: Number(record.stock ?? 0) > 0,
-  }
-}
-
-async function getHomeBestSellerProducts(): Promise<ProductListItem[]> {
-  const ordered: ProductListItem[] = []
-  const pb = getPb()
-  const baseFilter = 'isActive=true && (inView=true || inView=null) && stock > 0'
-
-  try {
-    const vedettesRes = await pb.collection('vedettes').getList(1, HOME_PRODUCTS_LIMIT, {
-      sort: 'created',
-      expand: 'product',
-      fields:
-        'id,product,expand.product.id,expand.product.slug,expand.product.sku,expand.product.name,expand.product.price,expand.product.promoPrice,expand.product.isActive,expand.product.inView,expand.product.description,expand.product.images,expand.product.currency,expand.product.categories,expand.product.category,expand.product.isNew,expand.product.isVariant,expand.product.stock',
-      requestKey: null,
-    })
-
-    const selected = new Map<string, ProductListItem>()
-    for (const item of vedettesRes.items) {
-      const expanded = Array.isArray((item as any)?.expand?.product)
-        ? (item as any).expand.product[0]
-        : (item as any)?.expand?.product
-      if (!expanded) continue
-
-      const mapped = mapRecordToHomeProduct(expanded)
-      if (!mapped.id) continue
-      if (selected.has(mapped.id)) continue
-      selected.set(mapped.id, mapped)
-      if (selected.size >= HOME_PRODUCTS_LIMIT) break
-    }
-
-    if (selected.size > 0) {
-      return Array.from(selected.values())
-    }
-  } catch {
-    // fallback to computed best sellers
-  }
-
-  try {
-    const bestSellerRes = await pb.collection('products').getList(1, HOME_PRODUCTS_LIMIT, {
-      sort: '-soldCount,-created',
-      filter: baseFilter,
-      fields: 'id,slug,sku,name,price,promoPrice,isActive,inView,description,images,currency,categories,category,isNew,isVariant,stock',
-      requestKey: null,
-    })
-
-    ordered.push(...bestSellerRes.items.map(mapRecordToHomeProduct))
-  } catch {
-    // Fallback when soldCount is missing or the best-seller query fails.
-    try {
-      const latestRes = await pb.collection('products').getList(1, HOME_PRODUCTS_LIMIT, {
-        sort: '-created',
-        filter: baseFilter,
-        fields: 'id,slug,sku,name,price,promoPrice,isActive,inView,description,images,currency,categories,category,isNew,isVariant,stock',
-        requestKey: null,
-      })
-      ordered.push(...latestRes.items.map(mapRecordToHomeProduct))
-    } catch {
-      // keep rendering home even if PB is unavailable
-    }
-  }
-
-  if (ordered.length < HOME_PRODUCTS_LIMIT) {
-    try {
-      const existingIds = new Set(ordered.map((item) => item.id))
-      const fillRes = await pb.collection('products').getList(1, 48, {
-        sort: '-created',
-        filter: baseFilter,
-        fields: 'id,slug,sku,name,price,promoPrice,isActive,inView,description,images,currency,categories,category,isNew,isVariant,stock',
-        requestKey: null,
-      })
-
-      for (const raw of fillRes.items) {
-        const mapped = mapRecordToHomeProduct(raw)
-        if (existingIds.has(mapped.id)) continue
-        ordered.push(mapped)
-        existingIds.add(mapped.id)
-        if (ordered.length === HOME_PRODUCTS_LIMIT) break
-      }
-    } catch {
-      // ignore and continue to placeholders if still needed
-    }
-  }
-
-  return ordered.slice(0, HOME_PRODUCTS_LIMIT)
-}
 
 export const metadata: Metadata = {
   title: 'Update Deisgn',
@@ -185,7 +51,7 @@ export const metadata: Metadata = {
 
 export default async function HomePage() {
   const [bestSellers, posts] = await Promise.all([
-    getHomeBestSellerProducts(),
+    getHomeBestSellerProducts(HOME_PRODUCTS_LIMIT),
     getAllPublishedPosts(),
   ])
   const latestPosts = posts.slice(0, 6)
@@ -195,17 +61,16 @@ export default async function HomePage() {
       <Navbar reserveSpace />
 
       <main>
-        <HeroContent />
+        <HomeTestHero />
         <HomeCategoriesSection categories={roomCategories} />
         <HomeHeritageSection />
         <HomeMarblePanelSection />
         <HomeWoodProfileSection />
-
         <HomeBestSellersSection products={bestSellers} />
-                <HomeContactSection />
-
-        <HomeFaqSection />
+        <HomeWhyChooseSection />
         <HomeLatestBlogsSection posts={latestPosts} />
+                <HomeFaqSection />
+
         <HomeMapSection />
       </main>
 

@@ -29,7 +29,7 @@ export default function HomeLatestBlogsSection({ posts }: HomeLatestBlogsSection
   }
 
   return (
-    <section className="bg-white px-2 py-10 md:py-14 xl:py-18">
+    <section className="bg-white px-2 py-12 md:py-16 lg:py-18">
       <div className="mx-auto max-w-7xl">
         <div className="mb-6 lg:mb-10 flex items-end justify-between gap-6">
           <div className="w-full">
