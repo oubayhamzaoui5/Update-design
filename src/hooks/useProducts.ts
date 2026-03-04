@@ -196,7 +196,7 @@ export function useProducts({
         promoPrice: parent.promoPrice != null ? String(parent.promoPrice) : '',
         description: parent.description ?? '',
         isActive: true,
-        inView: false,
+        inView: true,
         currency: 'DT',
         slug: '',
         existing: [],
@@ -425,10 +425,7 @@ export function useProducts({
     }
 
     const slugInput = form.slug.trim()
-    const variantAutoSlug =
-      editState.mode === 'create' && Boolean(parent) && isVariant
-        ? `${name}-${sku}`
-        : ''
+    const variantAutoSlug = isVariant ? `${name}-${sku}` : ''
     const effectiveSlug = slugInput || variantAutoSlug
     if (effectiveSlug) fd.set('slug', effectiveSlug)
     fd.set('isVariant', String(isVariant))
