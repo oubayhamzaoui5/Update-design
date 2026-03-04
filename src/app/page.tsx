@@ -62,11 +62,12 @@ export default async function HomePage() {
 
       <main>
         <HomeTestHero />
+                <HomeBestSellersSection products={bestSellers} />
+
         <HomeCategoriesSection categories={roomCategories} />
         <HomeHeritageSection />
         <HomeMarblePanelSection />
         <HomeWoodProfileSection />
-        <HomeBestSellersSection products={bestSellers} />
         <HomeWhyChooseSection />
         <HomeLatestBlogsSection posts={latestPosts} />
                 <HomeFaqSection />

@@ -50,7 +50,6 @@ export default function Hero() {
   <span className="mb-0 block text-[10px] font-bold uppercase tracking-[0.22em] lg:mb-2 lg:text-base lg:tracking-[0.3em]">
     Collection 2026
   </span>
-
   <h1 className="mb-3 text-2xl font-extrabold leading-[1.1] lg:mb-2 lg:text-7xl">
     Élégance
     <span>

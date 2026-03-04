@@ -117,10 +117,16 @@ export function Navbar(props: NavbarProps) {
 
   // search dropdown state
   const [searchOpen, setSearchOpen] = useState(false)
+  const [isSearchExpanded, setIsSearchExpanded] = useState(false)
   const [productResults, setProductResults] = useState<Product[]>([])
   const [categoryResults, setCategoryResults] = useState<Category[]>([])
   const [isSearching, setIsSearching] = useState(false)
-  const searchWrapRef = useRef<HTMLDivElement | null>(null)
+  const desktopSearchWrapRef = useRef<HTMLDivElement | null>(null)
+  const mobileSearchWrapRef = useRef<HTMLDivElement | null>(null)
+  const desktopSearchResultsRef = useRef<HTMLDivElement | null>(null)
+  const mobileSearchResultsRef = useRef<HTMLDivElement | null>(null)
+  const desktopSearchInputRef = useRef<HTMLInputElement | null>(null)
+  const mobileSearchInputRef = useRef<HTMLInputElement | null>(null)
   const debounceRef = useRef<number | null>(null)
 
   // profile dropdown state (desktop)
@@ -270,7 +276,14 @@ export function Navbar(props: NavbarProps) {
         return
       }
 
-      if (isMenuOpen || searchOpen || isProfileOpen || isCartPanelOpen || isAuthModalOpen) {
+      if (
+        isMenuOpen ||
+        searchOpen ||
+        isSearchExpanded ||
+        isProfileOpen ||
+        isCartPanelOpen ||
+        isAuthModalOpen
+      ) {
         setIsMobileNavVisible(true)
         lastScrollYRef.current = currentScrollY
         return
@@ -298,7 +311,14 @@ export function Navbar(props: NavbarProps) {
       window.removeEventListener("scroll", updateMobileNavVisibility)
       window.removeEventListener("resize", updateMobileNavVisibility)
     }
-  }, [isMenuOpen, searchOpen, isProfileOpen, isCartPanelOpen, isAuthModalOpen])
+  }, [
+    isMenuOpen,
+    searchOpen,
+    isSearchExpanded,
+    isProfileOpen,
+    isCartPanelOpen,
+    isAuthModalOpen,
+  ])
 
   const closeSignupPromo = () => {
     if (typeof window !== "undefined") {
@@ -596,9 +616,14 @@ export function Navbar(props: NavbarProps) {
   // close search on outside click
   useEffect(() => {
     function onDocClick(e: MouseEvent) {
-      if (!searchWrapRef.current) return
-      if (!searchWrapRef.current.contains(e.target as Node)) {
+      const target = e.target as Node
+      const inDesktopSearch = desktopSearchWrapRef.current?.contains(target)
+      const inMobileSearch = mobileSearchWrapRef.current?.contains(target)
+      const inDesktopResults = desktopSearchResultsRef.current?.contains(target)
+      const inMobileResults = mobileSearchResultsRef.current?.contains(target)
+      if (!inDesktopSearch && !inMobileSearch && !inDesktopResults && !inMobileResults) {
         setSearchOpen(false)
+        setIsSearchExpanded(false)
       }
     }
     document.addEventListener("mousedown", onDocClick)
@@ -645,6 +670,34 @@ export function Navbar(props: NavbarProps) {
     const next = new Set(expandedCategories)
     next.has(id) ? next.delete(id) : next.add(id)
     setExpandedCategories(next)
+  }
+
+  const closeSearchPanel = () => {
+    setSearchOpen(false)
+    setIsSearchExpanded(false)
+  }
+
+  const openSearchPanel = () => {
+    setIsSearchExpanded(true)
+    if (searchValue.trim()) {
+      setSearchOpen(true)
+    }
+
+    requestAnimationFrame(() => {
+      const input =
+        window.innerWidth >= 768
+          ? desktopSearchInputRef.current
+          : mobileSearchInputRef.current
+      input?.focus()
+    })
+  }
+
+  const toggleSearchPanel = () => {
+    if (isSearchExpanded) {
+      closeSearchPanel()
+      return
+    }
+    openSearchPanel()
   }
 
   // debounced searching (products from internal API + categories local)
@@ -752,7 +805,13 @@ export function Navbar(props: NavbarProps) {
     </div>
   )
 
-  const LogoSwap = ({ size = 60 }: { size?: number }) => (
+  const LogoSwap = ({
+    size = 60,
+    scale = 1,
+  }: {
+    size?: number
+    scale?: number
+  }) => (
     <div className="relative" style={{ width: size, height: size }}>
       <Image
         src="/logow.webp"
@@ -760,6 +819,7 @@ export function Navbar(props: NavbarProps) {
         fill
         sizes="(max-width: 768px) 36px, 60px"
         className="object-contain"
+        style={{ transform: `scale(${scale})` }}
         priority
       />
     </div>
@@ -777,8 +837,12 @@ export function Navbar(props: NavbarProps) {
   const shouldShowSignupPromo = isAuthResolved && !currentUser && showSignupPromo
   const navSpacerClass = reserveSpace
     ? shouldShowSignupPromo
-      ? "h-[100px] md:h-[112px]"
-      : "h-[60px] md:h-[72px]"
+      ? isSearchExpanded
+        ? "h-[156px] md:h-[172px]"
+        : "h-[100px] md:h-[112px]"
+      : isSearchExpanded
+        ? "h-[116px] md:h-[132px]"
+        : "h-[60px] md:h-[72px]"
     : null
 
   useEffect(() => {
@@ -786,13 +850,25 @@ export function Navbar(props: NavbarProps) {
     const root = document.documentElement
     root.style.setProperty(
       "--navbar-offset-mobile",
-      shouldShowSignupPromo ? "100px" : "60px"
+      shouldShowSignupPromo
+        ? isSearchExpanded
+          ? "156px"
+          : "100px"
+        : isSearchExpanded
+          ? "116px"
+          : "60px"
     )
     root.style.setProperty(
       "--navbar-offset-desktop",
-      shouldShowSignupPromo ? "112px" : "72px"
+      shouldShowSignupPromo
+        ? isSearchExpanded
+          ? "172px"
+          : "112px"
+        : isSearchExpanded
+          ? "132px"
+          : "72px"
     )
-  }, [shouldShowSignupPromo])
+  }, [shouldShowSignupPromo, isSearchExpanded])
 
   return (
     <NavbarCart currentUser={currentUser} onOpenChange={setIsCartPanelOpen}>
@@ -837,8 +913,8 @@ export function Navbar(props: NavbarProps) {
         }`}
       >
         {/* Desktop */}
-        <div className="hidden md:flex items-center justify-between px-0 py-0.5 max-w-7xl mx-auto">
-          <div className="flex items-center gap-3 flex-shrink-0">
+        <div className="hidden md:grid grid-cols-[1fr_auto_1fr] items-center px-0 py-0.5 max-w-7xl mx-auto">
+          <div className="flex items-center gap-3 justify-self-start">
             <button
               type="button"
               onClick={() => setIsDesktopMenuOpen((prev) => !prev)}
@@ -865,132 +941,25 @@ export function Navbar(props: NavbarProps) {
               </span>
             </button>
 
-            <Link href="/" className="flex items-center gap-3">
-              <LogoSwap size={70} />
-            </Link>
+            <button
+              type="button"
+              onClick={toggleSearchPanel}
+              className={`inline-flex h-10 w-10 items-center justify-center rounded-md transition-colors hover:bg-black/5 ${
+                isSearchExpanded ? "bg-black/5" : ""
+              }`}
+              aria-label="Afficher la recherche"
+              aria-expanded={isSearchExpanded}
+              aria-controls="desktop-navbar-search"
+            >
+              <Search size={20} />
+            </button>
           </div>
 
-          {/* Search desktop */}
-          <div className="flex-1 px-4">
-            <div className="relative w-full" ref={searchWrapRef}>
-              <div
-                className="flex w-full items-center gap-2 rounded-full border border-gray-300 bg-gray-100 px-5 py-2 transition-colors"
-              >
-                <Search size={18} className="opacity-70" />
-                <input
-                  type="text"
-                  placeholder="Rechercher Categorie , Produit ..."
-                  value={searchValue}
-                  onChange={(e) => setSearchValue(e.target.value)}
-                  onFocus={() => searchValue.trim() && setSearchOpen(true)}
-                  className="flex-1 bg-transparent text-sm text-black outline-none placeholder-gray-600 placeholder-opacity-70"
-                />
-              </div>
-
-              {searchOpen && (
-                <div
-                  className="absolute left-0 right-0 mt-2 overflow-hidden rounded-xl border border-black/10 bg-white text-black transition-colors"
-                >
-                  <div className="max-h-96 overflow-y-auto px-2 py-2">
-                    {categoryResults.length > 0 && (
-                      <div className="mb-2">
-                        <div className="px-2 py-1 text-xs uppercase tracking-wider opacity-60">
-                          Catégories
-                        </div>
-                        <div className="space-y-1">
-                          {categoryResults.map((c) => (
-                            <Link
-                              key={c.id}
-                              href={`/boutique/categorie/${c.slug}`}
-                              onClick={() => setSearchOpen(false)}
-                              className="flex items-center gap-3 rounded-lg px-2 py-2 transition hover:opacity-80 hover:bg-foreground/5"
-                            >
-                              <div
-                                className="flex h-9 w-9 items-center justify-center rounded-md bg-black/5"
-                              >
-                                <LayoutGrid className="h-4 w-4 opacity-80" />
-                              </div>
-                              <div className="min-w-0">
-                                <div className="text-sm font-medium truncate">
-                                  {c.name}
-                                </div>
-                                <div className="text-xs opacity-60">
-                                  Catégorie
-                                </div>
-                              </div>
-                            </Link>
-                          ))}
-                        </div>
-                      </div>
-                    )}
-
-                    {productResults.length > 0 && (
-                      <div className="mb-1">
-                        <div className="px-2 py-1 text-xs uppercase tracking-wider opacity-60">
-                          Produits
-                        </div>
-                        <div className="space-y-1">
-                          {productResults.map((p) => {
-                            const firstImg =
-                              Array.isArray(p.imageUrls) && p.imageUrls.length > 0
-                                ? p.imageUrls[0]!
-                                : "/placeholder-square.webp"
-
-                            return (
-                              <Link
-                                key={p.id}
-                                href={`/shop/${p.slug}`}
-                                onClick={() => setSearchOpen(false)}
-                                className="flex items-start gap-3 rounded-lg px-2 py-2 transition hover:opacity-80 hover:bg-foreground/5"
-                              >
-                                <div className="relative h-12 w-12 overflow-hidden rounded-md flex-shrink-0">
-                                  <Image
-                                    src={firstImg}
-                                    alt={p.name}
-                                    fill
-                                    sizes="48px"
-                                    className="object-cover"
-                                  />
-                                </div>
-
-                                <div className="min-w-0">
-                                  <div className="text-sm font-medium truncate">
-                                    {p.name}
-                                  </div>
-                                    <div className="text-xs opacity-70 truncate">
-                                    Reference: {p.sku}
-                                    </div>
-                                  {p.description && (
-                                    <div className="text-xs opacity-70 line-clamp-2">
-                                      {p.description}
-                                    </div>
-                                  )}
-                                </div>
-                              </Link>
-                            )
-                          })}
-                        </div>
-                      </div>
-                    )}
-
-                    {hasNoResults && (
-                      <div className="flex items-center gap-3 rounded-lg bg-foreground/5 px-3 py-4">
-                        <div className="flex h-9 w-9 items-center justify-center rounded-md bg-foreground/5">
-                          <PackageOpen className="h-5 w-5 opacity-70" />
-                        </div>
-                        <div className="text-sm opacity-70">
-                          Aucun résultat trouvé.
-                        </div>
-                      </div>
-                    )}
-                  </div>
-                </div>
-              )}
-            </div>
-          </div>
-
+          <Link href="/" className="flex items-center gap-3 justify-self-center">
+            <LogoSwap size={70} scale={1.2} />
+          </Link>
           {/* Icons desktop */}
-          <div className="flex items-center gap-4 flex-shrink-0">
+          <div className="flex items-center gap-4 justify-self-end">
             {/* Wishlist button visible only for logged-in users */}
             {currentUser && (
               <button
@@ -1111,6 +1080,34 @@ export function Navbar(props: NavbarProps) {
           </div>
         </div>
         <div
+          id="desktop-navbar-search"
+          className={`hidden md:block overflow-hidden transition-all duration-300 ease-out ${
+            isSearchExpanded ? "max-h-[96px] opacity-100 pb-2" : "max-h-0 opacity-0"
+          }`}
+          aria-hidden={!isSearchExpanded}
+        >
+          <div className="mx-auto max-w-7xl px-0">
+            <div className="relative w-full" ref={desktopSearchWrapRef}>
+              <div className="flex w-full items-center gap-2 rounded-full border border-gray-300 bg-gray-100 px-5 py-2 transition-colors">
+                <Search size={18} className="opacity-70" />
+                <input
+                  ref={desktopSearchInputRef}
+                  type="text"
+                  placeholder="Rechercher Categorie , Produit ..."
+                  value={searchValue}
+                  onChange={(e) => setSearchValue(e.target.value)}
+                  onFocus={() => {
+                    setIsSearchExpanded(true)
+                    if (searchValue.trim()) setSearchOpen(true)
+                  }}
+                  className="flex-1 bg-transparent text-sm text-black outline-none placeholder-gray-600 placeholder-opacity-70"
+                />
+              </div>
+
+            </div>
+          </div>
+        </div>
+        <div
           className={`hidden md:block overflow-hidden bg-white transition-all duration-300 ease-out ${
             isDesktopMenuOpen ? "max-h-20 opacity-100" : "max-h-0 opacity-0"
           }`}
@@ -1150,172 +1147,101 @@ export function Navbar(props: NavbarProps) {
           </div>
         </div>
         {/* Mobile */}
-        <div className="md:hidden relative" ref={searchWrapRef}>
-          <div className="flex items-center gap-2 px-2 py-2.5">
-            <Link href="/" className="flex items-center flex-shrink-0" aria-label="Accueil">
-              <LogoSwap size={36} />
-            </Link>
-                   <button
+        <div className="md:hidden relative" ref={mobileSearchWrapRef}>
+          <div className="relative flex items-center justify-between px-2 py-2.5">
+            <button
               type="button"
-              className="p-1 hover:opacity-70 transition-opacity"
-              aria-label="Compte"
-              onClick={() => {
-                if (!currentUser) {
-                  openAuthModal(pathname)
-                  return
-                }
-                if (currentUser?.role === "admin") {
-                  router.push("/admin")
-                  return
-                }
-                setIsProfileOpen((v) => !v)
-              }}
+              onClick={toggleSearchPanel}
+              className={`inline-flex h-9 w-9 items-center justify-center rounded-md transition-colors hover:bg-black/5 ${
+                isSearchExpanded ? "bg-black/5" : ""
+              }`}
+              aria-label="Afficher la recherche"
+              aria-expanded={isSearchExpanded}
             >
-              <User size={20} />
+              <Search size={18} />
             </button>
 
+            <Link
+              href="/"
+              className="absolute left-1/2 flex -translate-x-1/2 items-center"
+              aria-label="Accueil"
+            >
+              <LogoSwap size={36} scale={1.25} />
+            </Link>
 
-            <div className="flex-1">
+            <div className="flex items-center gap-1">
+              <button
+                type="button"
+                className="p-1 hover:opacity-70 transition-opacity"
+                aria-label="Compte"
+                onClick={() => {
+                  if (!currentUser) {
+                    openAuthModal(pathname)
+                    return
+                  }
+                  if (currentUser?.role === "admin") {
+                    router.push("/admin")
+                    return
+                  }
+                  setIsProfileOpen((v) => !v)
+                }}
+              >
+                <User size={20} />
+              </button>
+
+              <button
+                type="button"
+                onClick={openCart}
+                aria-label="Panier"
+                className="relative p-1 hover:opacity-70 transition-opacity"
+              >
+                <ShoppingCart size={20} />
+                {cartCount > 0 && (
+                  <span className="absolute -top-1 -right-2 inline-flex items-center justify-center h-5 min-w-[1.25rem] rounded-full bg-accent text-white text-[10px] font-semibold px-1">
+                    {cartCount > 99 ? "99+" : cartCount}
+                  </span>
+                )}
+              </button>
+
+              <button
+                onClick={() => {
+                  setIsMenuOpen(!isMenuOpen)
+                  closeSearchPanel()
+                }}
+                className={`p-2 transition-all duration-300 hover:opacity-70 ${isMenuOpen ? "rotate-90" : "rotate-0"}`}
+                aria-label="Toggle menu"
+              >
+                {isMenuOpen ? <X size={22} /> : <Menu size={22} />}
+              </button>
+            </div>
+          </div>
+
+          <div
+            className={`overflow-hidden transition-all duration-300 ease-out ${
+              isSearchExpanded ? "max-h-20 opacity-100 pb-2" : "max-h-0 opacity-0"
+            }`}
+            aria-hidden={!isSearchExpanded}
+          >
+            <div className="px-2">
               <div className="flex w-full items-center gap-2 rounded-lg border border-gray-300 bg-gray-100 px-3 py-1.5 transition-colors">
                 <Search size={16} className="opacity-70" />
                 <input
+                  ref={mobileSearchInputRef}
                   type="text"
                   placeholder="Rechercher..."
                   value={searchValue}
                   onChange={(e) => setSearchValue(e.target.value)}
-                  onFocus={() => searchValue.trim() && setSearchOpen(true)}
+                  onFocus={() => {
+                    setIsSearchExpanded(true)
+                    if (searchValue.trim()) setSearchOpen(true)
+                  }}
                   className="w-full bg-transparent text-xs text-black outline-none placeholder-gray-600 placeholder-opacity-70"
                 />
               </div>
             </div>
-
-     
-            <button
-              type="button"
-              onClick={openCart}
-              aria-label="Panier"
-              className="relative p-1 hover:opacity-70 transition-opacity"
-            >
-              <ShoppingCart size={20} />
-              {cartCount > 0 && (
-                <span className="absolute -top-1 -right-2 inline-flex items-center justify-center h-5 min-w-[1.25rem] rounded-full bg-accent text-white text-[10px] font-semibold px-1">
-                  {cartCount > 99 ? "99+" : cartCount}
-                </span>
-              )}
-            </button>
-
-            <button
-              onClick={() => setIsMenuOpen(!isMenuOpen)}
-              className={`p-2 transition-all duration-300 hover:opacity-70 ${isMenuOpen ? "rotate-90" : "rotate-0"}`}
-              aria-label="Toggle menu"
-            >
-              {isMenuOpen ? <X size={22} /> : <Menu size={22} />}
-            </button>
           </div>
 
-          {searchOpen && (
-            <div className="absolute left-0 right-0 top-full z-50 overflow-hidden border-x border-b border-black/10 bg-white text-black transition-colors">
-              <div className="max-h-80 overflow-y-auto px-2 py-2">
-                {categoryResults.length > 0 && (
-                  <div className="mb-2">
-                    <div className="px-2 py-1 text-xs uppercase tracking-wider opacity-60">
-                      Categories
-                    </div>
-                    <div className="space-y-1">
-                      {categoryResults.map((c) => (
-                        <Link
-                          key={c.id}
-                          href={`/boutique/categorie/${c.slug}`}
-                          onClick={() => {
-                            setSearchOpen(false)
-                            setIsMenuOpen(false)
-                          }}
-                          className="flex items-center gap-3 rounded-lg px-2 py-2 transition hover:opacity-80 hover:bg-black/5"
-                        >
-                          <div className="flex h-9 w-9 items-center justify-center rounded-md bg-foreground/5">
-                            <LayoutGrid className="h-4 w-4 opacity-80" />
-                          </div>
-                          <div className="min-w-0">
-                            <div className="text-sm font-medium truncate">
-                              {c.name}
-                            </div>
-                            <div className="text-xs opacity-60">
-                              Categorie
-                            </div>
-                          </div>
-                        </Link>
-                      ))}
-                    </div>
-                  </div>
-                )}
-
-                {productResults.length > 0 && (
-                  <div className="mb-1">
-                    <div className="px-2 py-1 text-xs uppercase tracking-wider opacity-60">
-                      Produits
-                    </div>
-                    <div className="space-y-1">
-                      {productResults.map((p) => {
-                        const firstImg =
-                          Array.isArray(p.imageUrls) && p.imageUrls.length > 0
-                            ? p.imageUrls[0]!
-                            : "/placeholder-square.webp"
-
-                        return (
-                          <Link
-                            key={p.id}
-                            href={`/shop/${p.slug}`}
-                            onClick={() => {
-                              setSearchOpen(false)
-                              setIsMenuOpen(false)
-                            }}
-                            className="flex items-start gap-3 rounded-lg px-2 py-2 transition hover:opacity-80 hover:bg-foreground/5"
-                          >
-                            <div className="relative h-12 w-12 overflow-hidden rounded-md flex-shrink-0">
-                              <Image
-                                src={firstImg}
-                                alt={p.name}
-                                fill
-                                sizes="48px"
-                                className="object-cover"
-                              />
-                            </div>
-
-                            <div className="min-w-0">
-                              <div className="text-sm font-medium truncate">
-                                {p.name}
-                              </div>
-                              <div className="text-xs opacity-70 truncate">
-                                Reference: {p.sku}
-                              </div>
-                              {p.description && (
-                                <div className="text-xs opacity-70 line-clamp-2">
-                                  {p.description}
-                                </div>
-                              )}
-                            </div>
-                          </Link>
-                        )
-                      })}
-                    </div>
-                  </div>
-                )}
-
-                {hasNoResults && (
-                  <div className="flex items-center gap-3 rounded-lg bg-foreground/5 px-3 py-4">
-                    <div className="flex h-9 w-9 items-center justify-center rounded-md bg-foreground/5">
-                      <PackageOpen className="h-5 w-5 opacity-70" />
-                    </div>
-                    <div className="text-sm opacity-70">
-                      Aucun resultat trouve.
-                    </div>
-                  </div>
-                )}
-              </div>
-            </div>
-          )}
         </div>
-
         {/* Mobile panel */}
         <div
           className={`border-t border-black/10 bg-white text-black transition-all duration-300 ease-out md:hidden ${
@@ -1392,6 +1318,222 @@ export function Navbar(props: NavbarProps) {
           </div>
         </div>
       </nav>
+
+      {isSearchExpanded && searchOpen && (
+        <>
+          <div
+            className="pointer-events-none fixed left-0 right-0 z-[45] hidden md:block"
+            style={{ top: "var(--navbar-offset-desktop)" }}
+          >
+            <div className="mx-auto max-w-7xl px-0">
+              <div
+                ref={desktopSearchResultsRef}
+                className="pointer-events-auto mt-2 overflow-hidden rounded-xl border border-black/10 bg-white text-black transition-colors"
+              >
+                <div className="max-h-96 overflow-y-auto px-2 py-2">
+                  {categoryResults.length > 0 && (
+                    <div className="mb-2">
+                      <div className="px-2 py-1 text-xs uppercase tracking-wider opacity-60">
+                        Categories
+                      </div>
+                      <div className="space-y-1">
+                        {categoryResults.map((c) => (
+                          <Link
+                            key={c.id}
+                            href={`/boutique/categorie/${c.slug}`}
+                            onClick={closeSearchPanel}
+                            className="flex items-center gap-3 rounded-lg px-2 py-2 transition hover:opacity-80 hover:bg-foreground/5"
+                          >
+                            <div className="flex h-9 w-9 items-center justify-center rounded-md bg-black/5">
+                              <LayoutGrid className="h-4 w-4 opacity-80" />
+                            </div>
+                            <div className="min-w-0">
+                              <div className="text-sm font-medium truncate">
+                                {c.name}
+                              </div>
+                              <div className="text-xs opacity-60">
+                                Categorie
+                              </div>
+                            </div>
+                          </Link>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {productResults.length > 0 && (
+                    <div className="mb-1">
+                      <div className="px-2 py-1 text-xs uppercase tracking-wider opacity-60">
+                        Produits
+                      </div>
+                      <div className="space-y-1">
+                        {productResults.map((p) => {
+                          const firstImg =
+                            Array.isArray(p.imageUrls) && p.imageUrls.length > 0
+                              ? p.imageUrls[0]!
+                              : "/placeholder-square.webp"
+
+                          return (
+                            <Link
+                              key={p.id}
+                              href={`/shop/${p.slug}`}
+                              onClick={closeSearchPanel}
+                              className="flex items-start gap-3 rounded-lg px-2 py-2 transition hover:opacity-80 hover:bg-foreground/5"
+                            >
+                              <div className="relative h-12 w-12 overflow-hidden rounded-md flex-shrink-0">
+                                <Image
+                                  src={firstImg}
+                                  alt={p.name}
+                                  fill
+                                  sizes="48px"
+                                  className="object-cover"
+                                />
+                              </div>
+
+                              <div className="min-w-0">
+                                <div className="text-sm font-medium truncate">
+                                  {p.name}
+                                </div>
+                                <div className="text-xs opacity-70 truncate">
+                                  Reference: {p.sku}
+                                </div>
+                                {p.description && (
+                                  <div className="text-xs opacity-70 line-clamp-2">
+                                    {p.description}
+                                  </div>
+                                )}
+                              </div>
+                            </Link>
+                          )
+                        })}
+                      </div>
+                    </div>
+                  )}
+
+                  {hasNoResults && (
+                    <div className="flex items-center gap-3 rounded-lg bg-foreground/5 px-3 py-4">
+                      <div className="flex h-9 w-9 items-center justify-center rounded-md bg-foreground/5">
+                        <PackageOpen className="h-5 w-5 opacity-70" />
+                      </div>
+                      <div className="text-sm opacity-70">
+                        Aucun resultat trouve.
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div
+            className="pointer-events-none fixed left-0 right-0 z-[45] md:hidden"
+            style={{ top: "var(--navbar-offset-mobile)" }}
+          >
+            <div
+              ref={mobileSearchResultsRef}
+              className="pointer-events-auto overflow-hidden border-x border-b border-black/10 bg-white text-black transition-colors"
+            >
+              <div className="max-h-80 overflow-y-auto px-2 py-2">
+                {categoryResults.length > 0 && (
+                  <div className="mb-2">
+                    <div className="px-2 py-1 text-xs uppercase tracking-wider opacity-60">
+                      Categories
+                    </div>
+                    <div className="space-y-1">
+                      {categoryResults.map((c) => (
+                        <Link
+                          key={c.id}
+                          href={`/boutique/categorie/${c.slug}`}
+                          onClick={() => {
+                            closeSearchPanel()
+                            setIsMenuOpen(false)
+                          }}
+                          className="flex items-center gap-3 rounded-lg px-2 py-2 transition hover:opacity-80 hover:bg-black/5"
+                        >
+                          <div className="flex h-9 w-9 items-center justify-center rounded-md bg-foreground/5">
+                            <LayoutGrid className="h-4 w-4 opacity-80" />
+                          </div>
+                          <div className="min-w-0">
+                            <div className="text-sm font-medium truncate">
+                              {c.name}
+                            </div>
+                            <div className="text-xs opacity-60">
+                              Categorie
+                            </div>
+                          </div>
+                        </Link>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {productResults.length > 0 && (
+                  <div className="mb-1">
+                    <div className="px-2 py-1 text-xs uppercase tracking-wider opacity-60">
+                      Produits
+                    </div>
+                    <div className="space-y-1">
+                      {productResults.map((p) => {
+                        const firstImg =
+                          Array.isArray(p.imageUrls) && p.imageUrls.length > 0
+                            ? p.imageUrls[0]!
+                            : "/placeholder-square.webp"
+
+                        return (
+                          <Link
+                            key={p.id}
+                            href={`/shop/${p.slug}`}
+                            onClick={() => {
+                              closeSearchPanel()
+                              setIsMenuOpen(false)
+                            }}
+                            className="flex items-start gap-3 rounded-lg px-2 py-2 transition hover:opacity-80 hover:bg-foreground/5"
+                          >
+                            <div className="relative h-12 w-12 overflow-hidden rounded-md flex-shrink-0">
+                              <Image
+                                src={firstImg}
+                                alt={p.name}
+                                fill
+                                sizes="48px"
+                                className="object-cover"
+                              />
+                            </div>
+
+                            <div className="min-w-0">
+                              <div className="text-sm font-medium truncate">
+                                {p.name}
+                              </div>
+                              <div className="text-xs opacity-70 truncate">
+                                Reference: {p.sku}
+                              </div>
+                              {p.description && (
+                                <div className="text-xs opacity-70 line-clamp-2">
+                                  {p.description}
+                                </div>
+                              )}
+                            </div>
+                          </Link>
+                        )
+                      })}
+                    </div>
+                  </div>
+                )}
+
+                {hasNoResults && (
+                  <div className="flex items-center gap-3 rounded-lg bg-foreground/5 px-3 py-4">
+                    <div className="flex h-9 w-9 items-center justify-center rounded-md bg-foreground/5">
+                      <PackageOpen className="h-5 w-5 opacity-70" />
+                    </div>
+                    <div className="text-sm opacity-70">
+                      Aucun resultat trouve.
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+        </>
+      )}
 
       {navSpacerClass ? <div aria-hidden className={navSpacerClass} /> : null}
 
@@ -1666,8 +1808,4 @@ export function Navbar(props: NavbarProps) {
     </NavbarCart>
   )
 }
-
-
-
-
 

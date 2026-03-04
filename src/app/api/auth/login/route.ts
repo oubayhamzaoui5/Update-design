@@ -279,6 +279,7 @@ export async function POST(request: NextRequest) {
       record: {
         id: authData.record.id,
         email: authData.record.email,
+        phone: authData.record.phone,
         surname: authData.record.surname,
         name: authData.record.name,
         username: authData.record.username,
@@ -302,6 +303,7 @@ export async function POST(request: NextRequest) {
       user: {
         id: authData.record.id,
         email: authData.record.email,
+        phone: authData.record.phone,
         surname: authData.record.surname,
         name: authData.record.name,
         username: authData.record.username,

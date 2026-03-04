@@ -231,6 +231,7 @@ export default function ProductsClient({
           submitProduct={submitProduct}
           adding={adding}
           relatedProductOptions={relatedProductOptions}
+          parentSku={parent?.sku}
         />
       )}
     </div>

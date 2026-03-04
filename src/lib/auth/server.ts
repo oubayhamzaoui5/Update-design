@@ -6,6 +6,7 @@ import { redirect } from 'next/navigation'
 export type User = {
   id: string
   email: string
+  phone?: string
   surname: string
   name: string
   username: string
@@ -58,6 +59,7 @@ export const getSession = cache(async (): Promise<Session | null> => {
     const user: User = {
       id: record.id,
       email: record.email,
+      phone: record.phone || '',
       surname: record.surname || '',
       name: record.name || '',
       username: record.username || '',

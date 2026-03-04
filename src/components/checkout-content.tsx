@@ -118,6 +118,14 @@ function formatPhoneDigits(value: string) {
   return `${digits.slice(0, 2)} ${digits.slice(2, 5)} ${digits.slice(5)}`
 }
 
+function normalizeEmail(value: string) {
+  return value.trim().toLowerCase()
+}
+
+function isPlaceholderEmail(value: string) {
+  return normalizeEmail(value).endsWith("@placeholder.local")
+}
+
 function getUnitPrice(product: CartProduct | null): number {
   if (!product) return 0
   const price = typeof product.price === "number" ? product.price : 0
@@ -136,6 +144,7 @@ export function CheckoutContent() {
   const [firstName, setFirstName] = useState("")
   const [lastName, setLastName] = useState("")
   const [email, setEmail] = useState("")
+  const [profileEmail, setProfileEmail] = useState("")
   const [phone, setPhone] = useState("")
 
   const [address, setAddress] = useState("")
@@ -161,18 +170,31 @@ export function CheckoutContent() {
     const applyModel = (model: Record<string, any> | null) => {
       if (!model) return
 
-      if (typeof model.email === "string") setEmail((prev) => prev || model.email)
+      if (typeof model.email === "string") {
+        const nextEmail = model.email.trim()
+        if (nextEmail) {
+          setProfileEmail(nextEmail)
+          if (!isPlaceholderEmail(nextEmail)) {
+            setEmail((prev) => prev || nextEmail)
+          }
+        }
+      }
       if (typeof model.phone === "string") {
         const rawPhone = model.phone.replace(PHONE_PREFIX, "").trim()
         setPhone((prev) => prev || formatPhoneDigits(rawPhone))
       }
-      if (typeof model.name === "string" && model.name.trim()) {
-        const [f = "", ...rest] = model.name.trim().split(/\s+/)
-        setFirstName((prev) => prev || f)
-        setLastName((prev) => prev || rest.join(" "))
+      if (typeof model.surname === "string" && model.surname.trim()) {
+        setFirstName((prev) => prev || model.surname.trim())
       }
-      if (typeof model.firstName === "string") setFirstName((prev) => prev || model.firstName)
-      if (typeof model.lastName === "string") setLastName((prev) => prev || model.lastName)
+      if (typeof model.name === "string" && model.name.trim()) {
+        setLastName((prev) => prev || model.name.trim())
+      }
+      if (typeof model.firstName === "string" && model.firstName.trim()) {
+        setFirstName((prev) => prev || model.firstName.trim())
+      }
+      if (typeof model.lastName === "string" && model.lastName.trim()) {
+        setLastName((prev) => prev || model.lastName.trim())
+      }
     }
 
     const syncAuthState = async () => {
@@ -414,6 +436,39 @@ export function CheckoutContent() {
     [firstName, lastName, phone, address, city, isPostalCodeValid]
   )
 
+  const syncEmailToProfile = async (showError = true) => {
+    if (!isLoggedIn) return true
+
+    const nextEmail = email.trim()
+    if (!nextEmail || isPlaceholderEmail(nextEmail)) return true
+    if (normalizeEmail(nextEmail) === normalizeEmail(profileEmail)) return true
+
+    try {
+      const res = await fetch("/api/auth/profile", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email: nextEmail }),
+      })
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}))
+        throw new Error(data?.message || "Impossible de mettre a jour votre email.")
+      }
+      const data = await res.json().catch(() => ({}))
+      const updatedEmail =
+        typeof data?.user?.email === "string" && data.user.email.trim()
+          ? data.user.email.trim()
+          : nextEmail
+      setProfileEmail(updatedEmail)
+      setEmail(updatedEmail)
+      return true
+    } catch (err: any) {
+      if (showError) {
+        setOrderError(err?.message || "Impossible de mettre a jour votre email.")
+      }
+      return false
+    }
+  }
+
   const handleUpdateQuantity = async (itemId: string, newQty: number) => {
     if (newQty < 1) {
       await handleRemoveItem(itemId)
@@ -559,6 +614,11 @@ export function CheckoutContent() {
     try {
       setIsPlacingOrder(true)
       setOrderFlowStage("loading")
+      const didSyncEmail = await syncEmailToProfile(true)
+      if (!didSyncEmail) {
+        setOrderFlowStage("idle")
+        return
+      }
       const fullPhone = `${PHONE_PREFIX} ${phone.trim()}`
 
       const itemsPayload = cartItems.map((item) => ({
@@ -685,7 +745,16 @@ export function CheckoutContent() {
                 </div>
                 <div className="md:col-span-2 space-y-1">
                   <label className={labelClass}>Email</label>
-                  <input type="email" className={inputClass} placeholder="Ahmed.gharbi@mail.com" value={email} onChange={(e) => setEmail(e.target.value)} />
+                  <input
+                    type="email"
+                    className={inputClass}
+                    placeholder="Ahmed.gharbi@mail.com"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    onBlur={() => {
+                      void syncEmailToProfile(false)
+                    }}
+                  />
                 </div>
                 <div className="md:col-span-2 space-y-1">
                   <label className={labelClass}>Téléphone <span className="text-destructive">*</span></label>

@@ -16,6 +16,58 @@ import type {
   ProductDetail,
 } from '@/types/product.types'
 
+function parseNumericInput(value: string): number | null {
+  const trimmed = value.trim()
+  if (!trimmed) return null
+  const parsed = Number(trimmed.replace(',', '.'))
+  return Number.isFinite(parsed) ? parsed : null
+}
+
+function extractErrorMessage(error: unknown, fallback: string): string {
+  if (error && typeof error === 'object') {
+    const maybeError = error as {
+      message?: unknown
+      response?: { message?: unknown; data?: unknown }
+    }
+
+    const responseData = maybeError.response?.data
+    if (responseData && typeof responseData === 'object') {
+      const fieldErrors = Object.entries(responseData as Record<string, unknown>)
+        .map(([field, detail]) => {
+          if (!detail || typeof detail !== 'object') return null
+          const message = (detail as { message?: unknown }).message
+          if (typeof message !== 'string' || !message.trim()) return null
+          return `${field}: ${message}`
+        })
+        .filter((item): item is string => !!item)
+
+      if (fieldErrors.length > 0) return fieldErrors.join(' | ')
+    }
+
+    const responseMessage = maybeError.response?.message
+    if (typeof responseMessage === 'string' && responseMessage.trim()) {
+      return responseMessage
+    }
+
+    if (typeof maybeError.message === 'string' && maybeError.message.trim()) {
+      return maybeError.message
+    }
+  }
+
+  return fallback
+}
+
+function sanitizeVariantKey(input: Record<string, string | null>): Record<string, string> {
+  const cleaned: Record<string, string> = {}
+  for (const [rawKey, rawValue] of Object.entries(input)) {
+    const key = rawKey.trim()
+    const value = (rawValue ?? '').trim()
+    if (!key || !value) continue
+    cleaned[key] = value
+  }
+  return cleaned
+}
+
 type UseProductsProps = {
   initialProducts: Product[]
   perPage: number
@@ -138,8 +190,8 @@ export function useProducts({
     if (parent) {
       // Prefill for variant
       setForm({
-        sku: '',
-        name: '',
+        sku: parent.sku ?? '',
+        name: parent.name ?? '',
         price: parent.price ? String(parent.price) : '',
         promoPrice: parent.promoPrice != null ? String(parent.promoPrice) : '',
         description: parent.description ?? '',
@@ -212,11 +264,11 @@ export function useProducts({
         }
 
         setProducts((prev) => [normalized, ...prev])
-        setTimedNotice('âœ… Product created successfully')
+        setTimedNotice('Product created successfully')
         setOpen(false)
         resetForm()
       } catch (e) {
-        setTimedNotice('âŒ Failed to create product')
+        setTimedNotice(extractErrorMessage(e, 'Failed to create product'))
         console.error('Create product error:', e)
       } finally {
         setAdding(false)
@@ -244,11 +296,11 @@ export function useProducts({
           )
         )
 
-        setTimedNotice('âœ… Product updated successfully')
+        setTimedNotice('Product updated successfully')
         setOpen(false)
         resetForm()
       } catch (e) {
-        setTimedNotice('âŒ Failed to update product')
+        setTimedNotice(extractErrorMessage(e, 'Failed to update product'))
         console.error('Update product error:', e)
       } finally {
         setAdding(false)
@@ -267,9 +319,9 @@ export function useProducts({
       try {
         await deleteProductAction(id)
         setProducts((prev) => prev.filter((p) => p.id !== id))
-        setTimedNotice('âœ… Product deleted successfully')
+        setTimedNotice('Product deleted successfully')
       } catch (e) {
-        setTimedNotice('âŒ Failed to delete product')
+        setTimedNotice(extractErrorMessage(e, 'Failed to delete product'))
         console.error('Delete product error:', e)
       }
     },
@@ -303,19 +355,44 @@ export function useProducts({
             p.id === variantId ? { ...p, variantKey: product.variantKey } : p
           )
         )
-        setTimedNotice('âŒ Failed to update variant')
+        setTimedNotice(extractErrorMessage(e, 'Failed to update variant'))
       }
     },
     [products, setTimedNotice]
   )
 
   const submitProduct = useCallback(async () => {
+    const sku = form.sku.trim()
+    const name = form.name.trim()
+    const price = parseNumericInput(form.price)
+    const promoPrice = parseNumericInput(form.promoPrice)
+
+    if (!sku || !name || price == null || price <= 0) {
+      setTimedNotice('Please provide SKU, name, and a price greater than 0.')
+      return
+    }
+
+    if (
+      editState.mode === 'create' &&
+      Boolean(parent) &&
+      isVariant &&
+      sku === (parent?.sku ?? '').trim()
+    ) {
+      setTimedNotice('Please change the SKU for this variant.')
+      return
+    }
+
+    if (form.promoPrice.trim() && (promoPrice == null || promoPrice < 0)) {
+      setTimedNotice('Promotion price must be a valid number.')
+      return
+    }
+
     const fd = new FormData()
 
-    fd.set('sku', form.sku.trim())
-    fd.set('name', form.name.trim())
-    fd.set('price', String(Number(form.price || 0)))
-    fd.set('promoPrice', form.promoPrice === '' ? '' : String(Number(form.promoPrice)))
+    fd.set('sku', sku)
+    fd.set('name', name)
+    fd.set('price', String(price))
+    fd.set('promoPrice', form.promoPrice.trim() === '' ? '' : String(promoPrice))
     fd.set('description', form.description)
     fd.set('isActive', String(form.isActive))
     fd.set('inView', String(form.inView))
@@ -348,12 +425,10 @@ export function useProducts({
     }
 
     if (form.slug) fd.set('slug', form.slug)
-    if (isVariant) fd.set('isVariant', 'true')
-    if (isParent) fd.set('isParent', 'true')
-    if (parentId) fd.set('parent', parentId)
-    if (Object.keys(variantKey).length > 0) {
-      fd.set('variantKey', JSON.stringify(variantKey))
-    }
+    fd.set('isVariant', String(isVariant))
+    fd.set('isParent', String(isParent))
+    fd.set('parent', parentId ?? '')
+    fd.set('variantKey', JSON.stringify(sanitizeVariantKey(variantKey)))
 
     for (const file of form.files) {
       fd.append('images', file)
@@ -371,6 +446,7 @@ export function useProducts({
     form,
     isParent,
     isVariant,
+    parent,
     parentId,
     update,
     variantKey,

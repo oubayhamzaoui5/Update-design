@@ -18,7 +18,7 @@
   --muted: oklch(0.88 0 0);
   --muted-foreground: oklch(0.5 0 0);
   /* <CHANGE> Gold accent color from logo */
-  --accent: #c19a2f;
+  --accent: rgb(193, 154, 47);
   --accent-foreground: oklch(0.15 0 0);
   --destructive: oklch(0.577 0.245 27.325);
   --destructive-foreground: oklch(0.577 0.245 27.325);

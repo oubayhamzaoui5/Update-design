@@ -502,7 +502,7 @@ export function NavbarCart({ currentUser, onOpenChange, children }: NavbarCartPr
               onClick={() => {
                 if (cartItems.length === 0) return
                 setIsCartOpen(false)
-                router.push("/chekout")
+                router.push("/commande")
               }}
             >
               <CreditCard size={18} />

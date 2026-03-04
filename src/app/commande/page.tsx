@@ -1,4 +1,4 @@
-// app/chekout/page.tsx
+// app/commande/page.tsx
 import type { Metadata } from "next"
 import { Suspense } from "react"
 import { Navbar } from "@/components/navbar"
@@ -9,7 +9,7 @@ export const metadata: Metadata = {
   title: "Update Design | Paiement",
 }
 
-export default function ChekoutPage() {
+export default function CommandePage() {
   return (
     <div className="min-h-screen flex flex-col bg-background">
       <Navbar />

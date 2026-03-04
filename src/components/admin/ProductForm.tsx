@@ -66,6 +66,7 @@ type ProductFormProps = {
     name: string
     sku: string
   }>
+  parentSku?: string
 }
 
 type PromoMode = "percent" | "price"
@@ -139,6 +140,7 @@ export default function ProductForm({
   submitProduct,
   adding,
   relatedProductOptions,
+  parentSku,
 }: ProductFormProps) {
   const fileInputRef = useRef<HTMLInputElement>(null)
   const [promoMode, setPromoMode] = useState<PromoMode>("percent")
@@ -259,6 +261,12 @@ export default function ProductForm({
         .filter((product): product is (typeof relatedProductOptions)[number] => !!product),
     [form.relatedProducts, relatedProductOptions]
   )
+
+  const isVariantCreate = editState.mode === "create" && isVariant
+  const unchangedParentSku =
+    isVariantCreate &&
+    Boolean(parentSku?.trim()) &&
+    form.sku.trim() === (parentSku ?? "").trim()
 
   const filteredRelatedOptions = useMemo(() => {
     const query = relatedSearch.trim().toLowerCase()
@@ -508,8 +516,17 @@ export default function ProductForm({
                 value={form.sku}
                 placeholder="SKU-001"
                 onChange={(e) => setForm({ ...form, sku: e.target.value })}
-                className={inputClasses}
+                className={`${inputClasses} ${
+                  unchangedParentSku
+                    ? "border-red-300 bg-red-50/40 text-red-700 focus:border-red-500 focus:ring-red-500/10"
+                    : ""
+                }`}
               />
+              {unchangedParentSku && (
+                <p className="mt-1 text-xs font-medium text-red-600">
+                  Changez le SKU pour la variante.
+                </p>
+              )}
             </div>
             <div>
               <label className="text-[11px] font-bold uppercase tracking-wider text-slate-500 ml-1">Nom du produit *</label>

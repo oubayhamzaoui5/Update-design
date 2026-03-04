@@ -804,7 +804,7 @@ export default function ProductClient({
           ? 'cursor-pointer bg-white text-black hover:bg-accent hover:border-accent hover:text-white'
           : 'cursor-not-allowed bg-gray-200 text-gray-500 border-gray-300'
       }`}
-      onClick={() => router.push(`/chekout?buyNow=1&productId=${product.id}&qty=${quantity}`)}
+      onClick={() => router.push(`/commande?buyNow=1&productId=${product.id}&qty=${quantity}`)}
       disabled={!isInStock}
     >
       {isInStock ? 'Acheter maintenant' : 'Indisponible'}
