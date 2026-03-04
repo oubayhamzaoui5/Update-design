@@ -424,7 +424,13 @@ export function useProducts({
       }
     }
 
-    if (form.slug) fd.set('slug', form.slug)
+    const slugInput = form.slug.trim()
+    const variantAutoSlug =
+      editState.mode === 'create' && Boolean(parent) && isVariant
+        ? `${name}-${sku}`
+        : ''
+    const effectiveSlug = slugInput || variantAutoSlug
+    if (effectiveSlug) fd.set('slug', effectiveSlug)
     fd.set('isVariant', String(isVariant))
     fd.set('isParent', String(isParent))
     fd.set('parent', parentId ?? '')
