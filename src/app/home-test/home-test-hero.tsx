@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useState } from "react"
+import { useEffect, useRef, useState } from "react"
 import Image, { type StaticImageData } from "next/image"
 import Link from "next/link"
 
@@ -19,6 +19,7 @@ export default function HomeTestHero() {
   const [loadedCount, setLoadedCount] = useState(0)
   const [isReady, setIsReady] = useState(false)
   const [showContent, setShowContent] = useState(false)
+  const hasDispatchedReadyRef = useRef(false)
 
   const heroImages: Record<HeroVariant, StaticImageData> = {
     hero1: hero4Image,
@@ -41,6 +42,15 @@ export default function HomeTestHero() {
       return () => clearTimeout(timer)
     }
   }, [loadedCount])
+
+  useEffect(() => {
+    if (!isReady || hasDispatchedReadyRef.current || typeof window === "undefined") return
+
+    hasDispatchedReadyRef.current = true
+    const windowWithHeroReady = window as Window & { __homeHeroReady?: boolean }
+    windowWithHeroReady.__homeHeroReady = true
+    window.dispatchEvent(new Event("home-hero-ready"))
+  }, [isReady])
 
   // Slide interval logic (only starts once ready)
   useEffect(() => {

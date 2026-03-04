@@ -1016,8 +1016,8 @@ useEffect(() => {
     <>
       {shouldShowSignupPromo && (
         <div className="absolute inset-x-0 top-0 z-50 overflow-x-clip border-b border-red-700 bg-red-600 text-white">
-          <div className="mx-auto flex h-10 max-w-7xl items-center justify-center px-10 sm:px-12">
-            <p className="max-w-full text-center text-[9px] font-medium leading-tight whitespace-normal md:text-sm md:whitespace-nowrap">
+          <div className="mx-auto flex h-10 max-w-7xl items-center justify-center px-10 sm:px-8">
+            <p className="max-w-full text-center text-[12px] font-medium leading-tight whitespace-normal md:text-sm md:whitespace-nowrap">
               <Link href="/inscription" className="underline underline-offset-2">
                 Créez un compte
               </Link>{' '}
