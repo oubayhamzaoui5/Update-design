@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from 'react'
 import Link from 'next/link'
 import Image, { type StaticImageData } from 'next/image'
-import { motion } from 'framer-motion'
+import { motion, useReducedMotion } from 'framer-motion'
 
 type RoomCategory = {
   name: string
@@ -44,24 +44,16 @@ const mobileContainerVariants = {
   visible: {
     opacity: 1,
     transition: {
-      staggerChildren: 0.15, // Time between each card appearing
-      delayChildren: 0.2,    // Slight pause before the chain starts
+      staggerChildren: 0.1,
+      delayChildren: 0.06,
     },
   },
 }
 
 // Mobile Individual Cards
 const mobileCardVariants = {
-  hidden: { 
-    opacity: 0, 
-    y: 25,
-    filter: 'blur(4px)' 
-  },
-  visible: { 
-    opacity: 1, 
-    y: 0,
-    filter: 'blur(0px)',
-  },
+  hidden: { opacity: 0, y: 12 },
+  visible: { opacity: 1, y: 0 },
 }
 
 export default function HomeCategoriesSection({ categories }: HomeCategoriesSectionProps) {
@@ -71,6 +63,7 @@ export default function HomeCategoriesSection({ categories }: HomeCategoriesSect
   
   const secondRowRef = useRef<HTMLDivElement | null>(null)
   const [isHeroReady, setIsHeroReady] = useState(false)
+  const reduceMotion = useReducedMotion()
 
   // Wait for Hero to finish
   useEffect(() => {
@@ -175,16 +168,16 @@ export default function HomeCategoriesSection({ categories }: HomeCategoriesSect
         variants={mobileContainerVariants}
         initial="hidden"
         whileInView={isHeroReady ? 'visible' : 'hidden'}
-        viewport={{ once: true, amount: 0.1 }} // Starts as soon as the section enters the screen
+        viewport={{ once: true, amount: 0.2 }}
       >
         {/* Row 1 (LTR) */}
         <div className="hide-scrollbar flex snap-x snap-mandatory gap-3 overflow-x-auto pb-1">
           {firstRowCategories.map((item) => (
             <motion.div
               key={`mobile-r1-${item.name}`}
-              className="w-[85%] flex-none snap-start"
+              className="w-[85%] flex-none snap-start transform-gpu"
               variants={mobileCardVariants}
-              transition={{ duration: 0.7, ease: 'easeOut' }}
+              transition={reduceMotion ? { duration: 0 } : { duration: 0.38, ease: 'easeOut' }}
             >
               <Link className="group relative block overflow-hidden rounded-xl aspect-[16/9]" href={item.href}>
                 <Image src={item.image} alt={item.name} fill sizes="85vw" className="object-cover" />
@@ -205,9 +198,9 @@ export default function HomeCategoriesSection({ categories }: HomeCategoriesSect
           {secondRowCategories.map((item) => (
             <motion.div
               key={`mobile-r2-${item.name}`}
-              className="w-[85%] flex-none snap-start"
+              className="w-[85%] flex-none snap-start transform-gpu"
               variants={mobileCardVariants}
-              transition={{ duration: 0.7, ease: 'easeOut' }}
+              transition={reduceMotion ? { duration: 0 } : { duration: 0.38, ease: 'easeOut' }}
             >
               <Link className="group relative block overflow-hidden rounded-xl aspect-[16/9]" href={item.href}>
                 <Image src={item.image} alt={item.name} fill sizes="85vw" className="object-cover" />
