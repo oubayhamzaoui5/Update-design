@@ -4,7 +4,7 @@
 import { useState, useEffect, useLayoutEffect, useRef } from "react"
 import Image from "next/image"
 import Link from "next/link"
-import { usePathname, useRouter, useSearchParams } from "next/navigation"
+import { usePathname, useRouter } from "next/navigation"
 import { NavbarCart } from "@/components/navbar-cart"
 import {
   Search,
@@ -101,7 +101,6 @@ function formatPhoneForStorage(value: string) {
 export function Navbar(props: NavbarProps) {
   const router = useRouter()
   const pathname = usePathname()
-  const searchParams = useSearchParams()
   const categoriesProp = props.categories ?? []
   const reserveSpace = props.reserveSpace ?? false
 
@@ -174,10 +173,13 @@ export function Navbar(props: NavbarProps) {
   }, [])
 
   useEffect(() => {
-    const authParam = searchParams.get("auth")
+    if (typeof window === "undefined") return
+
+    const params = new URLSearchParams(window.location.search)
+    const authParam = params.get("auth")
     if (authParam !== "login" && authParam !== "signup") return
 
-    const nextParam = resolveRedirectPath(searchParams.get("next"))
+    const nextParam = resolveRedirectPath(params.get("next"))
     setPostLoginRedirect(nextParam)
     setAuthMode(authParam)
     setIsAuthModalOpen(true)
@@ -190,7 +192,7 @@ export function Navbar(props: NavbarProps) {
     url.searchParams.delete("auth")
     url.searchParams.delete("next")
     window.history.replaceState({}, "", `${url.pathname}${url.search}${url.hash}`)
-  }, [searchParams, pathname])
+  }, [pathname])
 
   useEffect(() => {
     if (!isAuthModalOpen) return
