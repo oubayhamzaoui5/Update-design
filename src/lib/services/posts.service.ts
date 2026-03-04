@@ -13,8 +13,10 @@ import { slugify } from '@/utils/slug'
 const POSTS_COLLECTION = 'posts'
 const PRODUCTS_COLLECTION = 'products'
 const VALID_SLUG_REGEX = /^[a-z0-9]+(?:-[a-z0-9]+)*$/
-const BLOG_PUBLIC_PREFIX = '/blog/'
-const BLOG_PUBLIC_DIR = path.join(process.cwd(), 'public', 'blog')
+const BLOG_PUBLIC_PREFIX = '/blog-images/'
+const LEGACY_BLOG_PUBLIC_PREFIX = '/blog/'
+const BLOG_PUBLIC_DIR = path.join(process.cwd(), 'public', 'blog-images')
+const LEGACY_BLOG_PUBLIC_DIR = path.join(process.cwd(), 'public', 'blog')
 const IMG_SRC_REGEX = /<img\b[^>]*\bsrc=(['"])(.*?)\1[^>]*>/gi
 
 function escapePbFilterValue(value: string): string {
@@ -36,7 +38,8 @@ function toSafeCoverImage(value: unknown): string {
 
 type PocketBaseLike = {
   files: {
-    getUrl: (record: Record<string, unknown>, filename: string) => string
+    getURL: (record: Record<string, unknown>, filename: string) => string
+    getUrl?: (record: Record<string, unknown>, filename: string) => string
   }
 }
 
@@ -73,12 +76,14 @@ function extractBlogPublicPath(value: unknown): string {
   if (typeof value !== 'string') return ''
   const cleaned = value.trim()
   if (!cleaned) return ''
-  if (cleaned.startsWith(BLOG_PUBLIC_PREFIX)) return cleaned
+  if (cleaned.startsWith(BLOG_PUBLIC_PREFIX) || cleaned.startsWith(LEGACY_BLOG_PUBLIC_PREFIX)) return cleaned
 
   if (/^https?:\/\//i.test(cleaned)) {
     try {
       const url = new URL(cleaned)
-      if (url.pathname.startsWith(BLOG_PUBLIC_PREFIX)) return url.pathname
+      if (url.pathname.startsWith(BLOG_PUBLIC_PREFIX) || url.pathname.startsWith(LEGACY_BLOG_PUBLIC_PREFIX)) {
+        return url.pathname
+      }
     } catch {
       return ''
     }
@@ -90,8 +95,11 @@ function extractBlogPublicPath(value: unknown): string {
 function toAbsoluteBlogPath(publicPath: string): string | null {
   const relative = publicPath.replace(/^\/+/, '')
   const absolute = path.normalize(path.join(process.cwd(), 'public', relative))
-  const blogRoot = path.normalize(`${BLOG_PUBLIC_DIR}${path.sep}`)
-  if (!absolute.startsWith(blogRoot)) return null
+  const allowedRoots = [
+    path.normalize(`${BLOG_PUBLIC_DIR}${path.sep}`),
+    path.normalize(`${LEGACY_BLOG_PUBLIC_DIR}${path.sep}`),
+  ]
+  if (!allowedRoots.some((root) => absolute.startsWith(root))) return null
   return absolute
 }
 
@@ -187,16 +195,30 @@ function normalizeSlug(slug: unknown, fallbackTitle: unknown): string {
 }
 
 function resolveCoverImageUrl(pb: PocketBaseLike, record: Record<string, unknown>): string {
+  const collectionId = toSafeText(record.collectionId, 120)
+  const recordId = toSafeText(record.id, 120)
+  const toProxyUrl = (filename: string): string => {
+    const safeFile = filename.trim()
+    if (!safeFile || !collectionId || !recordId) return ''
+    return `/api/pb-files/${encodeURIComponent(collectionId)}/${encodeURIComponent(recordId)}/${encodeURIComponent(safeFile)}`
+  }
+
   const rawCover = record.coverImage
   if (typeof rawCover === 'string' && rawCover.trim()) {
     const safe = toSafeCoverImage(rawCover)
     if (safe) return safe
-    return pb.files.getUrl(record, rawCover.trim())
+    const proxyUrl = toProxyUrl(rawCover)
+    if (proxyUrl) return proxyUrl
+    return pb.files.getURL(record, rawCover.trim())
   }
 
   if (Array.isArray(rawCover)) {
     const first = rawCover.find((value) => typeof value === 'string' && value.trim())
-    if (typeof first === 'string') return pb.files.getUrl(record, first.trim())
+    if (typeof first === 'string') {
+      const proxyUrl = toProxyUrl(first)
+      if (proxyUrl) return proxyUrl
+      return pb.files.getURL(record, first.trim())
+    }
   }
 
   return ''

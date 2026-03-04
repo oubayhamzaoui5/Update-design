@@ -3,8 +3,10 @@ import { slugify } from '@/utils/slug'
 const TARGET_CATEGORY_SLUGS = new Set([
   'panneau-effet-marbre',
   'panneau-mural-effet-marbre',
+  'profile-mural-effet-bois',
   'profile-effet-bois-d-interieur',
   'profile-mural-effet-bois-d-interieur',
+  'profile-mural-effet-bois-d-exterieur',
 ])
 
 const CATEGORY_KEY_PATTERN =

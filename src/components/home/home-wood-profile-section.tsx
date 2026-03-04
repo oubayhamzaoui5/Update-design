@@ -11,7 +11,7 @@ export default function HomeWoodProfileSection() {
         {/* Animated Image */}
         <div className="flex w-full flex-1 justify-center p-2 lg:justify-start lg:p-0">
           <motion.img
-            initial={{ opacity: 0, x: -60, scale: 0.95 }} // Starts to the left, slightly smaller
+            initial={{ opacity: 0, x: -20, scale: 0.95 }} // Starts to the left, slightly smaller
             whileInView={{ opacity: 1, x: 0, scale: 1 }} // Slides into place
             viewport={{ once: true, margin: "-50px" }}
             transition={{ 

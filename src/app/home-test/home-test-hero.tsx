@@ -113,20 +113,15 @@ export default function HomeTestHero() {
 
         {/* 4. Text Content - Staggered Fade-in */}
         <div className="absolute inset-0 z-20 flex flex-col items-start justify-start bg-gradient-to-r from-black/80 via-black/20 to-transparent px-4 pt-10 sm:px-8 sm:pt-18 md:justify-center md:px-24 md:pt-0 lg:px-32">
-<h2 className="mb-3 text-1xl font-black  tracking-tight text-white lg:text-5xl">
+<h2 className={`mb-1 text-2xl font-extrabold leading-tight tracking-tight text-white drop-shadow-2xl sm:text-3xl md:mb-4 md:text-4xl lg:text-5xl transition-all duration-1000 delay-300 ${
+              showContent ? "translate-x-0 opacity-100" : "-translate-x-10 opacity-0"
+            }`}>
   Update 
   <span className="relative text-accent ml-2 [text-shadow:2px_2px_0px_rgba(0,0,0,1)]">
     Design
   </span>
 </h2>
-          <h1 
-            className={`mb-1 text-2xl font-extrabold leading-tight tracking-tight text-white drop-shadow-2xl sm:text-3xl md:mb-4 md:text-4xl lg:text-5xl transition-all duration-1000 delay-300 ${
-              showContent ? "translate-x-0 opacity-100" : "-translate-x-10 opacity-0"
-            }`}
-          >
-            Où vos visions <br /> prennent vie.
-          </h1>
-
+      
           <p 
             className={`hidden max-w-xl text-gray-100 drop-shadow-md md:block md:text-lg transition-all duration-1000 delay-500 ${
               showContent ? "translate-x-0 opacity-100" : "-translate-x-10 opacity-0"
