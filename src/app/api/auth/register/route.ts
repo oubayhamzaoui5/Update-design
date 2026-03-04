@@ -131,8 +131,6 @@ export async function POST(request: NextRequest) {
       name: data.name,
       phone: normalizedPhone,
     })
-    const shouldAutoVerify = !normalizedEmail
-
     const record = await pb.collection('users').create({
       email: finalEmail,
       phone: normalizedPhone,
@@ -143,7 +141,6 @@ export async function POST(request: NextRequest) {
       username,
       role: 'customer',
       isActive: true,
-      verified: shouldAutoVerify,
       emailVisibility: Boolean(normalizedEmail),
     })
 
