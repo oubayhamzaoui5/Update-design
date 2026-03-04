@@ -5,7 +5,7 @@ import { motion } from 'framer-motion';
 
 export default function HomeWoodProfileSection() {
   return (
-    <section className="bg-white py-12 md:py-16 lg:py-18 overflow-hidden">
+    <section className="bg-white py-10 md:py-16 lg:py-18 overflow-hidden">
       <div className="mx-auto flex max-w-7xl flex-col items-center gap-6 lg:gap-6 lg:flex-row">
         
         {/* Animated Image */}

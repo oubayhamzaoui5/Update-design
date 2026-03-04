@@ -40,7 +40,7 @@ type Product = {
   images?: string[]
 }
 
-// Ã°Å¸â¬Â¹ Product type for cart (minimal)
+// Product type for cart (minimal)
 type CartProduct = {
   id: string
   slug: string
@@ -407,7 +407,7 @@ useEffect(() => {
         return
       }
 
-      // Ã°Å¸Â§Â¾ Guest: load from localStorage
+      // Guest: load from localStorage
       const guest = getGuestCart()
       if (guest.length === 0) {
         if (!cancelled) setCartItems([])
@@ -743,7 +743,7 @@ useEffect(() => {
                   type="button"
                   onClick={(e) => toggleCategory(category.id, e)}
                   className="inline-flex h-6 w-6 items-center justify-center rounded transition-colors hover:bg-black/5"
-                  aria-label="Afficher les sous-catÃ©gories"
+                  aria-label="Afficher les sous-catégories"
                 >
                   <ChevronRight
                     size={16}
@@ -788,14 +788,14 @@ useEffect(() => {
     "Mon compte"
   const shouldShowSignupPromo = isAuthResolved && !currentUser && showSignupPromo
 
-  // Ã°Å¸Â§Â® Number of distinct products in cart (badge)
+  // Number of distinct products in cart (badge)
   const cartCount = cartItems.length
 
-  // Ã°Å¸Â§Â® Cart currency (first found or "DT")
+  // Cart currency (first found or "DT")
   const cartCurrency =
     cartItems.find((item) => item.product?.currency)?.product?.currency ?? "DT"
 
-  // Ã°Å¸Â§Â® Cart total (with promo logic)
+  // Cart total (with promo logic)
   const cartTotal = cartItems.reduce((sum, item) => {
     const prod = item.product
     if (!prod) return sum
@@ -926,7 +926,7 @@ useEffect(() => {
                                   item.quantity - 1
                                 )
                               }
-                              aria-label="Diminuer la quantitÃ©"
+                              aria-label="Diminuer la quantité"
                             >
                               -
                             </button>
@@ -942,7 +942,7 @@ useEffect(() => {
                                   item.quantity + 1
                                 )
                               }
-                              aria-label="Augmenter la quantitÃ©"
+                              aria-label="Augmenter la quantité"
                             >
                               +
                             </button>
@@ -984,7 +984,7 @@ useEffect(() => {
             >
               <CreditCard size={18} />
               <span>
-                ProcÃ©der au paiement - {cartTotal.toFixed(2)} {cartCurrency}
+                Procéder au paiement - {cartTotal.toFixed(2)} {cartCurrency}
               </span>
             </button>
           </div>
@@ -999,21 +999,34 @@ useEffect(() => {
       : "h-[60px] md:h-[72px]"
     : null
 
+  useEffect(() => {
+    if (typeof document === "undefined") return
+    const root = document.documentElement
+    root.style.setProperty(
+      "--navbar-offset-mobile",
+      shouldShowSignupPromo ? "100px" : "60px"
+    )
+    root.style.setProperty(
+      "--navbar-offset-desktop",
+      shouldShowSignupPromo ? "112px" : "72px"
+    )
+  }, [shouldShowSignupPromo])
+
   return (
     <>
       {shouldShowSignupPromo && (
-        <div className="absolute left-0 right-0 top-0 z-50 border-b border-red-700 bg-red-600 text-white">
-          <div className="mx-auto flex h-10 max-w-7xl items-center justify-center px-4">
-            <p className="pr-8 text-center text-[9px] font-medium whitespace-nowrap md:text-sm">
+        <div className="absolute inset-x-0 top-0 z-50 overflow-x-clip border-b border-red-700 bg-red-600 text-white">
+          <div className="mx-auto flex h-10 max-w-7xl items-center justify-center px-10 sm:px-12">
+            <p className="max-w-full text-center text-[9px] font-medium leading-tight whitespace-normal md:text-sm md:whitespace-nowrap">
               <Link href="/inscription" className="underline underline-offset-2">
-                CrÃ©ez un compte
+                Créez un compte
               </Link>{' '}
-              et obtenez 10% de rÃ©duction sur votre premiÃ¨re commande.
+              et obtenez 10% de réduction sur votre première commande.
             </p>
             <button
               type="button"
               onClick={closeSignupPromo}
-              className="absolute right-4 inline-flex h-7 w-7 items-center justify-center rounded-full hover:bg-red-700/60"
+              className="absolute right-2 sm:right-4 inline-flex h-7 w-7 items-center justify-center rounded-full hover:bg-red-700/60"
               aria-label="Close promotion"
             >
               <X size={16} />
@@ -1094,7 +1107,7 @@ useEffect(() => {
                     {categoryResults.length > 0 && (
                       <div className="mb-2">
                         <div className="px-2 py-1 text-xs uppercase tracking-wider opacity-60">
-                          CatÃ©gories
+                          Catégories
                         </div>
                         <div className="space-y-1">
                           {categoryResults.map((c) => (
@@ -1114,7 +1127,7 @@ useEffect(() => {
                                   {c.name}
                                 </div>
                                 <div className="text-xs opacity-60">
-                                  CatÃ©gorie
+                                  Catégorie
                                 </div>
                               </div>
                             </Link>
@@ -1178,7 +1191,7 @@ useEffect(() => {
                           <PackageOpen className="h-5 w-5 opacity-70" />
                         </div>
                         <div className="text-sm opacity-70">
-                          Aucun rÃ©sultat trouvÃ©.
+                          Aucun résultat trouvé.
                         </div>
                       </div>
                     )}
@@ -1282,7 +1295,7 @@ useEffect(() => {
                       >
                         <div className="flex items-center gap-2">
                           <Settings className="h-4 w-4 opacity-80" />
-                          <span>ParamÃ¨tres</span>
+                          <span>Paramètres</span>
                         </div>
                         <ChevronRight className="h-3 w-3 opacity-50" />
                       </Link>
@@ -1295,7 +1308,7 @@ useEffect(() => {
                       >
                         <div className="flex items-center gap-2">
                           <LogOut className="h-4 w-4 opacity-80 text-red-500" />
-                          <span className="text-red-500">Se dÃ©connecter</span>
+                          <span className="text-red-500">Se déconnecter</span>
                         </div>
                       </button>
                     </div>
@@ -1344,7 +1357,7 @@ useEffect(() => {
               href="/Nouveautes"
               className="text-sm font-extrabold hover:opacity-70 transition-opacity"
             >
-              NouveautÃ©s
+              Nouveautés
             </Link>
 
             <Link
@@ -1550,7 +1563,7 @@ useEffect(() => {
                 onClick={() => setIsMenuOpen(false)}
                 className="block text-sm font-medium hover:opacity-70 transition-opacity"
               >
-                NouveautÃ©s
+                Nouveautés
               </Link>
 
               <Link
@@ -1578,7 +1591,7 @@ useEffect(() => {
                   className="flex items-center gap-2 text-sm font-medium hover:opacity-70 transition-opacity w-full"
                   aria-label="Afficher ou masquer les categories"
                 >
-                  CatÃ©gories
+                  Catégories
                   <ChevronRight
                     size={16}
                     className={`transition-transform ${

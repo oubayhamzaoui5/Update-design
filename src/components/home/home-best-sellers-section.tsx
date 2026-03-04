@@ -7,7 +7,7 @@ type HomeBestSellersSectionProps = {
 
 export default function HomeBestSellersSection({ products }: HomeBestSellersSectionProps) {
   return (
-    <section className="overflow-hidden bg-white py-12 md:py-16 lg:py-18">
+    <section className="overflow-hidden bg-white py-10 md:py-16 lg:py-18">
       <div className="mx-auto mb-6 flex max-w-7xl items-center justify-between px-2 md:mb-10 lg:mb-12">
         <h2 className="text-2xl lg:text-3xl font-bold">Meilleures ventes</h2>
       </div>

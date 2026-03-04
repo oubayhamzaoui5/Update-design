@@ -1,6 +1,6 @@
 export default function HomeWhyChooseSection() {
   return (
-    <section id="contact" className="mx-auto max-w-7xl px-4 py-12 md:py-16 lg:py-18">
+    <section id="contact" className="mx-auto max-w-7xl px-4 py-10 md:py-16 lg:py-18">
       <h2 className="text-2xl font-semibold text-[#111] md:text-3xl">
         Pourquoi choisir Update Design pour vos projets en Tunisie ?
       </h2>

@@ -25,7 +25,7 @@ const faqItems = [
 
 export default function HomeFaqSection() {
   return (
-    <section id="faq" className="bg-white px-6 py-12 md:py-16 lg:py-18">
+    <section id="faq" className="bg-white px-6 py-10 md:py-16 lg:py-18">
       <div className="mx-auto max-w-4xl">
         <h2 className="mb-12 lg:mb-16 text-center text-3xl font-bold text-slate-900 sm:text-4xl">
           Questions frequentes

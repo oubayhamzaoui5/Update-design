@@ -1,5 +1,6 @@
 'use client'
 
+import { useEffect, useRef } from 'react'
 import Link from 'next/link'
 import Image, { type StaticImageData } from 'next/image'
 import { motion } from 'framer-motion'
@@ -38,10 +39,24 @@ const childVariants = [
 export default function HomeCategoriesSection({ categories }: HomeCategoriesSectionProps) {
   const visibleCategories = categories.slice(0, 4)
   const firstRowCategories = visibleCategories.slice(0, 2)
-  const secondRowCategories = visibleCategories.slice(2, 4)
+  const secondRowCategories = visibleCategories.slice(2, 4).reverse()
+  const secondRowRef = useRef<HTMLDivElement | null>(null)
+
+  useEffect(() => {
+    const row = secondRowRef.current
+    if (!row) return
+
+    const scrollToRight = () => {
+      row.scrollLeft = row.scrollWidth - row.clientWidth
+    }
+
+    scrollToRight()
+    window.addEventListener('resize', scrollToRight)
+    return () => window.removeEventListener('resize', scrollToRight)
+  }, [secondRowCategories.length])
 
   return (
-    <section id="home-categories" className="mx-auto max-w-7xl px-4 py-12 md:px-2 md:py-16 lg:py-18">
+    <section id="home-categories" className="mx-auto max-w-7xl px-4 py-10 md:px-2 md:py-16 lg:py-18">
       {/* Header Section */}
       <div className="mb-4 flex items-end justify-between md:mb-12">
         <div>
@@ -135,9 +150,9 @@ export default function HomeCategoriesSection({ categories }: HomeCategoriesSect
         </div>
 
         {/* Mobile Row 2 */}
-        <div className="hide-scrollbar flex snap-x snap-mandatory gap-3 overflow-x-auto pb-1">
+        <div ref={secondRowRef} className="hide-scrollbar flex snap-x snap-mandatory gap-3 overflow-x-auto pb-1">
           {secondRowCategories.map((item) => (
-            <div key={`mobile-row-2-${item.name}`} className="w-[45%] max-w-none flex-none snap-start">
+            <div key={`mobile-row-2-${item.name}`} className="w-[85%] max-w-none flex-none snap-start">
               <Link
                 className="group relative block overflow-hidden rounded-xl aspect-[16/9]"
                 href={item.href}
@@ -146,7 +161,7 @@ export default function HomeCategoriesSection({ categories }: HomeCategoriesSect
                   src={item.image}
                   alt={item.name}
                   fill
-                  sizes="45vw"
+                  sizes="85vw"
                   className="absolute inset-0 h-full w-full object-cover object-center"
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-slate-900/80 via-transparent to-transparent" />
