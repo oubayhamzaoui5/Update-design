@@ -1,0 +1,87 @@
+{
+  "hero": {
+    "headline": "Parasols",
+    "italic": "Premium",
+    "body": "De la piscine d'hôtel à la terrasse de restaurant — structure aluminium thermolaqué, toiles Sunbrella® et 4 modèles exclusifs déportés. Livraison nationale, installation professionnelle.",
+    "ctaLabel": "Configurer mon parasol",
+    "ctaHref": "/parasol"
+  },
+  "models": [
+    {
+      "name": "Dallas",
+      "img": "/dallas.webp",
+      "tagline": "Compact & Fonctionnel",
+      "desc": "Parasol déporté compact, idéal pour les espaces réduits. Facilement repositionnable."
+    },
+    {
+      "name": "Havana",
+      "img": "/havana.webp",
+      "tagline": "Élégance Asymétrique",
+      "desc": "Design asymétrique élégant avec bras orientable à 360°. La référence des terrasses de restaurant."
+    },
+    {
+      "name": "Ibiza",
+      "img": "/ibiza.webp",
+      "tagline": "Premium Hôtelier",
+      "desc": "Parasol déporté premium avec finition haut de gamme. Conçu pour les établissements 4 et 5 étoiles."
+    },
+    {
+      "name": "Mauris",
+      "img": "/mauris.webp",
+      "tagline": "Grandes Surfaces",
+      "desc": "Structure multi-têtes pour couvrir de larges surfaces. Idéal pour les plages privées et les piscines."
+    }
+  ],
+  "features": [
+    {
+      "title": "Structure Aluminium",
+      "body": "Profilés aluminium thermolaqué ultra-résistants à la corrosion saline. Adaptés au bord de mer et aux zones côtières tunisiennes."
+    },
+    {
+      "title": "35+ Coloris Sunbrella®",
+      "body": "Toiles en tissu acrylique Sunbrella® : imperméables, anti-moisissures, résistantes aux UV. Personnalisables à l'identité visuelle de votre établissement."
+    },
+    {
+      "title": "Dimensions Sur Mesure",
+      "body": "Diamètres de 2 à 6 m, formes carrées ou rectangulaires. Chaque parasol est dimensionné précisément selon vos espaces."
+    },
+    {
+      "title": "Motorisation Disponible",
+      "body": "Option motorisation pour les grandes structures. Ouverture et fermeture automatiques, compatible avec des systèmes domotiques."
+    },
+    {
+      "title": "Résistance Vent & UV",
+      "body": "Testé pour résister aux vents forts (classe 5). Filtre jusqu'à 95 % des UV. Durée de vie supérieure à 10 ans avec entretien standard."
+    },
+    {
+      "title": "Référence Hôtelière",
+      "body": "Installés dans les hôtels et résidences balnéaires de Tunisie. Nos commerciaux se déplacent sur site pour les projets d'envergure."
+    }
+  ],
+  "premium": {
+    "headline": "Conçu pour durer,",
+    "italic": "pensé pour plaire",
+    "paragraph1": "Nos parasols sont fabriqués avec des profilés aluminium thermolaqué ultra-résistants à la corrosion saline — adaptés au bord de mer et aux zones côtières tunisiennes. Rien ne rouille, rien ne se déforme, même après des années d'exposition.",
+    "paragraph2": "La toile Sunbrella® filtre jusqu'à 95 % des rayons UV, résiste à la pluie et conserve son éclat sur le long terme. Plus de 35 coloris disponibles, tous coordonnables à l'identité visuelle de votre établissement.",
+    "features": [
+      "Structure aluminium thermolaqué — résistant à la corrosion saline et aux intempéries",
+      "Toiles Sunbrella® acrylique — 35+ coloris, protection UV jusqu'à 95 %",
+      "4 modèles déportés exclusifs — Dallas, Havana, Ibiza, Mauris",
+      "Dimensions sur mesure — diamètres de 2 à 6 m, formes carrées ou rectangulaires",
+      "Motorisation disponible — ouverture automatique compatible domotique",
+      "Testé classe 5 résistance au vent — durée de vie supérieure à 10 ans",
+      "Installation professionnelle partout en Tunisie"
+    ]
+  },
+  "quote": {
+    "text": "L'ombre n'est pas un luxe.",
+    "accent": "C'est une signature."
+  },
+  "cta": {
+    "headline": "Donnez de l'ombre",
+    "italic": "à votre projet.",
+    "body": "Partagez vos dimensions, votre coloris préféré et la nature de votre projet — nous revenons vers vous avec une offre sur mesure sous 24 heures.",
+    "ctaLabel": "Configurer mon parasol",
+    "ctaHref": "/parasol"
+  }
+}

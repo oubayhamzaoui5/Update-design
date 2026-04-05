@@ -1,0 +1,84 @@
+{
+  "hero": {
+    "eyebrow":        "Notre Histoire · Update Design",
+    "headline":       "Le fournisseur déco",
+    "headlineAccent": "des professionnels",
+    "headlineSuffix": "tunisiens.",
+    "body":           "Hôtels, promoteurs immobiliers, architectes, revendeurs — Update Design est structuré pour répondre aux exigences des professionnels : stock permanent, tarifs dégressifs et livraison rapide sur tout le territoire tunisien.",
+    "ctaLabel":       "Découvrir la boutique",
+    "ctaHref":        "/shop",
+    "locationLabel":  "Tunis, Tunisie",
+    "image":          "/about/about-hero.jpg"
+  },
+  "stats": [
+    { "value": "+200", "suffix": "",   "label": "Partenaires Professionnels" },
+    { "value": "4.8",  "suffix": "/5", "label": "Satisfaction Client" },
+    { "value": "72h",  "suffix": "",   "label": "Livraison Nationale" },
+    { "value": "1000", "suffix": "+",  "label": "Références en Stock" }
+  ],
+  "story": {
+    "eyebrow":        "Notre Histoire",
+    "headline":       "Pensé pour ceux",
+    "headlineAccent": "qui construisent.",
+    "paragraph1":     "Update Design est né pour servir les professionnels du secteur immobilier et de la décoration en Tunisie — ceux qui ont besoin de quantités, de régularité et d'un partenaire fiable à chaque projet.",
+    "paragraph2":     "Hôtels qui rénovent leurs chambres, promoteurs qui équipent des résidences entières, revendeurs qui gèrent leurs stocks — notre catalogue de plus de 1 000 références est structuré pour répondre à ces besoins à grande échelle.",
+    "checklist": [
+      "Tarifs dégressifs à partir de certains volumes",
+      "Stock permanent, expédition sous 24 à 72h",
+      "Interlocuteur dédié pour les comptes professionnels"
+    ],
+    "image": "/about/about-showroom.jpg"
+  },
+  "vision": {
+    "eyebrow":     "Notre Vision",
+    "quote":       "Les professionnels méritent un fournisseur",
+    "quoteAccent": "aussi sérieux",
+    "quoteSuffix": "qu'eux.",
+    "attribution": "L'équipe Update Design"
+  },
+  "values": {
+    "eyebrow":        "Notre Engagement",
+    "headline":       "Ce qui nous",
+    "headlineAccent": "distingue.",
+    "items": [
+      {
+        "num":   "01",
+        "title": "Volume & Tarifs Dégressifs",
+        "text":  "Plus vous commandez, plus le prix unitaire baisse. Nos grilles tarifaires sont pensées pour les professionnels qui achètent régulièrement ou en grande quantité."
+      },
+      {
+        "num":   "02",
+        "title": "Stock & Disponibilité",
+        "text":  "Nous maintenons un stock important pour que vos chantiers et projets ne soient jamais bloqués. Expédition sous 24 à 72h pour la grande majorité de notre catalogue."
+      },
+      {
+        "num":   "03",
+        "title": "Partenariat sur le Long Terme",
+        "text":  "Nous ne cherchons pas à vendre une fois — nous construisons des relations durables avec nos clients professionnels, avec un interlocuteur dédié et un suivi personnalisé."
+      }
+    ],
+    "image": "/about/about-craft.jpg"
+  },
+  "team": {
+    "eyebrow":        "L'Équipe",
+    "headline":       "Une équipe dédiée",
+    "headlineAccent": "aux professionnels.",
+    "paragraph1":     "Notre équipe comprend des commerciaux habitués à traiter des commandes volumineuses, des logisticiens qui coordonnent les livraisons sur chantier, et des conseillers produits capables de guider architectes et promoteurs dans leurs choix.",
+    "paragraph2":     "Chaque compte professionnel bénéficie d'un interlocuteur dédié — pas de standard téléphonique, pas de formulaire perdu. Un contact direct, des réponses rapides.",
+    "stats": [
+      { "v": "+200", "l": "Partenaires pro actifs" },
+      { "v": "100%", "l": "Qualité certifiée" }
+    ],
+    "image": "/about/about-team.jpg"
+  },
+  "cta": {
+    "eyebrow":        "Travaillons ensemble",
+    "headline":       "Obtenez votre devis",
+    "headlineAccent": "en 24 heures.",
+    "body":           "Hôtel, résidence, chantier ou stock revendeur — envoyez-nous vos références et quantités, nous vous répondons avec une offre personnalisée sous 24h.",
+    "primaryLabel":   "Demander un devis",
+    "primaryHref":    "/contact",
+    "secondaryLabel": "Voir le catalogue",
+    "secondaryHref":  "/shop"
+  }
+}

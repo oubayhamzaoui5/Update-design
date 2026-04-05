@@ -1,0 +1,82 @@
+{
+  "hero": {
+    "headline": "Store à Bras",
+    "italic": "Invisibles",
+    "body": "Le store qui disparaît. Bras articulés entièrement escamotables dans un caisson discret — protection maximale le jour, façade parfaite la nuit.",
+    "ctaLabel": "Configurer mon store",
+    "ctaHref": "/tinda"
+  },
+  "models": [
+    {
+      "name": "Pragua",
+      "desc": "Conception classique, robuste et polyvalente pour tous types de façades.",
+      "img": "/store/pragua-droit.webp",
+      "recommended": false
+    },
+    {
+      "name": "Valancia",
+      "desc": "Design épuré avec mécanisme à manivelle intégrée, finition premium.",
+      "img": "/store/valancia-droit.webp",
+      "recommended": true
+    }
+  ],
+  "premium": {
+    "headline": "Conçu pour durer,",
+    "italic": "pensé pour disparaître",
+    "paragraph1": "Nos stores à bras invisibles sont fabriqués avec des profilés aluminium thermolaqué résistants à la corrosion, au vent et à la chaleur du climat tunisien. Rien ne rouille, rien ne se déforme.",
+    "paragraph2": "La toile Sunbrella® — tissu acrylique haute performance — bloque jusqu'à 95 % des rayons UV, résiste à la pluie fine et conserve son éclat des années durant. 34 coloris disponibles, tous coordonnables à vos finitions intérieures et extérieures.",
+    "features": [
+      "Structure aluminium thermolaqué — résistant à la corrosion et aux intempéries",
+      "Toiles Sunbrella® acrylique — 34 coloris, résistance UV et pluie garantie",
+      "Bras articulés entièrement escamotables dans le caisson",
+      "Motorisation Somfy silencieuse — télécommande, murale ou application mobile",
+      "Capteur vent & pluie disponible en option",
+      "Fabrication sur mesure — largeurs jusqu'à 8 m",
+      "Installation professionnelle partout en Tunisie"
+    ]
+  },
+  "features": [
+    {
+      "title": "Bras Escamotables",
+      "body": "Les bras articulés se rétractent entièrement dans le caisson. Façade intacte, esthétique préservée — même fermé."
+    },
+    {
+      "title": "Motorisation Somfy",
+      "body": "Moteur Somfy ou Nice silencieux. Commande murale, télécommande ou application mobile. Automatisation crépusculaire disponible."
+    },
+    {
+      "title": "Structure Aluminium",
+      "body": "Profilés aluminium thermolaqué résistants à la corrosion, au vent et à la chaleur. Adapté au climat tunisien."
+    },
+    {
+      "title": "34 Coloris Sunbrella®",
+      "body": "Tissu acrylique haute performance — imperméable, anti-moisissures, résistant aux UV. Coordonnable à toutes vos finitions."
+    },
+    {
+      "title": "Lambrequin Sur Mesure",
+      "body": "Trois finitions disponibles : sans lambrequin, droit 30 cm ou vagues 30 cm. Option impression logo incluse."
+    },
+    {
+      "title": "Fabrication Sur Mesure",
+      "body": "Chaque store est fabriqué selon les cotes exactes de votre projet. Largeurs jusqu'à 8 m, profondeur jusqu'à 4 m."
+    }
+  ],
+  "applications": {
+    "headline": "Pour quels\nprojets ?",
+    "description": "Installés dans toute la Tunisie — du Grand Tunis aux zones touristiques côtières.",
+    "items": [
+      "Hôtels & Résidences Hôtelières",
+      "Restaurants & Cafés",
+      "Immeubles & Copropriétés",
+      "Villas & Maisons Individuelles",
+      "Bureaux & Commerces"
+    ]
+  },
+  "cta": {
+    "headline": "Prêt à habiller",
+    "italic": "votre façade ?",
+    "body": "Modèle, dimensions, coloris, options — configurez votre store et recevez un devis sous 24 h.",
+    "ctaLabel": "Configurer mon store",
+    "ctaHref": "/tinda"
+  }
+}

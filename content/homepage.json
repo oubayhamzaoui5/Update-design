@@ -1,0 +1,78 @@
+{
+  "hero": {
+    "ctaLabel": "Découvrir",
+    "ctaHref": "/shop",
+    "slides": [
+      { "id": "gazon",        "title": "Gazon Artificiel",       "image": "/hero/gazon-landscape-new.png" },
+      { "id": "parasols",     "title": "Parasols",               "image": "/hero/parasols-landscape-new.png" },
+      { "id": "panneaux",     "title": "Panneaux Muraux",        "image": "/hero/panneaux-landscape-new.png" },
+      { "id": "profile-bois", "title": "Profile Mural Bois",     "image": "/hero/profile-bois-landscape-new.png" },
+      { "id": "stores",       "title": "Store à Bras Invisibles","image": "/hero/stores-landscape-new.png" }
+    ]
+  },
+  "stats": [
+    { "value": "72h",  "suffix": "",   "label": "Livraison nationale" },
+    { "value": "1000", "suffix": "+",  "label": "Références en stock" },
+    { "value": "4.8",  "suffix": "/5", "label": "Satisfaction client" }
+  ],
+  "about": {
+    "eyebrow": "Notre Histoire",
+    "headline": "Le partenaire déco",
+    "headlineAccent": "des professionnels.",
+    "paragraph1": "Update Design s'adresse avant tout aux professionnels : hôtels, promoteurs immobiliers, architectes d'intérieur, revendeurs et entrepreneurs qui achètent en volume et exigent constance, qualité et prix compétitifs.",
+    "paragraph2": "Tarifs dégressifs, stock disponible, livraison nationale rapide — nous construisons des partenariats sur le long terme.",
+    "stats": [
+      { "value": "+200", "suffix": "",   "label": "Partenaires professionnels" },
+      { "value": "100%", "suffix": "",   "label": "Qualité certifiée" },
+      { "value": "4.8",  "suffix": "/5", "label": "Satisfaction client" }
+    ],
+    "ctaLabel": "Notre histoire",
+    "image": "/about/about-showroom.png"
+  },
+  "faq": {
+    "introText": "Tout ce que vous devez savoir avant de passer votre première commande professionnelle. Pour un devis sur mesure, notre équipe répond sous 24h.",
+    "items": [
+      {
+        "question": "Proposez-vous des tarifs dégressifs sur les commandes en volume ?",
+        "answer": "Oui. Nos prix sont structurés pour récompenser les achats en quantité. Plus le volume est important, plus le tarif unitaire est avantageux. Contactez-nous avec vos besoins et nous vous adressons une offre personnalisée sous 24h."
+      },
+      {
+        "question": "Comment obtenir un devis professionnel ?",
+        "answer": "Utilisez le formulaire de contact en sélectionnant « Devis volume / Achat en gros », indiquez les références et quantités souhaitées. Notre équipe commerciale vous répond sous 24h avec une offre détaillée."
+      },
+      {
+        "question": "Quels types de clients travaillent avec vous ?",
+        "answer": "Nous travaillons principalement avec des hôtels et résidences qui équipent plusieurs chambres ou espaces communs, des promoteurs immobiliers, des architectes et décorateurs d'intérieur, ainsi que des revendeurs qui achètent régulièrement en stock."
+      },
+      {
+        "question": "Quels sont les délais de livraison pour les grandes commandes ?",
+        "answer": "Les commandes en stock standard sont expédiées sous 24 à 72h. Pour les commandes volumineuses ou sur mesure (gazon artificiel au mètre, stores), un délai spécifique est convenu lors de la validation du devis."
+      },
+      {
+        "question": "Les particuliers peuvent-ils aussi commander ?",
+        "answer": "Tout à fait. Même si notre modèle est pensé pour les professionnels et les achats en volume, nous accueillons également les particuliers avec plaisir. Les mêmes produits, la même qualité — quelle que soit la quantité."
+      },
+      {
+        "question": "Livrez-vous sur tout le territoire tunisien ?",
+        "answer": "Oui, nous livrons dans tous les gouvernorats de Tunisie — de Tunis à Sfax, de Sousse à Bizerte et au-delà. Pour les gros volumes, nous organisons une logistique adaptée."
+      }
+    ]
+  },
+  "contact": {
+    "headline": "Nous sommes",
+    "headlineAccent": "à votre écoute.",
+    "description": "Demande de devis, achat en volume, partenariat revendeur ou question produit — nous répondons sous 24h.",
+    "phone": "+216 XX XXX XXX",
+    "location": "Tunisie — livraison nationale",
+    "hours": "Lun–Sam, 9h–18h",
+    "subjects": [
+      { "value": "devis",   "label": "Devis volume / Achat en gros" },
+      { "value": "hotel",   "label": "Hôtel / Résidence / Promoteur" },
+      { "value": "reseller","label": "Partenariat revendeur" },
+      { "value": "pro",     "label": "Architecte / Décorateur / BTP" },
+      { "value": "product", "label": "Information produit" },
+      { "value": "order",   "label": "Suivi de commande" },
+      { "value": "general", "label": "Question générale" }
+    ]
+  }
+}
