@@ -686,7 +686,7 @@ async function getVariantsAndValues(
     const product = mapProduct(v, categoriesById)
     return {
       ...product,
-      image: product.imageUrls[0] ?? '/aboutimg.webp',
+      image: product.imageUrls[0] ?? '/a-proposimg.webp',
     }
   })
 
@@ -694,7 +694,7 @@ async function getVariantsAndValues(
   for (const variant of variants) {
     const key = variantKeyToString(variant.variantKey ?? {})
     if (key) {
-      variantUrlMap[key] = `/product/${variant.slug}`
+      variantUrlMap[key] = `/produit/${variant.slug}`
     }
   }
 
@@ -748,7 +748,7 @@ async function getVariantsAndValues(
           value: raw,
           resolvedValue: {
             type: 'image',
-            url: image ? fileUrl('variables', parsed.id, image) : '/aboutimg.webp',
+            url: image ? fileUrl('variables', parsed.id, image) : '/a-proposimg.webp',
             value: variable?.name ? String(variable.name) : undefined,
           },
         })
@@ -955,11 +955,11 @@ export async function getProductDetailsBySlug(rawSlug: string): Promise<ProductD
     product: {
       ...base,
       details,
-      image: base.imageUrls[0] ?? '/aboutimg.webp',
+      image: base.imageUrls[0] ?? '/a-proposimg.webp',
     },
     categories,
     categoryName,
-    imageUrls: base.imageUrls.length > 0 ? base.imageUrls : ['/aboutimg.webp'],
+    imageUrls: base.imageUrls.length > 0 ? base.imageUrls : ['/a-proposimg.webp'],
     availability,
     variants,
     variantUrlMap,

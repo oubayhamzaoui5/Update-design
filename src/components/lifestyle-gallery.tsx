@@ -5,12 +5,12 @@ import { ScrollTrigger } from "gsap/ScrollTrigger";
 gsap.registerPlugin(ScrollTrigger);
 
 const images = [
-  { id: 1, src: "/aboutimg.webp", alt: "Modern interior with elegant chandelier" },
-  { id: 2, src: "/aboutimg.webp", alt: "Dining room with crystal lighting" },
-  { id: 3, src: "/aboutimg.webp", alt: "Contemporary space with pendant lighting" },
-  { id: 4, src: "/aboutimg.webp", alt: "Bedroom with luxury wall lighting" },
-  { id: 5, src: "/aboutimg.webp", alt: "Bedroom with luxury wall lighting" },
-    { id: 6, src: "/aboutimg.webp", alt: "Bedroom with luxury wall lighting" },
+  { id: 1, src: "/a-proposimg.webp", alt: "Modern interior with elegant chandelier" },
+  { id: 2, src: "/a-proposimg.webp", alt: "Dining room with crystal lighting" },
+  { id: 3, src: "/a-proposimg.webp", alt: "Contemporary space with pendant lighting" },
+  { id: 4, src: "/a-proposimg.webp", alt: "Bedroom with luxury wall lighting" },
+  { id: 5, src: "/a-proposimg.webp", alt: "Bedroom with luxury wall lighting" },
+    { id: 6, src: "/a-proposimg.webp", alt: "Bedroom with luxury wall lighting" },
 
 ];
 

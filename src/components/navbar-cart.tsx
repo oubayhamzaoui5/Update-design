@@ -306,7 +306,7 @@ export function NavbarCart({ currentUser, onOpenChange, children }: NavbarCartPr
                 </p>
               </div>
               <Link
-                href="/shop"
+                href="/boutique"
                 onClick={() => setIsCartOpen(false)}
                 className="inline-flex cursor-pointer items-center gap-2 px-6 py-3 transition-all hover:gap-3"
                 style={{
@@ -326,7 +326,7 @@ export function NavbarCart({ currentUser, onOpenChange, children }: NavbarCartPr
             <div className="space-y-4">
               {cartItems.map((item) => {
                 const prod = item.product
-                const productHref = prod?.slug ? `/product/${prod.slug}` : null
+                const productHref = prod?.slug ? `/produit/${prod.slug}` : null
                 const imgSrc = prod && Array.isArray(prod.imageUrls) && prod.imageUrls.length > 0
                   ? prod.imageUrls[0]! : "/placeholder-square.png"
                 const unitPrice = typeof prod?.promoPrice === "number" && prod.promoPrice > 0 && typeof prod?.price === "number" && prod.promoPrice < prod.price
@@ -456,7 +456,7 @@ export function NavbarCart({ currentUser, onOpenChange, children }: NavbarCartPr
             <div className="px-7 py-5 flex flex-col gap-3">
               <button
                 type="button"
-                onClick={() => { setIsCartOpen(false); router.push("/checkout") }}
+                onClick={() => { setIsCartOpen(false); router.push("/paiement") }}
                 className="w-full cursor-pointer inline-flex items-center justify-center gap-2 py-4 transition-all hover:opacity-85 active:scale-[0.99]"
                 style={{
                   fontFamily: BODY,

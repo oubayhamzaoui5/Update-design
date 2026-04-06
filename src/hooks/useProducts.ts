@@ -6,7 +6,7 @@ import {
   updateProductAction,
   deleteProductAction,
   updateVariantKeyAction,
-} from '@/app/(admin)/admin/products/actions'
+} from '@/app/(admin)/admin/produits/actions'
 import { normalizeRelationIds } from '@/utils/product.utils'
 import type {
   Product,

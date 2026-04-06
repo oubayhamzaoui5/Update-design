@@ -9,7 +9,7 @@ type HeroContent = HomepageContent["hero"]
 
 const DEFAULT: HeroContent = {
   ctaLabel: "Découvrir",
-  ctaHref:  "/shop",
+  ctaHref:  "/boutique",
   slides: [
     { id: "gazon",        title: "Gazon Artificiel",        image: "/hero/gazon-landscape-new.png" },
     { id: "parasols",     title: "Parasols",                image: "/hero/parasols-landscape-new.png" },

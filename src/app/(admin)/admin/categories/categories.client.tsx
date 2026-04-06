@@ -242,14 +242,14 @@ export default function CategoriesClient(props: { initialCategories: Category[] 
                   name: updated.name,
                   slug: updated.slug,
                   order: updated.order,
-                  description: updated.description ?? '',
+                  description: updated.description ?? null,
                   parent: updated.parent ?? null,
                   promo: updated.promo,
                   activeAll: updated.activeAll,
-                  menuImage: updated.menuImage ?? undefined,
-                  menuImageUrl: updated.menuImageUrl ?? undefined,
-                  coverImage: updated.coverImage ?? undefined,
-                  coverImageUrl: updated.coverImageUrl ?? undefined,
+                  menuImage: updated.menuImage ?? null,
+                  menuImageUrl: updated.menuImageUrl ?? null,
+                  coverImage: updated.coverImage ?? null,
+                  coverImageUrl: updated.coverImageUrl ?? null,
                 }
               : c
           )
@@ -563,7 +563,7 @@ export default function CategoriesClient(props: { initialCategories: Category[] 
                   <ImageField
                     label="Image menu (mega-menu + page d'accueil)"
                     preview={form.menuImagePreview}
-                    existing={editingCat?.menuImageUrl}
+                    existing={editingCat?.menuImageUrl ?? undefined}
                     removed={form.removeMenuImage}
                     inputRef={menuImageRef}
                     onChange={(file, preview) =>
@@ -578,7 +578,7 @@ export default function CategoriesClient(props: { initialCategories: Category[] 
                     <ImageField
                       label="Image de couverture (page categorie)"
                       preview={form.coverImagePreview}
-                      existing={editingCat?.coverImageUrl}
+                      existing={editingCat?.coverImageUrl ?? undefined}
                       removed={form.removeCoverImage}
                       inputRef={coverImageRef}
                       onChange={(file, preview) =>

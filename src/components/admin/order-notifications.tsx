@@ -150,7 +150,7 @@ function useOrderNotificationsListener(enabled: boolean) {
 
     notification.onclick = () => {
       window.focus()
-      window.location.href = '/admin/orders'
+      window.location.href = '/admin/commandes'
     }
   }, [enabled])
 

@@ -29,7 +29,7 @@ export default function Sidebar() {
     try {
       await fetch("/api/auth/logout", { method: "POST" })
     } finally {
-      router.replace("/login")
+      router.replace("/connexion")
       router.refresh()
     }
   }
@@ -101,7 +101,7 @@ export default function Sidebar() {
           Main
         </p>
         <NavLink href="/admin" icon={LayoutDashboard} label="Tableau de bord" />
-        <NavLink href="/admin/products" icon={Package} label="Produits" />
+        <NavLink href="/admin/produits" icon={Package} label="Produits" />
         <NavLink href="/admin/categories" icon={FolderTree} label="Categories" />
         <NavLink href="/admin/variables" icon={Sliders} label="Variables" />
 
@@ -111,12 +111,12 @@ export default function Sidebar() {
         >
           Operations
         </p>
-        <NavLink href="/admin/orders" icon={ShoppingCart} label="Commandes" badge={pendingCount} />
-        <NavLink href="/admin/inventory" icon={Boxes} label="Stock" />
-        <NavLink href="/admin/users" icon={Users} label="Clients" />
-        <NavLink href="/admin/admins" icon={ShieldCheck} label="Administrateurs" />
+        <NavLink href="/admin/commandes" icon={ShoppingCart} label="Commandes" badge={pendingCount} />
+        <NavLink href="/admin/inventaire" icon={Boxes} label="Stock" />
+        <NavLink href="/admin/utilisateurs" icon={Users} label="Clients" />
+        <NavLink href="/admin/administrateurs" icon={ShieldCheck} label="Administrateurs" />
         <NavLink href="/admin/blog" icon={FileText} label="Blog" />
-        <NavLink href="/admin/content" icon={Sliders} label="Contenu site" />
+        <NavLink href="/admin/contenu" icon={Sliders} label="Contenu site" />
 
         <p
           className="px-3 pt-4 pb-2 text-[10px] font-semibold uppercase tracking-widest"
@@ -124,8 +124,8 @@ export default function Sidebar() {
         >
           System
         </p>
-        <NavLink href="/admin/keys" icon={KeyRound} label="Cles API" />
-        <NavLink href="/admin/settings" icon={Settings} label="Parametres" />
+        <NavLink href="/admin/cles" icon={KeyRound} label="Cles API" />
+        <NavLink href="/admin/parametres" icon={Settings} label="Parametres" />
       </nav>
 
       {/* Logout */}

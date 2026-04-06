@@ -14,10 +14,10 @@ export default function ProductCard({ product }: { product: HomeProduct }) {
 
   return (
     <article className="group overflow-hidden rounded-2xl border border-foreground/10 bg-background transition duration-300 hover:-translate-y-1 hover:shadow-lg">
-      <Link href={`/product/${product.slug}`} className="block">
+      <Link href={`/produit/${product.slug}`} className="block">
         <div className="relative aspect-square overflow-hidden bg-foreground/5">
           <Image
-            src={product.imageUrl || '/aboutimg.webp'}
+            src={product.imageUrl || '/a-proposimg.webp'}
             alt={product.name}
             fill
             className="object-cover transition duration-500 group-hover:scale-105"
@@ -36,7 +36,7 @@ export default function ProductCard({ product }: { product: HomeProduct }) {
           </span>
         </div>
 
-        <Link href={`/product/${product.slug}`} className="block text-base font-semibold leading-snug hover:underline">
+        <Link href={`/produit/${product.slug}`} className="block text-base font-semibold leading-snug hover:underline">
           {product.name}
         </Link>
 

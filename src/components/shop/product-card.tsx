@@ -61,13 +61,13 @@ export default function ProductCard({
   const [liked, setLiked] = useState(initialWishlisted)
   const [isWishLoading, setIsWishLoading] = useState(false)
 
-  const productHref = originQuery ? `/product/${p.slug}?${originQuery}` : `/product/${p.slug}`
+  const productHref = originQuery ? `/produit/${p.slug}?${originQuery}` : `/produit/${p.slug}`
 
   useEffect(() => {
     setLiked(initialWishlisted)
   }, [initialWishlisted])
 
-  const imageSrc = imageCount > 0 ? imageUrls[0] : '/aboutimg.webp'
+  const imageSrc = imageCount > 0 ? imageUrls[0] : '/a-proposimg.webp'
   const hoverImageSrc = imageCount > 1 ? imageUrls[1] : imageSrc
 
   const hasPromo = p.promoPrice != null && p.promoPrice > 0 && p.promoPrice < p.price
@@ -85,8 +85,8 @@ export default function ProductCard({
       setLiked(inWishlist)
     } catch {
       const currentPath =
-        typeof window !== 'undefined' ? `${window.location.pathname}${window.location.search}` : `/product/${p.slug}`
-      router.push(`/login?next=${encodeURIComponent(currentPath)}`)
+        typeof window !== 'undefined' ? `${window.location.pathname}${window.location.search}` : `/produit/${p.slug}`
+      router.push(`/connexion?next=${encodeURIComponent(currentPath)}`)
     } finally {
       setIsWishLoading(false)
     }

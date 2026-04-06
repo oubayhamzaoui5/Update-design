@@ -67,7 +67,7 @@ export default function LandingShowcase() {
               ))}
             </div>
             <Link
-              href="/product/pudding-proteine-aux-graines-de-chia-saveur-fraises-et-creme"
+              href="/produit/pudding-proteine-aux-graines-de-chia-saveur-fraises-et-creme"
               className="shimmer-btn relative isolate inline-flex h-13 items-center justify-center overflow-hidden rounded-sm border-3 border-black px-8 text-sm font-black uppercase tracking-[0.12em] text-white transition-all duration-200 hover:-translate-x-0.5 hover:-translate-y-0.5 hover:shadow-[6px_6px_0px_#111] active:translate-x-0 active:translate-y-0 active:shadow-[2px_2px_0px_#111]"
               style={{ fontFamily: FONT, fontWeight: 900, background: "#C4A23E", boxShadow: "4px 4px 0 #111" }}
             >
@@ -138,7 +138,7 @@ export default function LandingShowcase() {
               ))}
             </div>
             <Link
-              href="/shop"
+              href="/boutique"
               className="shimmer-btn relative isolate inline-flex h-13 items-center justify-center overflow-hidden rounded-sm border-3 border-black px-8 text-sm font-black uppercase tracking-[0.12em] text-white transition-all duration-200 hover:-translate-x-0.5 hover:-translate-y-0.5 hover:shadow-[6px_6px_0px_#111] active:translate-x-0 active:translate-y-0 active:shadow-[2px_2px_0px_#111]"
               style={{ fontFamily: FONT, fontWeight: 900, background: "#C4A23E", boxShadow: "4px 4px 0 #111" }}
             >

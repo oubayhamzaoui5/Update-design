@@ -14,7 +14,7 @@ export default function ProductGallery({
   const [currentImage, setCurrentImage] = useState(0)
   const carouselRef = useRef<HTMLDivElement | null>(null)
 
-  const safeImages = Array.isArray(images) && images.length ? images : ["/aboutimg.webp"]
+  const safeImages = Array.isArray(images) && images.length ? images : ["/a-proposimg.webp"]
   const hasMultipleImages = safeImages.length > 1
   const galleryLayoutClass = hasMultipleImages
     ? "grid gap-4 md:grid-cols-[1fr_auto] md:items-start"

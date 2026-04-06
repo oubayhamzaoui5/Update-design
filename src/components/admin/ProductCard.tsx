@@ -178,7 +178,7 @@ export default function ProductCard({
       {/* VARIANTS PAGE LINK */}
       {p.isParent && p.isVariant && (
         <Link
-          href={`/admin/products/${p.id}/variants`}
+          href={`/admin/produits/${p.id}/variants`}
           aria-label="Ouvrir les variantes"
           className="absolute top-2 right-2 inline-flex h-6 w-6 items-center justify-center rounded-full bg-blue-600 text-white"
         >

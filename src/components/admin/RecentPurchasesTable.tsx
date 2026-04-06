@@ -47,7 +47,7 @@ export default function RecentPurchasesTable() {
     pending: 'Pending',
     confirmed: 'Confirmed',
     delevering: 'En cours de livraison',
-    delivered: 'Livree',
+    Livree: 'Livree',
     cancelled: 'Cancelled',
     'En attente': 'En attente',
     returned: 'Returned',
@@ -75,7 +75,7 @@ export default function RecentPurchasesTable() {
           <p className="text-sm text-slate-500">Snapshot of recent transactions</p>
         </div>
         <Link 
-          href="/admin/orders" 
+          href="/admin/commandes" 
           className="text-blue-600 hover:text-blue-700 text-sm font-medium flex items-center gap-1 transition-colors"
         >
           View all <ChevronRight className="w-4 h-4" />

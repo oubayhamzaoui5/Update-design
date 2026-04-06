@@ -19,22 +19,22 @@ const CATEGORY_ITEMS = [
   {
     id: 'lighting',
     name: 'Luminaires',
-    href: '/shop?category=lighting',
-    image: '/aboutimg.webp',
+    href: '/boutique?category=lighting',
+    image: '/a-proposimg.webp',
     description: 'Suspensions, lampadaires et appliques.',
   },
   {
     id: 'decor',
     name: 'Decoration',
-    href: '/shop?category=decor',
-    image: '/aboutimg.webp',
+    href: '/boutique?category=decor',
+    image: '/a-proposimg.webp',
     description: 'Objets design et textures elegantes.',
   },
   {
     id: 'furniture',
     name: 'Mobilier',
-    href: '/shop?category=furniture',
-    image: '/aboutimg.webp',
+    href: '/boutique?category=furniture',
+    image: '/a-proposimg.webp',
     description: 'Pieces signature pour chaque piece.',
   },
 ]
@@ -47,7 +47,7 @@ const FALLBACK_PRODUCTS: HomeProduct[] = [
     price: 420,
     promoPrice: 360,
     currency: 'DT',
-    imageUrl: '/aboutimg.webp',
+    imageUrl: '/a-proposimg.webp',
     shortDescription: 'Lampadaire en metal brosse, eclairage doux et diffus.',
     category: 'Lighting',
     inStock: true,
@@ -59,7 +59,7 @@ const FALLBACK_PRODUCTS: HomeProduct[] = [
     price: 540,
     promoPrice: null,
     currency: 'DT',
-    imageUrl: '/aboutimg.webp',
+    imageUrl: '/a-proposimg.webp',
     shortDescription: 'Suspension contemporaine pour salle a manger.',
     category: 'Lighting',
     inStock: true,
@@ -71,7 +71,7 @@ const FALLBACK_PRODUCTS: HomeProduct[] = [
     price: 980,
     promoPrice: 899,
     currency: 'DT',
-    imageUrl: '/aboutimg.webp',
+    imageUrl: '/a-proposimg.webp',
     shortDescription: 'Lustre premium pour hall et sejour haut de gamme.',
     category: 'Lighting',
     inStock: true,
@@ -83,7 +83,7 @@ const FALLBACK_PRODUCTS: HomeProduct[] = [
     price: 610,
     promoPrice: null,
     currency: 'DT',
-    imageUrl: '/aboutimg.webp',
+    imageUrl: '/a-proposimg.webp',
     shortDescription: 'Silhouette organique et ambiance chaleureuse.',
     category: 'Lighting',
     inStock: false,
@@ -152,7 +152,7 @@ export default function HomePageClient() {
             </p>
           </div>
           <Button asChild variant="outline" className="rounded-full">
-            <Link href="/shop">Voir tout</Link>
+            <Link href="/boutique">Voir tout</Link>
           </Button>
         </div>
 

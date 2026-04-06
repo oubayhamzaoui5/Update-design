@@ -9,7 +9,7 @@ export default function HeroSection() {
       <div className="absolute inset-0 bg-gradient-to-r from-background via-background/80 to-transparent" />
       <div className="absolute inset-0 opacity-30">
         <Image
-          src="/aboutimg.webp"
+          src="/a-proposimg.webp"
           alt="Salon moderne avec luminaires design"
           fill
           priority
@@ -29,10 +29,10 @@ export default function HeroSection() {
           </p>
           <div className="flex flex-wrap gap-3">
             <Button asChild size="lg" className="rounded-full px-8">
-              <Link href="/shop">Decouvrir la boutique</Link>
+              <Link href="/boutique">Decouvrir la boutique</Link>
             </Button>
             <Button asChild size="lg" variant="outline" className="rounded-full px-8">
-              <Link href="/shop?category=lighting">Voir les luminaires</Link>
+              <Link href="/boutique?category=lighting">Voir les luminaires</Link>
             </Button>
           </div>
         </div>

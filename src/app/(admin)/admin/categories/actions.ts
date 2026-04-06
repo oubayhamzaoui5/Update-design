@@ -41,7 +41,7 @@ export async function createCategoryAction(formData: FormData) {
   const created = await pb.collection('categories').create(payload)
 
   revalidatePath('/admin/categories')
-  revalidatePath('/shop')
+  revalidatePath('/boutique')
   revalidatePath('/')
   revalidateTag('shop-categories', 'max')
 
@@ -105,7 +105,7 @@ export async function updateCategoryAction(id: string, formData: FormData) {
   const updated = await pb.collection('categories').update(id, payload)
 
   revalidatePath('/admin/categories')
-  revalidatePath('/shop')
+  revalidatePath('/boutique')
   revalidatePath('/')
   revalidateTag('shop-categories', 'max')
 
@@ -130,7 +130,7 @@ export async function deleteCategoryAction(id: string) {
   const { pb } = await getAdminPbForAction()
   await pb.collection('categories').delete(id)
   revalidatePath('/admin/categories')
-  revalidatePath('/shop')
+  revalidatePath('/boutique')
   revalidatePath('/')
   revalidateTag('shop-categories', 'max')
   return { ok: true }
@@ -154,7 +154,7 @@ export async function reorderCategoriesAction(
   )
 
   revalidatePath('/admin/categories')
-  revalidatePath('/shop')
+  revalidatePath('/boutique')
   revalidatePath('/')
   revalidateTag('shop-categories', 'max')
   return { ok: true }

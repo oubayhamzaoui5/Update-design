@@ -92,7 +92,7 @@ export default function Hero() {
         </h1>
 
         {/* BUTTON */}
-    <Link href="/shop?category=lighting">
+    <Link href="/boutique?category=lighting">
 <button
   className="
     relative mt-6 px-6 py-2
@@ -132,7 +132,7 @@ transitionProperty: "opacity, transform",
   }}
 >
   <img
-    src="/aboutimg.webp"
+    src="/a-proposimg.webp"
     alt="lamp dark"
     className="max-h-[100vh] max-w-full h-auto w-auto  md:object-contain"
   />
@@ -146,7 +146,7 @@ transitionProperty: "opacity, transform",
             opacity: lampFadeOut ? 0 : 1,
           }}
         >
-          <img src="/aboutimg.webp" alt="lamp" className="max-h-[100vh] max-w-full h-auto w-auto object-contain" />
+          <img src="/a-proposimg.webp" alt="lamp" className="max-h-[100vh] max-w-full h-auto w-auto object-contain" />
         </div>
       </div>
     </div>

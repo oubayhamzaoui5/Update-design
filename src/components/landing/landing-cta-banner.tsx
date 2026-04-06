@@ -44,14 +44,14 @@ export default function LandingCtaBanner() {
             </p>
             <div className="flex flex-wrap gap-3">
               <Link
-                href="/shop"
+                href="/boutique"
                 className="inline-flex items-center gap-2 text-sm transition-all duration-200 hover:opacity-90 hover:-translate-y-0.5"
                 style={{ background: COLOR_ACCENT, color: COLOR_DARK, padding: "13px 30px", letterSpacing: "0.05em", fontWeight: 500 }}
               >
                 Voir les produits <ArrowRight size={13} />
               </Link>
               <Link
-                href="/about"
+                href="/a-propos"
                 className="inline-flex items-center gap-2 text-sm transition-all duration-200 hover:-translate-y-0.5"
                 style={{ border: "1px solid rgba(255,255,255,0.18)", color: "rgba(255,255,255,0.65)", padding: "13px 30px", letterSpacing: "0.05em", fontWeight: 300 }}
               >

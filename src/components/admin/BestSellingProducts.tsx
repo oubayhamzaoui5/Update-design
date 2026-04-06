@@ -72,7 +72,7 @@ export default function BestSellingProducts() {
       className="w-full h-full object-cover"
       onError={(e) => {
         // Fallback if the URL returns a 404
-        (e.target as HTMLImageElement).src = '/aboutimg.webp'; 
+        (e.target as HTMLImageElement).src = '/a-proposimg.webp'; 
       }}
     />
   ) : (

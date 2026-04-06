@@ -103,7 +103,7 @@ export default function VariablesClient({
   <div className="flex flex-col items-center gap-3 text-center w-full">
     <div className="h-16 w-16 overflow-visible rounded-none bg-transparent sm:h-20 sm:w-20">
       <img
-        src={v.image || '/aboutimg.webp'}
+        src={v.image || '/a-proposimg.webp'}
         alt={v.name}
         className="h-full w-full object-contain"
       />

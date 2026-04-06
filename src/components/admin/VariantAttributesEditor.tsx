@@ -5,7 +5,7 @@ import { Trash2 } from 'lucide-react'
 
 import Button from '@/components/admin/button'
 import VariantValueSelector from '@/components/admin/variant-value-selector'
-import { saveParentVariantAttributes } from '@/app/(admin)/admin/products/actions'
+import { saveParentVariantAttributes } from '@/app/(admin)/admin/produits/actions'
 
 type KV = { key: string; value: string }
 type VariantVariable = {
@@ -53,7 +53,7 @@ export default function VariantAttributesEditor({
       onSave?.()
     } catch (error) {
       console.error(error)
-      setNotice('Echec de l'enregistrement des attributs de variante.')
+      setNotice("Echec de l'enregistrement des attributs de variante.")
     } finally {
       setSaving(false)
       setTimeout(() => setNotice(null), 3000)

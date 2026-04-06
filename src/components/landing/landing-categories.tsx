@@ -44,7 +44,7 @@ export default function LandingCategories({ categories: allCategories = [] }: { 
               Tout pour votre maison
             </h2>
           </div>
-          <Link href="/shop" className="hidden md:inline-flex items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.15em] transition-all hover:gap-3" style={{ color: "rgba(28,26,20,0.45)", fontFamily: BODY }}>
+          <Link href="/boutique" className="hidden md:inline-flex items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.15em] transition-all hover:gap-3" style={{ color: "rgba(28,26,20,0.45)", fontFamily: BODY }}>
             Voir tout <ArrowRight size={13} />
           </Link>
         </div>
@@ -69,7 +69,7 @@ export default function LandingCategories({ categories: allCategories = [] }: { 
                 style={{ border: "1px solid rgba(196,162,62,0.15)" }}
               >
                 {/* Image */}
-                <Link href={`/shop/${cat.slug}`} className="block relative overflow-hidden" style={{ aspectRatio: "4/3" }}>
+                <Link href={`/boutique/${cat.slug}`} className="block relative overflow-hidden" style={{ aspectRatio: "4/3" }}>
                   <div className="absolute inset-0 transition-transform duration-700 group-hover:scale-[1.03]">
                     {imageSrc ? (
                       <Image
@@ -117,7 +117,7 @@ export default function LandingCategories({ categories: allCategories = [] }: { 
                       {children.map((child) => (
                         <li key={child.id}>
                           <Link
-                            href={`/shop/${child.slug}`}
+                            href={`/boutique/${child.slug}`}
                             className="flex items-center gap-2.5 py-1 transition-colors duration-150 group/link"
                             style={{ fontFamily: BODY }}
                           >
@@ -135,7 +135,7 @@ export default function LandingCategories({ categories: allCategories = [] }: { 
                   )}
 
                   <Link
-                    href={`/shop/${cat.slug}`}
+                    href={`/boutique/${cat.slug}`}
                     className="mt-auto inline-flex items-center gap-1.5 self-start text-[10px] font-bold uppercase tracking-[0.18em] transition-all hover:gap-2.5"
                     style={{ color: GOLD, fontFamily: BODY }}
                   >
@@ -149,7 +149,7 @@ export default function LandingCategories({ categories: allCategories = [] }: { 
 
         {/* Mobile see all */}
         <div className="mt-8 flex justify-center md:hidden">
-          <Link href="/shop" className="inline-flex items-center gap-2 text-sm font-semibold uppercase tracking-[0.15em]" style={{ color: DARK, fontFamily: BODY }}>
+          <Link href="/boutique" className="inline-flex items-center gap-2 text-sm font-semibold uppercase tracking-[0.15em]" style={{ color: DARK, fontFamily: BODY }}>
             Voir tous les produits <ArrowRight size={14} />
           </Link>
         </div>

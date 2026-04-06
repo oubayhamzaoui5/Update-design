@@ -78,7 +78,7 @@ export function useAuth() {
       }
 
       const safeRedirectTo = resolveRedirectPath(redirectTo)
-      const targetPath = safeRedirectTo ?? (data.user.role === 'admin' ? '/admin/products' : '/')
+      const targetPath = safeRedirectTo ?? (data.user.role === 'admin' ? '/admin/produits' : '/')
 
       router.refresh()
       router.push(targetPath)

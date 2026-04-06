@@ -34,7 +34,7 @@ export async function createVariableAction(formData: FormData) {
   const { pb } = await getAdminPbForAction()
   const created = await pb.collection('variables').create(safe)
   revalidatePath('/admin/variables')
-  revalidatePath('/admin/products')
+  revalidatePath('/admin/produits')
   return created
 }
 
@@ -43,6 +43,6 @@ export async function deleteVariableAction(id: string) {
   const { pb } = await getAdminPbForAction()
   await pb.collection('variables').delete(id)
   revalidatePath('/admin/variables')
-  revalidatePath('/admin/products')
+  revalidatePath('/admin/produits')
   return { ok: true }
 }

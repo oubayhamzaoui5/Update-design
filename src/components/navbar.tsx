@@ -319,7 +319,7 @@ export function Navbar(props: NavbarProps) {
       setCurrentUser((data?.user as AuthUser) ?? null); closeAuthModal(); router.refresh()
       const safeRedirect = resolveRedirectPath(postLoginRedirect)
       if (safeRedirect) { router.push(safeRedirect); return }
-      if ((data?.user as AuthUser | undefined)?.role === "admin") router.push("/admin/products")
+      if ((data?.user as AuthUser | undefined)?.role === "admin") router.push("/admin/produits")
     } catch { setAuthError("Une erreur est survenue.") } finally { setIsAuthSubmitting(false) }
   }
 
@@ -340,7 +340,7 @@ export function Navbar(props: NavbarProps) {
       setCurrentUser((loginData?.user as AuthUser) ?? null); closeAuthModal(); router.refresh()
       const safeRedirect = resolveRedirectPath(postLoginRedirect)
       if (safeRedirect) { router.push(safeRedirect); return }
-      if ((loginData?.user as AuthUser | undefined)?.role === "admin") router.push("/admin/products")
+      if ((loginData?.user as AuthUser | undefined)?.role === "admin") router.push("/admin/produits")
     } catch { setAuthError("Une erreur est survenue.") } finally { setIsAuthSubmitting(false) }
   }
 
@@ -414,7 +414,7 @@ export function Navbar(props: NavbarProps) {
         return (
           <div key={category.id}>
             <div className="flex items-center justify-between">
-              <Link href={`/shop/${category.slug}`} className="text-sm font-light tracking-wide transition-colors hover:opacity-60" style={{ color: UD_DARK, fontFamily: BODY_FONT }} onClick={(e) => e.stopPropagation()}>
+              <Link href={`/boutique/${category.slug}`} className="text-sm font-light tracking-wide transition-colors hover:opacity-60" style={{ color: UD_DARK, fontFamily: BODY_FONT }} onClick={(e) => e.stopPropagation()}>
                 {category.name}
               </Link>
               {children.length > 0 && (
@@ -551,8 +551,8 @@ export function Navbar(props: NavbarProps) {
                           </div>
                           <div className="p-1.5 space-y-0.5">
                             {[
-                              { href: currentUser?.role === "admin" ? "/admin" : "/orders", icon: <CircleUser size={13} strokeWidth={2} />, label: currentUser?.role === "admin" ? "Panneau admin" : "Mon profil" },
-                              ...(currentUser?.role !== "admin" ? [{ href: "/orders", icon: <ClipboardList size={13} strokeWidth={2} />, label: "Mes commandes" }, { href: "/account", icon: <SlidersHorizontal size={13} strokeWidth={2} />, label: "Paramètres" }] : []),
+                              { href: currentUser?.role === "admin" ? "/admin" : "/commandes", icon: <CircleUser size={13} strokeWidth={2} />, label: currentUser?.role === "admin" ? "Panneau admin" : "Mon profil" },
+                              ...(currentUser?.role !== "admin" ? [{ href: "/commandes", icon: <ClipboardList size={13} strokeWidth={2} />, label: "Mes commandes" }, { href: "/compte", icon: <SlidersHorizontal size={13} strokeWidth={2} />, label: "Paramètres" }] : []),
                             ].map(({ href, icon, label }) => (
                               <Link key={href + label} href={href} className="flex items-center gap-3 px-3 py-2 text-[11px] tracking-wide rounded transition-colors hover:bg-black/5" style={{ color: UD_DARK, fontFamily: BODY_FONT }} onClick={() => setIsProfileOpen(false)}>
                                 {icon}{label}
@@ -615,7 +615,7 @@ export function Navbar(props: NavbarProps) {
                   style={{ background: UD_CREAM, borderTop: "1px solid rgba(196,162,62,0.12)" }}
                 >
                   <div className="p-6 space-y-5">
-                    {[{ href: "/shop", label: "Boutique" }, { href: "/#story", label: "À Propos" }, { href: "/#contact", label: "Contact" }, { href: "/blog", label: "Blog" }].map(({ href, label }, i) => (
+                    {[{ href: "/boutique", label: "Boutique" }, { href: "/#story", label: "À Propos" }, { href: "/#contact", label: "Contact" }, { href: "/blog", label: "Blog" }].map(({ href, label }, i) => (
                       <motion.div key={href} initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: i * 0.06, duration: 0.2 }}>
                         <Link href={href} onClick={() => setIsMenuOpen(false)} className="block text-[13px] font-semibold tracking-[0.2em] uppercase transition-colors" style={{ color: "rgba(28,26,20,0.6)", fontFamily: BODY_FONT }}
                           onMouseEnter={(e) => (e.currentTarget.style.color = UD_GOLD)} onMouseLeave={(e) => (e.currentTarget.style.color = "rgba(28,26,20,0.6)")}>

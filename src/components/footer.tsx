@@ -12,11 +12,11 @@ const columns = [
   {
     heading: "Boutique",
     links: [
-      { label: "Tous les produits",  href: "/shop" },
-      { label: "Panneaux muraux",    href: "/shop" },
-      { label: "Gazon artificiel",   href: "/shop" },
-      { label: "Néons LED",          href: "/shop" },
-      { label: "Nouveautés",         href: "/shop" },
+      { label: "Tous les produits",  href: "/boutique" },
+      { label: "Panneaux muraux",    href: "/boutique" },
+      { label: "Gazon artificiel",   href: "/boutique" },
+      { label: "Néons LED",          href: "/boutique" },
+      { label: "Nouveautés",         href: "/boutique" },
     ],
   },
   {

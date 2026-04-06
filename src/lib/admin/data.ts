@@ -9,15 +9,15 @@ export type AdminCategoryRecord = {
   name: string
   slug: string
   order: number
-  description?: string
-  parent?: string | null
-  promo?: number
-  activeAll?: boolean
-  coverImage?: string
-  coverImageUrl?: string
-  menuImage?: string
-  menuImageUrl?: string
-  features?: string[]
+  description: string | null
+  parent: string | null
+  promo: number
+  activeAll: boolean
+  coverImage: string | null
+  coverImageUrl: string | null
+  menuImage: string | null
+  menuImageUrl: string | null
+  features: string[]
 }
 
 export type AdminVariableRecord = {
@@ -176,7 +176,7 @@ export async function getAdminCategories(): Promise<AdminCategoryRecord[]> {
   const res = await pb.collection('categories').getList(1, 200, { sort: 'order,name' })
 
   return res.items.map((r: any) => {
-    let features: string[] | undefined
+    let features: string[] = []
     if (Array.isArray(r.features)) {
       features = r.features as string[]
     } else if (typeof r.features === 'string' && r.features.trim()) {
@@ -187,22 +187,22 @@ export async function getAdminCategories(): Promise<AdminCategoryRecord[]> {
     const parent: string | null =
       Array.isArray(rawParent) ? (rawParent[0] ?? null) : (rawParent || null)
 
-    const coverImage: string | undefined = r.coverImage || undefined
-    const menuImage: string | undefined = r.menuImage || undefined
+    const coverImage: string | null = r.coverImage || null
+    const menuImage: string | null = r.menuImage || null
 
     return {
       id: r.id,
       name: r.name ?? '',
       slug: r.slug ?? '',
       order: Number(r.order ?? 0),
-      description: (r.desc ?? r.description ?? '') as string,
+      description: (r.desc ?? r.description ?? null) as string | null,
       parent,
       promo: Number(r.promo ?? 0),
       activeAll: Boolean(r.activeAll),
       coverImage,
-      coverImageUrl: buildCategoryImageUrl(r.id, coverImage),
+      coverImageUrl: buildCategoryImageUrl(r.id, coverImage ?? undefined) ?? null,
       menuImage,
-      menuImageUrl: buildCategoryImageUrl(r.id, menuImage),
+      menuImageUrl: buildCategoryImageUrl(r.id, menuImage ?? undefined) ?? null,
       features,
     }
   })

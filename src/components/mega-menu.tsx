@@ -142,7 +142,7 @@ export function MegaMenu({ isOpen, categories = [], onClose }: MegaMenuProps) {
 
                   {/* Promotions link */}
                   <Link
-                    href="/shop?promo=true"
+                    href="/boutique?promo=true"
                     onClick={onClose}
                     onMouseEnter={() => setHoveredId(null)}
                     className="relative flex items-center gap-2 px-6 py-5 transition-opacity hover:opacity-80"
@@ -154,7 +154,7 @@ export function MegaMenu({ isOpen, categories = [], onClose }: MegaMenuProps) {
 
                   {/* All products link */}
                   <Link
-                    href="/shop"
+                    href="/boutique"
                     onClick={onClose}
                     className="ml-auto flex items-center gap-2 px-6 py-5 hover:opacity-60 transition-opacity"
                     style={{ fontFamily: BODY, fontSize: "0.75rem", fontWeight: 600, letterSpacing: "0.14em", textTransform: "uppercase", color: `rgba(28,26,20,0.65)` }}
@@ -191,7 +191,7 @@ export function MegaMenu({ isOpen, categories = [], onClose }: MegaMenuProps) {
                                   transition={{ delay: i * 0.04, duration: 0.2 }}
                                 >
                                   <Link
-                                    href={`/shop/${child.slug}`}
+                                    href={`/boutique/${child.slug}`}
                                     onClick={onClose}
                                     className="group flex flex-col overflow-hidden transition-all hover:opacity-90"
                                     style={{ border: `1px solid rgba(196,162,62,0.18)` }}
@@ -228,7 +228,7 @@ export function MegaMenu({ isOpen, categories = [], onClose }: MegaMenuProps) {
                   {activeRoot && activeChildren.length === 0 && (
                     <div className="py-6">
                       <Link
-                        href={`/shop/${activeRoot.slug}`}
+                        href={`/boutique/${activeRoot.slug}`}
                         onClick={onClose}
                         className="inline-flex items-center gap-2 text-sm font-semibold transition-opacity hover:opacity-70"
                         style={{ color: GOLD, fontFamily: BODY }}

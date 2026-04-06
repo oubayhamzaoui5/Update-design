@@ -112,7 +112,7 @@ const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
                 )}
                 {v.type === "image" && (
                   <img
-                    src={v.image || "/aboutimg.webp"}
+                    src={v.image || "/a-proposimg.webp"}
                     className="w-8 aspect-square rounded-full object-cover ring-1 ring-black/10"
                     alt={v.name}
                   />

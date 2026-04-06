@@ -4,7 +4,7 @@ import Link from "next/link"
 import { motion } from "framer-motion"
 import { ArrowRight, Star } from "lucide-react"
 import type { ProductListItem } from "@/lib/services/product.service"
-import ShopProductCard from "@/app/shop/_components/shop-product-card"
+import ShopProductCard from "@/app/boutique/_components/shop-product-card"
 
 const DISPLAY = "var(--font-display), 'Cormorant Garamond', Georgia, serif"
 const BODY    = "'DM Sans', 'Outfit', system-ui, sans-serif"
@@ -40,7 +40,7 @@ export default function LandingBestSellers({ products }: { products: ProductList
             </h2>
           </div>
           <Link
-            href="/shop"
+            href="/boutique"
             className="hidden md:inline-flex items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.15em] transition-all hover:gap-3"
             style={{ color: "rgba(28,26,20,0.45)", fontFamily: BODY }}
           >
@@ -60,7 +60,7 @@ export default function LandingBestSellers({ products }: { products: ProductList
             >
               <ShopProductCard
                 product={product}
-                productHref={`/product/${product.slug}`}
+                productHref={`/produit/${product.slug}`}
                 prioritizeImage={i < 2}
               />
             </motion.div>
@@ -70,7 +70,7 @@ export default function LandingBestSellers({ products }: { products: ProductList
         {/* Mobile see all */}
         <div className="mt-10 flex justify-center md:hidden">
           <Link
-            href="/shop"
+            href="/boutique"
             className="inline-flex items-center gap-2 text-sm font-semibold uppercase tracking-[0.15em]"
             style={{ color: DARK, fontFamily: BODY }}
           >

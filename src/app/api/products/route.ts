@@ -48,7 +48,7 @@ export async function GET(request: NextRequest) {
       price: item.price,
       promoPrice: item.promoPrice,
       currency: item.currency || 'DT',
-      imageUrl: item.imageUrls[0] ?? '/aboutimg.webp',
+      imageUrl: item.imageUrls[0] ?? '/a-proposimg.webp',
       shortDescription: item.description || 'Produit design pour interieur contemporain.',
       category: data.activeCategory?.name ?? mapCategoryName(category),
       inStock: item.inStock,

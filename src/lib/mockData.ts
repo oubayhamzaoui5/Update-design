@@ -34,8 +34,8 @@ export type StudioMember = {
 }
 
 export const luxeNav: LuxeNavItem[] = [
-  { label: 'Collections', href: '/shop' },
-  { label: 'A Propos', href: '/about' },
+  { label: 'Collections', href: '/boutique' },
+  { label: 'A Propos', href: '/a-propos' },
   { label: 'Contact', href: '/contact' },
 ]
 
@@ -43,22 +43,22 @@ export const homeCategories: LuxeCategory[] = [
   {
     id: 'suspensions',
     title: 'Suspensions',
-    href: '/shop?category=suspensions',
-    image: '/aboutimg.webp',
+    href: '/boutique?category=suspensions',
+    image: '/a-proposimg.webp',
     description: 'Volumes aeriens et silhouettes architecturales.',
   },
   {
     id: 'lampes-table',
     title: 'Lampes de Table',
-    href: '/shop?category=lampes-table',
-    image: '/aboutimg.webp',
+    href: '/boutique?category=lampes-table',
+    image: '/a-proposimg.webp',
     description: 'Lumiere d ambiance pour salon, bureau et chambre.',
   },
   {
     id: 'appliques-murales',
     title: 'Appliques Murales',
-    href: '/shop?category=appliques-murales',
-    image: '/aboutimg.webp',
+    href: '/boutique?category=appliques-murales',
+    image: '/a-proposimg.webp',
     description: 'Eclairage mural precis pour rythmer les espaces.',
   },
 ]
@@ -69,7 +69,7 @@ export const featuredProducts: LuxeProduct[] = [
     name: 'Suspension Halo en Laiton',
     slug: 'suspension-halo-laiton',
     priceEuro: 890,
-    image: '/aboutimg.webp',
+    image: '/a-proposimg.webp',
     category: 'Suspensions',
   },
   {
@@ -77,7 +77,7 @@ export const featuredProducts: LuxeProduct[] = [
     name: 'Lampe de Table Verre Fume',
     slug: 'lampe-table-verre-fume',
     priceEuro: 420,
-    image: '/aboutimg.webp',
+    image: '/a-proposimg.webp',
     category: 'Lampes de Table',
   },
   {
@@ -85,7 +85,7 @@ export const featuredProducts: LuxeProduct[] = [
     name: 'Applique Murale Marbre Noir',
     slug: 'applique-murale-marbre-noir',
     priceEuro: 560,
-    image: '/aboutimg.webp',
+    image: '/a-proposimg.webp',
     category: 'Appliques Murales',
   },
   {
@@ -93,7 +93,7 @@ export const featuredProducts: LuxeProduct[] = [
     name: 'Lampadaire Atelier Signature',
     slug: 'lampadaire-atelier-signature',
     priceEuro: 990,
-    image: '/aboutimg.webp',
+    image: '/a-proposimg.webp',
     category: 'Lampadaires',
   },
 ]
@@ -131,19 +131,19 @@ export const studioMembers: StudioMember[] = [
     id: 'm1',
     name: 'Claire Martin',
     role: 'Directrice Artistique',
-    image: '/aboutimg.webp',
+    image: '/a-proposimg.webp',
   },
   {
     id: 'm2',
     name: 'Julien Roche',
     role: 'Curateur Lumiere',
-    image: '/aboutimg.webp',
+    image: '/a-proposimg.webp',
   },
   {
     id: 'm3',
     name: 'Nora El Hadi',
     role: 'Responsable Studio',
-    image: '/aboutimg.webp',
+    image: '/a-proposimg.webp',
   },
 ]
 

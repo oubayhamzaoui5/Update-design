@@ -8,10 +8,10 @@ import { ScrollTrigger } from "gsap/ScrollTrigger";
 gsap.registerPlugin(ScrollTrigger);
 
 const baseImages = [
-  "/aboutimg.webp",
-  "/aboutimg.webp",
-  "/aboutimg.webp",
-  "/aboutimg.webp",
+  "/a-proposimg.webp",
+  "/a-proposimg.webp",
+  "/a-proposimg.webp",
+  "/a-proposimg.webp",
 ];
 
 const products = [

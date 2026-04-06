@@ -122,7 +122,7 @@ export async function sendAdminOrderPushNotification(order: NewOrderPayload) {
     title: 'Nouvelle commande',
     body: `${order.customerName} a passe une commande (${amount}).`,
     tag: `order-${order.id}`,
-    url: '/admin/orders',
+    url: '/admin/commandes',
   })
 
   await Promise.all(

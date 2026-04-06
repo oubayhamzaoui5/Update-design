@@ -44,19 +44,19 @@ export default function AlertNotifications() {
     {
       type: 'danger',
       message: `${counts?.outOfStock || 0} products are out of stock`,
-      link: '/admin/inventory',
+      link: '/admin/inventaire',
       linkText: 'Gerer le stock',
     },
     {
       type: 'warning',
       message: `${counts?.lowStock || 0} products have low stock`,
-      link: '/admin/inventory',
+      link: '/admin/inventaire',
       linkText: 'Gerer le stock',
     },
     {
       type: 'info',
       message: `${counts?.pendingOrders || 0} orders are pending`,
-      link: '/admin/orders',
+      link: '/admin/commandes',
       linkText: 'Voir les commandes',
     },
   ]

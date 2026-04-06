@@ -28,7 +28,7 @@ export default async function AdminBlogPage() {
           <p className="mt-1 text-sm" style={{ color: '#6B7280' }}>Gerez vos articles.</p>
         </div>
         <Link
-          href="/admin/blog/create"
+          href="/admin/blog/creer"
           className="rounded-xl px-4 py-2.5 text-sm font-semibold text-white transition-opacity hover:opacity-90"
           style={{ background: '#4F46E5' }}
         >
@@ -62,7 +62,7 @@ export default async function AdminBlogPage() {
                   <h3 className="truncate text-xl font-bold text-slate-900 dark:text-zinc-100">{post.title}</h3>
                   <div className="flex shrink-0 items-center gap-2">
                     <Link
-                      href={`/admin/blog/${post.id}/edit`}
+                      href={`/admin/blog/${post.id}/modifier`}
                       aria-label={`Edit ${post.title}`}
                       className="rounded-lg p-2 text-white transition-opacity hover:opacity-80" style={{ background: '#4F46E5' }}
                     >

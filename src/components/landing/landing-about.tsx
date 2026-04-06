@@ -25,7 +25,7 @@ const DEFAULT: AboutSection = {
     { value: "4.8",  suffix: "/5", label: "Satisfaction client" },
   ],
   ctaLabel: "Notre histoire",
-  image:    "/about/about-showroom.png",
+  image:    "/a-propos/about-showroom.png",
 }
 
 export default function LandingAbout({ content = DEFAULT }: { content?: AboutSection }) {
@@ -123,7 +123,7 @@ export default function LandingAbout({ content = DEFAULT }: { content?: AboutSec
             </div>
 
             <Link
-              href="/about"
+              href="/a-propos"
               className="inline-flex w-fit items-center gap-3 transition-all duration-300 hover:gap-5"
               style={{
                 fontFamily: BODY,
