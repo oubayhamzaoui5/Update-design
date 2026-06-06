@@ -27,6 +27,12 @@ const products = [
   { code: 'EX01-TEAK', name: 'LAME DE BARDAGE EN WPC 150*2900mm TEAK', note: 'Lame 150mm' },
 ]
 
+const models = [
+  { code: 'EX01', name: 'Lame de bardage 150mm', note: 'Lame lineaire pour facade et habillage mural', image: '/categories/ext-profiles.png' },
+  { code: 'EX04', name: 'Profile WPC bicolore', note: 'Effet bois avec contraste black selon finition', image: '/categories/ext-profiles.png' },
+  { code: 'EX05', name: 'Profile WPC plein ton', note: 'Teak, black, white, brawn et finitions unies', image: '/categories/ext-profiles.png' },
+]
+
 export default function PvcEffetBoisExterieurPage() {
   return (
     <StaticCataloguePage
@@ -43,6 +49,7 @@ export default function PvcEffetBoisExterieurPage() {
         { value: '150', label: 'lames mm' },
         { value: '219', label: 'profiles mm' },
       ]}
+      models={models}
       products={products}
       features={[
         { title: 'Usage facade', text: 'Profiles et lames prevus pour habiller des surfaces exterieures et zones semi-exposees.' },

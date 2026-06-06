@@ -151,7 +151,7 @@ export default async function ProfilMuralEffetBoisPage() {
                 {content.hero.body}
               </p>
               <div className="mt-10 flex flex-col gap-3 sm:flex-row">
-                <Link href={content.hero.primaryHref} className="inline-flex items-center justify-center gap-3 px-7 py-4 text-[11px] font-bold uppercase tracking-[0.2em] text-white" style={{ background: GOLD }}>
+                <Link href="/devis" className="inline-flex items-center justify-center gap-3 px-7 py-4 text-[11px] font-bold uppercase tracking-[0.2em] text-white" style={{ background: GOLD }}>
                   {content.hero.primaryLabel} <ArrowRight size={14} />
                 </Link>
                 <Link href={content.hero.secondaryHref} className="inline-flex items-center justify-center gap-3 border border-white/20 px-7 py-4 text-[11px] font-bold uppercase tracking-[0.2em] text-white/90 transition hover:bg-white/10">
@@ -219,7 +219,7 @@ export default async function ProfilMuralEffetBoisPage() {
                   {item}
                 </div>
               ))}
-              <Link href={content.advice.ctaHref} className="mt-5 inline-flex w-fit items-center gap-3 px-7 py-4 text-[11px] font-bold uppercase tracking-[0.2em] text-white" style={{ background: GOLD }}>
+              <Link href="/devis" className="mt-5 inline-flex w-fit items-center gap-3 px-7 py-4 text-[11px] font-bold uppercase tracking-[0.2em] text-white" style={{ background: GOLD }}>
                 {content.advice.ctaLabel} <ArrowRight size={14} />
               </Link>
             </div>

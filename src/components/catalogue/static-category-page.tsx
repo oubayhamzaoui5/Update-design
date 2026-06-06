@@ -4,6 +4,7 @@ import { ArrowRight, Check, Layers, PackageSearch, Ruler, Sparkles } from 'lucid
 
 import Footer from '@/components/footer'
 import { Navbar } from '@/components/navbar'
+import { QuoteButton } from '@/components/catalogue/quote-cart'
 
 const DISPLAY = "var(--font-display), 'Cormorant Garamond', Georgia, serif"
 const BODY = "'DM Sans', 'Outfit', system-ui, sans-serif"
@@ -41,6 +42,7 @@ type StaticCataloguePageProps = {
   productImage: string
   productImageAlt: string
   stats: Array<{ value: string; label: string }>
+  models?: StaticCatalogueProduct[]
   products: StaticCatalogueProduct[]
   accessories: StaticCatalogueAccessory[]
   features: StaticCatalogueFeature[]
@@ -57,11 +59,15 @@ export default function StaticCataloguePage({
   productImage,
   productImageAlt,
   stats,
+  models,
   products,
   accessories,
   features,
   application,
 }: StaticCataloguePageProps) {
+  const categoryName = `${title} ${italic}`.replace(/\.$/, '').trim()
+  const visibleModels = models ?? products.slice(0, Math.min(3, products.length))
+
   return (
     <div style={{ fontFamily: BODY, background: CREAM, color: DARK }}>
       <Navbar reserveSpace />
@@ -96,14 +102,14 @@ export default function StaticCataloguePage({
               <p className="mt-8 max-w-[640px] text-base leading-8 text-white/64">{intro}</p>
               <div className="mt-10 flex flex-col gap-3 sm:flex-row">
                 <Link
-                  href="#catalogue"
+                  href="#modeles"
                   className="inline-flex items-center justify-center gap-3 px-7 py-4 text-[11px] font-bold uppercase tracking-[0.2em] text-white"
                   style={{ background: GOLD }}
                 >
                   Voir les references <ArrowRight size={14} />
                 </Link>
                 <Link
-                  href="/contact"
+                  href="/devis"
                   className="inline-flex items-center justify-center gap-3 border border-white/20 px-7 py-4 text-[11px] font-bold uppercase tracking-[0.2em] text-white/90 transition hover:bg-white/10"
                 >
                   Demander un devis
@@ -144,10 +150,69 @@ export default function StaticCataloguePage({
           </div>
         </section>
 
+        <section id="modeles" className="py-10 md:py-14">
+          <div className="mx-auto max-w-[1500px] px-6 md:px-10">
+            <div className="mb-8 flex items-center gap-4">
+              <p className="text-[11px] font-bold uppercase tracking-[0.22em]" style={{ color: GOLD }}>Modeles</p>
+              <div className="h-px flex-1 bg-[#14130F]/24" />
+              <p className="text-[11px] font-bold uppercase tracking-[0.22em] text-[#14130F]/52">
+                Choix de base
+              </p>
+            </div>
+
+            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+              {visibleModels.map((model) => (
+                <article key={`model-${model.code}-${model.name}`} className="overflow-hidden border border-[#14130F]/10 bg-[#FCFCFD] transition duration-300 hover:-translate-y-1 hover:border-[#C4A23E]/45 hover:shadow-[0_18px_45px_rgba(20,19,15,0.12)]">
+                  <div className="relative aspect-[16/8] overflow-hidden bg-white">
+                    <Image
+                      src={model.image ?? productImage}
+                      alt={`${model.name} - ${productImageAlt}`}
+                      fill
+                      sizes="(max-width: 768px) 100vw, 33vw"
+                      className="object-cover transition duration-700 hover:scale-[1.045]"
+                    />
+                  </div>
+                  <div
+                    className="border-t border-[#14130F]/10 p-5"
+                    style={{
+                      backgroundColor: '#D5D0C6',
+                      backgroundImage:
+                        'radial-gradient(rgba(20,19,15,0.08) 0.7px, transparent 0.7px), linear-gradient(135deg, rgba(255,255,255,0.32), rgba(20,19,15,0.035))',
+                      backgroundSize: '7px 7px, 100% 100%',
+                    }}
+                  >
+                    <div className="flex items-center justify-between gap-4">
+                      <div>
+                        <p className="text-[10px] font-bold uppercase tracking-[0.22em]" style={{ color: GOLD }}>Modele</p>
+                        <h3 className="mt-3 text-lg font-black tracking-[0.08em]">{model.name}</h3>
+                      </div>
+                      <Ruler className="h-4 w-4" style={{ color: GOLD }} />
+                    </div>
+                    <p className="mt-2 text-sm text-[#14130F]/58">{model.note ?? `Ref. ${model.code}`}</p>
+                    <div className="mt-5">
+                      <QuoteButton
+                        item={{
+                          id: `${categoryName}-model-${model.code}`,
+                          category: categoryName,
+                          type: 'Modele',
+                          name: model.name,
+                          ref: model.code,
+                          image: model.image ?? productImage,
+                        }}
+                        compact
+                      />
+                    </div>
+                  </div>
+                </article>
+              ))}
+            </div>
+          </div>
+        </section>
+
         <section id="catalogue" className="py-10 md:py-14">
           <div className="mx-auto max-w-[1500px] px-6 md:px-10">
             <div className="mb-8 flex items-center gap-4">
-              <p className="text-[11px] font-bold uppercase tracking-[0.22em]" style={{ color: GOLD }}>References</p>
+              <p className="text-[11px] font-bold uppercase tracking-[0.22em]" style={{ color: GOLD }}>Textures</p>
               <div className="h-px flex-1 bg-[#14130F]/24" />
               <p className="text-[11px] font-bold uppercase tracking-[0.22em] text-[#14130F]/52">
                 {products.length} produits
@@ -171,7 +236,7 @@ export default function StaticCataloguePage({
                     </p>
                   </div>
                   <div
-                    className="flex min-h-[178px] flex-col justify-between border-t border-[#14130F]/10 p-5"
+                    className="flex min-h-[218px] flex-col justify-between border-t border-[#14130F]/10 p-5"
                     style={{
                       backgroundColor: '#D5D0C6',
                       backgroundImage:
@@ -188,6 +253,19 @@ export default function StaticCataloguePage({
                     <p className="mt-8 text-xs font-semibold uppercase tracking-[0.16em] text-[#14130F]/42">
                       {product.note ?? 'Catalogue statique'}
                     </p>
+                    <div className="mt-5">
+                      <QuoteButton
+                        item={{
+                          id: `${categoryName}-texture-${product.code}`,
+                          category: categoryName,
+                          type: 'Texture',
+                          name: product.name,
+                          ref: product.code,
+                          image: product.image ?? productImage,
+                        }}
+                        compact
+                      />
+                    </div>
                   </div>
                 </article>
               ))}
@@ -212,8 +290,8 @@ export default function StaticCataloguePage({
                   {item}
                 </div>
               ))}
-              <Link href="/contact" className="mt-5 inline-flex w-fit items-center gap-3 px-7 py-4 text-[11px] font-bold uppercase tracking-[0.2em] text-white" style={{ background: GOLD }}>
-                Cadrer le projet <Ruler size={14} />
+              <Link href="/devis" className="mt-5 inline-flex w-fit items-center gap-3 px-7 py-4 text-[11px] font-bold uppercase tracking-[0.2em] text-white" style={{ background: GOLD }}>
+                Demander un devis <Ruler size={14} />
               </Link>
             </div>
           </div>
@@ -252,6 +330,19 @@ export default function StaticCataloguePage({
                       <PackageSearch className="h-4 w-4 shrink-0" style={{ color: GOLD }} />
                     </div>
                     <p className="text-sm leading-6 text-[#14130F]/58">{item.text}</p>
+                    <div className="mt-5">
+                      <QuoteButton
+                        item={{
+                          id: `${categoryName}-accessoire-${item.name}`,
+                          category: categoryName,
+                          type: 'Accessoire',
+                          name: item.name,
+                          ref: item.tag,
+                          image: item.image,
+                        }}
+                        compact
+                      />
+                    </div>
                   </div>
                 </article>
               ))}

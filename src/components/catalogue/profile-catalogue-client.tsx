@@ -5,6 +5,7 @@ import Image from 'next/image'
 import Link from 'next/link'
 import { Ruler, X } from 'lucide-react'
 import { slugify } from '@/utils/slug'
+import { QuoteButton } from '@/components/catalogue/quote-cart'
 
 const DISPLAY = "var(--font-display), 'Cormorant Garamond', Georgia, serif"
 const GOLD = '#C4A23E'
@@ -80,6 +81,19 @@ export default function ProfileCatalogueClient({
                     <Ruler className="h-4 w-4" style={{ color: GOLD }} />
                   </div>
                   <p className="mt-2 text-sm text-[#14130F]/58">{item.text}</p>
+                  <div className="mt-5">
+                    <QuoteButton
+                      item={{
+                        id: `profil-bois-modele-${item.model}`,
+                        category: 'Profil mural effet bois',
+                        type: 'Modele',
+                        name: item.model,
+                        ref: item.model,
+                        image: item.image,
+                      }}
+                      compact
+                    />
+                  </div>
                 </div>
               </article>
             ))}
@@ -165,11 +179,11 @@ export default function ProfileCatalogueClient({
                     const href = productHrefBySku[sku] ?? `/produit/pvc-effet-bois-${slugify(sku)}`
 
                     return (
-                    <Link
-                      href={href}
+                    <article
                       key={`${row.texture}-${model}`}
                       className="group w-full cursor-pointer overflow-hidden border border-[#14130F]/12 transition duration-300 hover:-translate-y-1 hover:border-[#C4A23E]/50 hover:shadow-[0_18px_45px_rgba(20,19,15,0.14)] sm:w-[calc(50%-0.375rem)] lg:w-[calc(33.333%-0.5rem)] xl:w-[calc(16.666%-0.625rem)]"
                     >
+                    <Link href={href} className="block">
                       <div className="relative aspect-square overflow-hidden" style={{ background: MODEL_BG }}>
                         <Image
                           src={modelImage(row.texture, model)}
@@ -197,6 +211,20 @@ export default function ProfileCatalogueClient({
                         <p className="mt-1 text-xs text-[#14130F]/50">{modelDescriptions[model]}</p>
                       </div>
                     </Link>
+                      <div className="border-t border-[#14130F]/10 bg-[#D5D0C6] p-3">
+                        <QuoteButton
+                          item={{
+                            id: `profil-bois-texture-${row.texture}-${model}`,
+                            category: 'Profil mural effet bois',
+                            type: 'Texture',
+                            name: `${row.name} ${model}`,
+                            ref: sku,
+                            image: modelImage(row.texture, model),
+                          }}
+                          compact
+                        />
+                      </div>
+                    </article>
                   )})}
                 </div>
               </article>

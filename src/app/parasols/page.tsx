@@ -5,6 +5,7 @@ import { ArrowRight, Check, MessageCircle, ShieldCheck, Sun } from 'lucide-react
 
 import Footer from '@/components/footer'
 import { Navbar } from '@/components/navbar'
+import { QuoteButton } from '@/components/catalogue/quote-cart'
 import { getParasolContent } from '@/lib/services/site-content.service'
 import type { ParasolContent } from '@/types/site-content'
 
@@ -188,6 +189,19 @@ export default function ParasolsPage() {
                   <div className="border-x border-b border-[#C4A23E]/20 p-5">
                     <h3 style={{ fontFamily: DISPLAY }} className="text-3xl leading-none">{model.name}</h3>
                     <p className="mt-4 text-sm leading-7 text-[#14130F]/60">{model.desc}</p>
+                    <div className="mt-5">
+                      <QuoteButton
+                        item={{
+                          id: `parasol-modele-${model.name}`,
+                          category: 'Parasols professionnels',
+                          type: 'Modele',
+                          name: model.name,
+                          ref: model.tagline,
+                          image: model.img,
+                        }}
+                        compact
+                      />
+                    </div>
                   </div>
                 </article>
               ))}

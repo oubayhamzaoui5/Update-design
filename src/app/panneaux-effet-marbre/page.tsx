@@ -5,6 +5,7 @@ import { ArrowRight, Check, MessageCircle, Ruler } from 'lucide-react'
 
 import Footer from '@/components/footer'
 import { Navbar } from '@/components/navbar'
+import { QuoteButton } from '@/components/catalogue/quote-cart'
 import { DEFAULT_MARBLE_PANELS_CONTENT } from '@/lib/site-page-defaults'
 import { getSitePageContent } from '@/lib/services/site-content.service'
 import { getProductHrefBySku } from '@/lib/services/catalogue-links.service'
@@ -131,6 +132,7 @@ export default async function PanneauxEffetMarbrePage() {
   }
 
   const productHref = (name: string, prefix: string) => `/produit/${prefix}-${slugify(name)}`
+  const categoryName = 'Panneaux effet marbre'
 
   return (
     <div style={{ fontFamily: BODY, background: CREAM, color: DARK }}>
@@ -167,7 +169,7 @@ export default async function PanneauxEffetMarbrePage() {
                 {content.hero.body}
               </p>
               <div className="mt-10 flex flex-col gap-3 sm:flex-row">
-                <Link href={content.hero.primaryHref} className="inline-flex items-center justify-center gap-3 px-7 py-4 text-[11px] font-bold uppercase tracking-[0.2em] text-white" style={{ background: GOLD }}>
+                <Link href="/devis" className="inline-flex items-center justify-center gap-3 px-7 py-4 text-[11px] font-bold uppercase tracking-[0.2em] text-white" style={{ background: GOLD }}>
                   {content.hero.primaryLabel} <ArrowRight size={14} />
                 </Link>
                 <Link href={content.hero.secondaryHref} className="inline-flex items-center justify-center gap-3 border border-white/20 px-7 py-4 text-[11px] font-bold uppercase tracking-[0.2em] text-white/90 transition hover:bg-white/10">
@@ -217,6 +219,19 @@ export default async function PanneauxEffetMarbrePage() {
                       <Ruler className="h-4 w-4" style={{ color: GOLD }} />
                     </div>
                     <p className="mt-2 text-sm text-[#14130F]/58">{item.text}</p>
+                    <div className="mt-5">
+                      <QuoteButton
+                        item={{
+                          id: `marbre-modele-${item.model}`,
+                          category: categoryName,
+                          type: 'Modele',
+                          name: item.model,
+                          ref: item.model,
+                          image: item.image,
+                        }}
+                        compact
+                      />
+                    </div>
                   </div>
                 </article>
               ))}
@@ -236,7 +251,8 @@ export default async function PanneauxEffetMarbrePage() {
 
             <div className="grid justify-start gap-4 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-5">
               {content.references.models.map((model, index) => (
-                <Link key={model.ref} href={marbleHref(model.ref)} className="group cursor-pointer overflow-hidden bg-[#F7F2E8] transition duration-300 hover:shadow-[0_12px_32px_rgba(20,19,15,0.10)]">
+                <article key={model.ref} className="group overflow-hidden bg-[#F7F2E8] transition duration-300 hover:shadow-[0_12px_32px_rgba(20,19,15,0.10)]">
+                  <Link href={marbleHref(model.ref)} className="block cursor-pointer">
                   <div className="relative aspect-square overflow-hidden">
                     <Image
                       src={model.src}
@@ -260,7 +276,21 @@ export default async function PanneauxEffetMarbrePage() {
                       </span>
                     </div>
                   </div>
-                </Link>
+                  </Link>
+                  <div className="px-4 pb-4">
+                    <QuoteButton
+                      item={{
+                        id: `marbre-texture-${model.ref}`,
+                        category: categoryName,
+                        type: 'Texture',
+                        name: model.name,
+                        ref: model.ref,
+                        image: model.src,
+                      }}
+                      compact
+                    />
+                  </div>
+                </article>
               ))}
             </div>
           </div>
@@ -292,7 +322,8 @@ export default async function PanneauxEffetMarbrePage() {
 
                   <div className="mt-3 grid grid-cols-2 gap-3">
                     {accessoryFinishes.map((finish) => (
-                      <Link key={`${item.type}-${finish.name}`} href={productHref(`${item.type} ${finish.name}`, 'profil-finition-marbre')} className="group cursor-pointer border border-[#14130F]/12 bg-[#F7F2E8] p-3 transition duration-300 hover:-translate-y-1 hover:border-[#C4A23E]/50 hover:shadow-[0_14px_34px_rgba(20,19,15,0.12)]">
+                      <article key={`${item.type}-${finish.name}`} className="group border border-[#14130F]/12 bg-[#F7F2E8] p-3 transition duration-300 hover:-translate-y-1 hover:border-[#C4A23E]/50 hover:shadow-[0_14px_34px_rgba(20,19,15,0.12)]">
+                      <Link href={productHref(`${item.type} ${finish.name}`, 'profil-finition-marbre')} className="block cursor-pointer">
                         <div className="relative aspect-square overflow-hidden border border-[#14130F]/10 bg-white">
                           <Image
                             src={accessoryFinishImage(item.type, item.src, finish)}
@@ -306,6 +337,20 @@ export default async function PanneauxEffetMarbrePage() {
                           {item.type}
                         </p>
                       </Link>
+                        <div className="mt-3">
+                          <QuoteButton
+                            item={{
+                              id: `marbre-accessoire-${item.type}-${finish.name}`,
+                              category: categoryName,
+                              type: 'Accessoire',
+                              name: `${item.type} ${finish.name}`,
+                              ref: item.type,
+                              image: accessoryFinishImage(item.type, item.src, finish),
+                            }}
+                            compact
+                          />
+                        </div>
+                      </article>
                     ))}
                   </div>
                 </div>
@@ -333,12 +378,27 @@ export default async function PanneauxEffetMarbrePage() {
               </div>
               <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6">
                 {lProfiles.map((profile) => (
-                  <Link key={profile.name} href={productHref(`Type L ${profile.name}`, 'profil-finition-marbre')} className="group cursor-pointer border border-[#14130F]/12 bg-[#F7F2E8] p-3 transition duration-300 hover:-translate-y-1 hover:border-[#C4A23E]/50 hover:shadow-[0_14px_34px_rgba(20,19,15,0.12)]">
+                  <article key={profile.name} className="group border border-[#14130F]/12 bg-[#F7F2E8] p-3 transition duration-300 hover:-translate-y-1 hover:border-[#C4A23E]/50 hover:shadow-[0_14px_34px_rgba(20,19,15,0.12)]">
+                  <Link href={productHref(`Type L ${profile.name}`, 'profil-finition-marbre')} className="block cursor-pointer">
                     <div className="relative aspect-square overflow-hidden border border-[#14130F]/10 bg-white">
                       <Image src={profile.src} alt={profile.name} fill sizes="(max-width:640px) 50vw, (max-width:1024px) 33vw, 16vw" className="object-cover transition duration-500 group-hover:scale-[1.05]" />
                     </div>
                     <p className="mt-3 text-center text-[10px] font-bold uppercase tracking-[0.16em] text-[#14130F]/54">{profile.name}</p>
                   </Link>
+                    <div className="mt-3">
+                      <QuoteButton
+                        item={{
+                          id: `marbre-accessoire-type-l-${profile.name}`,
+                          category: categoryName,
+                          type: 'Accessoire',
+                          name: `Type L ${profile.name}`,
+                          ref: 'Type L',
+                          image: profile.src,
+                        }}
+                        compact
+                      />
+                    </div>
+                  </article>
                 ))}
               </div>
             </div>
@@ -391,7 +451,7 @@ export default async function PanneauxEffetMarbrePage() {
               <p className="mt-7 max-w-[620px] text-base leading-8 text-[#14130F]/62">
                 {content.proposal.body}
               </p>
-              <Link href={content.proposal.ctaHref} className="mt-9 inline-flex w-fit items-center gap-3 px-8 py-4 text-[11px] font-bold uppercase tracking-[0.2em] text-white" style={{ background: GOLD }}>
+              <Link href="/devis" className="mt-9 inline-flex w-fit items-center gap-3 px-8 py-4 text-[11px] font-bold uppercase tracking-[0.2em] text-white" style={{ background: GOLD }}>
                 {content.proposal.ctaLabel} <ArrowRight size={14} />
               </Link>
             </div>

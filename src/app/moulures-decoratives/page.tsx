@@ -16,6 +16,12 @@ const products = [
   { code: 'MD240-100', name: 'Moulures plinthe central 100mm', note: 'Plinthe decorative' },
 ]
 
+const models = [
+  { code: '20MM', name: 'Bombage central 20mm', note: 'Relief fin pour cadres muraux discrets' },
+  { code: '40MM', name: 'Bombage central 40mm', note: 'Relief plus present pour composition marquee' },
+  { code: '100MM', name: 'Plinthe centrale 100mm', note: 'Base decorative pour finition basse' },
+]
+
 export default function MouluresDecorativesPage() {
   return (
     <StaticCataloguePage
@@ -32,6 +38,7 @@ export default function MouluresDecorativesPage() {
         { value: '20/40', label: 'reliefs mm' },
         { value: '100', label: 'plinthe mm' },
       ]}
+      models={models}
       products={products}
       features={[
         { title: 'Relief propre', text: 'Profils pour creer une ligne decorative sans surcharge visuelle.' },

@@ -16,6 +16,12 @@ const products = [
   { code: 'TN90PRIMA', name: 'TUBE NEON LED 20W 8000K 90cm', note: 'Format intermediaire' },
 ]
 
+const models = [
+  { code: '60CM', name: 'Tube LED 60cm', note: 'Format compact pour zones secondaires' },
+  { code: '90CM', name: 'Tube LED 90cm', note: 'Format intermediaire pour ateliers et reserves' },
+  { code: '120-150CM', name: 'Tube LED grand format', note: 'Lignes continues pour bureaux, boutiques et chantiers' },
+]
+
 export default function LampesPage() {
   return (
     <StaticCataloguePage
@@ -32,6 +38,7 @@ export default function LampesPage() {
         { value: '60-150', label: 'formats cm' },
         { value: '4000K', label: 'a 8000K' },
       ]}
+      models={models}
       products={products}
       features={[
         { title: 'Formats utiles', text: 'Une selection courte pour couvrir les longueurs les plus demandees en installation interieure.' },

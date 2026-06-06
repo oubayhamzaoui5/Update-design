@@ -1,6 +1,7 @@
 import Image from 'next/image'
 import Link from 'next/link'
 import { ArrowRight, Check, FileText, MessageCircle, MoveUpRight } from 'lucide-react'
+import { QuoteButton } from '@/components/catalogue/quote-cart'
 
 const DISPLAY = "var(--font-display), 'Cormorant Garamond', Georgia, serif"
 const BODY = "'DM Sans', 'Outfit', system-ui, sans-serif"
@@ -25,6 +26,7 @@ type LeadShowcasePageProps = {
   formText: string
   secondaryImage: string
   secondaryAlt: string
+  quoteCategory?: string
 }
 
 export default function LeadShowcasePage({
@@ -43,6 +45,7 @@ export default function LeadShowcasePage({
   formText,
   secondaryImage,
   secondaryAlt,
+  quoteCategory = title,
 }: LeadShowcasePageProps) {
   return (
     <main style={{ fontFamily: BODY, background: CREAM, color: DARK }}>
@@ -106,6 +109,19 @@ export default function LeadShowcasePage({
                 <div className="border-x border-b border-[#C4A23E]/20 p-5">
                   <h3 style={{ fontFamily: DISPLAY }} className="text-3xl leading-none">{model.name}</h3>
                   <p className="mt-4 text-sm leading-7 text-[#14130F]/60">{model.text}</p>
+                  <div className="mt-5">
+                    <QuoteButton
+                      item={{
+                        id: `${quoteCategory}-modele-${model.name}`,
+                        category: quoteCategory,
+                        type: 'Modele',
+                        name: model.name,
+                        ref: model.tag,
+                        image: model.image,
+                      }}
+                      compact
+                    />
+                  </div>
                 </div>
               </article>
             ))}
@@ -134,9 +150,14 @@ export default function LeadShowcasePage({
                 </div>
               ))}
             </div>
-            <Link href={ctaHref} className="mt-9 inline-flex w-fit items-center gap-3 px-8 py-4 text-[11px] font-bold uppercase tracking-[0.2em] text-white" style={{ background: GOLD }}>
-              {ctaLabel} <ArrowRight size={14} />
-            </Link>
+            <div className="mt-9 flex flex-col gap-3 sm:flex-row">
+              <Link href={ctaHref} className="inline-flex w-fit items-center gap-3 px-8 py-4 text-[11px] font-bold uppercase tracking-[0.2em] text-white" style={{ background: GOLD }}>
+                {ctaLabel} <ArrowRight size={14} />
+              </Link>
+              <Link href="/devis" className="inline-flex w-fit items-center gap-3 border border-[#14130F]/16 px-8 py-4 text-[11px] font-bold uppercase tracking-[0.2em] text-[#14130F]">
+                Voir le devis <ArrowRight size={14} />
+              </Link>
+            </div>
           </div>
         </div>
       </section>

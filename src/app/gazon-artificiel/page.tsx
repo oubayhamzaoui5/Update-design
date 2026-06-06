@@ -20,6 +20,12 @@ const products = [
   { code: 'GAZ45P/4M', name: 'GAZON ARTIFICIEL 45MM/4M PREMIUM', note: 'Premium 4m' },
 ]
 
+const models = [
+  { code: '10MM', name: 'Gazon 10mm', note: 'Pratique pour zones decoratives et evenements', image: 'https://images.unsplash.com/photo-1598971861713-54ad16a7e72e?auto=format&fit=crop&w=900&q=80' },
+  { code: '25MM', name: 'Gazon 25mm', note: 'Equilibre budget, confort et surface visible', image: 'https://images.unsplash.com/photo-1558904541-efa843a96f01?auto=format&fit=crop&w=900&q=80' },
+  { code: '35-45MM', name: 'Gazon premium', note: 'Densite plus haute pour jardins, piscines et terrasses', image: 'https://images.unsplash.com/photo-1599231092330-9f6a7f85b805?auto=format&fit=crop&w=900&q=80' },
+]
+
 export default function GazonArtificielPage() {
   return (
     <StaticCataloguePage
@@ -36,6 +42,7 @@ export default function GazonArtificielPage() {
         { value: '10-45', label: 'hauteurs mm' },
         { value: '2/4m', label: 'largeurs' },
       ]}
+      models={models}
       products={products}
       features={[
         { title: 'Plusieurs hauteurs', text: 'Du 10mm pratique au 45mm premium pour ajuster confort, densite et budget.' },
