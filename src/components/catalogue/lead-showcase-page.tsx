@@ -1,7 +1,6 @@
 import Image from 'next/image'
 import Link from 'next/link'
 import { ArrowRight, Check, FileText, MessageCircle, MoveUpRight } from 'lucide-react'
-import { QuoteButton } from '@/components/catalogue/quote-cart'
 
 const DISPLAY = "var(--font-display), 'Cormorant Garamond', Georgia, serif"
 const BODY = "'DM Sans', 'Outfit', system-ui, sans-serif"
@@ -26,7 +25,6 @@ type LeadShowcasePageProps = {
   formText: string
   secondaryImage: string
   secondaryAlt: string
-  quoteCategory?: string
 }
 
 export default function LeadShowcasePage({
@@ -45,7 +43,6 @@ export default function LeadShowcasePage({
   formText,
   secondaryImage,
   secondaryAlt,
-  quoteCategory = title,
 }: LeadShowcasePageProps) {
   return (
     <main style={{ fontFamily: BODY, background: CREAM, color: DARK }}>
@@ -109,19 +106,6 @@ export default function LeadShowcasePage({
                 <div className="border-x border-b border-[#C4A23E]/20 p-5">
                   <h3 style={{ fontFamily: DISPLAY }} className="text-3xl leading-none">{model.name}</h3>
                   <p className="mt-4 text-sm leading-7 text-[#14130F]/60">{model.text}</p>
-                  <div className="mt-5">
-                    <QuoteButton
-                      item={{
-                        id: `${quoteCategory}-modele-${model.name}`,
-                        category: quoteCategory,
-                        type: 'Modele',
-                        name: model.name,
-                        ref: model.tag,
-                        image: model.image,
-                      }}
-                      compact
-                    />
-                  </div>
                 </div>
               </article>
             ))}

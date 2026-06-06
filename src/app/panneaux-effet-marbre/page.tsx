@@ -5,7 +5,6 @@ import { ArrowRight, Check, MessageCircle, Ruler } from 'lucide-react'
 
 import Footer from '@/components/footer'
 import { Navbar } from '@/components/navbar'
-import { QuoteButton } from '@/components/catalogue/quote-cart'
 import { DEFAULT_MARBLE_PANELS_CONTENT } from '@/lib/site-page-defaults'
 import { getSitePageContent } from '@/lib/services/site-content.service'
 import { getProductHrefBySku } from '@/lib/services/catalogue-links.service'
@@ -132,8 +131,6 @@ export default async function PanneauxEffetMarbrePage() {
   }
 
   const productHref = (name: string, prefix: string) => `/produit/${prefix}-${slugify(name)}`
-  const categoryName = 'Panneaux effet marbre'
-
   return (
     <div style={{ fontFamily: BODY, background: CREAM, color: DARK }}>
       <Navbar reserveSpace />
@@ -219,19 +216,6 @@ export default async function PanneauxEffetMarbrePage() {
                       <Ruler className="h-4 w-4" style={{ color: GOLD }} />
                     </div>
                     <p className="mt-2 text-sm text-[#14130F]/58">{item.text}</p>
-                    <div className="mt-5">
-                      <QuoteButton
-                        item={{
-                          id: `marbre-modele-${item.model}`,
-                          category: categoryName,
-                          type: 'Modele',
-                          name: item.model,
-                          ref: item.model,
-                          image: item.image,
-                        }}
-                        compact
-                      />
-                    </div>
                   </div>
                 </article>
               ))}
@@ -277,19 +261,6 @@ export default async function PanneauxEffetMarbrePage() {
                     </div>
                   </div>
                   </Link>
-                  <div className="px-4 pb-4">
-                    <QuoteButton
-                      item={{
-                        id: `marbre-texture-${model.ref}`,
-                        category: categoryName,
-                        type: 'Texture',
-                        name: model.name,
-                        ref: model.ref,
-                        image: model.src,
-                      }}
-                      compact
-                    />
-                  </div>
                 </article>
               ))}
             </div>
@@ -337,19 +308,6 @@ export default async function PanneauxEffetMarbrePage() {
                           {item.type}
                         </p>
                       </Link>
-                        <div className="mt-3">
-                          <QuoteButton
-                            item={{
-                              id: `marbre-accessoire-${item.type}-${finish.name}`,
-                              category: categoryName,
-                              type: 'Accessoire',
-                              name: `${item.type} ${finish.name}`,
-                              ref: item.type,
-                              image: accessoryFinishImage(item.type, item.src, finish),
-                            }}
-                            compact
-                          />
-                        </div>
                       </article>
                     ))}
                   </div>
@@ -385,19 +343,6 @@ export default async function PanneauxEffetMarbrePage() {
                     </div>
                     <p className="mt-3 text-center text-[10px] font-bold uppercase tracking-[0.16em] text-[#14130F]/54">{profile.name}</p>
                   </Link>
-                    <div className="mt-3">
-                      <QuoteButton
-                        item={{
-                          id: `marbre-accessoire-type-l-${profile.name}`,
-                          category: categoryName,
-                          type: 'Accessoire',
-                          name: `Type L ${profile.name}`,
-                          ref: 'Type L',
-                          image: profile.src,
-                        }}
-                        compact
-                      />
-                    </div>
                   </article>
                 ))}
               </div>

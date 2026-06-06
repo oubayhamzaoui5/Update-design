@@ -4,7 +4,6 @@ import { ArrowRight, Check, Layers, PackageSearch, Ruler, Sparkles } from 'lucid
 
 import Footer from '@/components/footer'
 import { Navbar } from '@/components/navbar'
-import { QuoteButton } from '@/components/catalogue/quote-cart'
 
 const DISPLAY = "var(--font-display), 'Cormorant Garamond', Georgia, serif"
 const BODY = "'DM Sans', 'Outfit', system-ui, sans-serif"
@@ -65,7 +64,6 @@ export default function StaticCataloguePage({
   features,
   application,
 }: StaticCataloguePageProps) {
-  const categoryName = `${title} ${italic}`.replace(/\.$/, '').trim()
   const visibleModels = models ?? products.slice(0, Math.min(3, products.length))
 
   return (
@@ -189,19 +187,6 @@ export default function StaticCataloguePage({
                       <Ruler className="h-4 w-4" style={{ color: GOLD }} />
                     </div>
                     <p className="mt-2 text-sm text-[#14130F]/58">{model.note ?? `Ref. ${model.code}`}</p>
-                    <div className="mt-5">
-                      <QuoteButton
-                        item={{
-                          id: `${categoryName}-model-${model.code}`,
-                          category: categoryName,
-                          type: 'Modele',
-                          name: model.name,
-                          ref: model.code,
-                          image: model.image ?? productImage,
-                        }}
-                        compact
-                      />
-                    </div>
                   </div>
                 </article>
               ))}
@@ -253,19 +238,6 @@ export default function StaticCataloguePage({
                     <p className="mt-8 text-xs font-semibold uppercase tracking-[0.16em] text-[#14130F]/42">
                       {product.note ?? 'Catalogue statique'}
                     </p>
-                    <div className="mt-5">
-                      <QuoteButton
-                        item={{
-                          id: `${categoryName}-texture-${product.code}`,
-                          category: categoryName,
-                          type: 'Texture',
-                          name: product.name,
-                          ref: product.code,
-                          image: product.image ?? productImage,
-                        }}
-                        compact
-                      />
-                    </div>
                   </div>
                 </article>
               ))}
@@ -330,19 +302,6 @@ export default function StaticCataloguePage({
                       <PackageSearch className="h-4 w-4 shrink-0" style={{ color: GOLD }} />
                     </div>
                     <p className="text-sm leading-6 text-[#14130F]/58">{item.text}</p>
-                    <div className="mt-5">
-                      <QuoteButton
-                        item={{
-                          id: `${categoryName}-accessoire-${item.name}`,
-                          category: categoryName,
-                          type: 'Accessoire',
-                          name: item.name,
-                          ref: item.tag,
-                          image: item.image,
-                        }}
-                        compact
-                      />
-                    </div>
                   </div>
                 </article>
               ))}
