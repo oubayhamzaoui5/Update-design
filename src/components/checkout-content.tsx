@@ -5,7 +5,6 @@ import { useRouter, useSearchParams } from "next/navigation"
 import Image from "next/image"
 import {
   CreditCard,
-  Save,
   X,
   ChevronRight,
   ShoppingBag,
@@ -509,7 +508,7 @@ export function CheckoutContent() {
     [cartItems]
   )
   const cartCurrency = "USD"
-  const shipping = cartItems.length > 0 ? (country === "US" ? 5 : country ? 20 : 0) : 0
+  const shipping = 0
   const cartTotal = cartSubtotal + shipping
 
   const canSaveAddress = useMemo(() => {
@@ -528,14 +527,9 @@ export function CheckoutContent() {
     () =>
       Boolean(
         firstName.trim() &&
-        lastName.trim() &&
-        country.trim() &&
-        address.trim() &&
-        city.trim() &&
-        isPostalCodeValid &&
-        (country !== "US" || state.trim())
+        lastName.trim()
       ),
-    [firstName, lastName, country, address, city, isPostalCodeValid, state]
+    [firstName, lastName]
   )
 
   const syncEmailToProfile = async (showError = true) => {
@@ -706,14 +700,6 @@ export function CheckoutContent() {
       setOrderError("Please fill in your contact information.")
       return
     }
-    if (!country.trim()) {
-      setOrderError("Please select your country.")
-      return
-    }
-    if (!address.trim() || !city.trim()) {
-      setOrderError("Please enter your shipping address.")
-      return
-    }
     if (cartItems.length === 0) {
       setOrderError("Your cart is empty.")
       return
@@ -741,13 +727,13 @@ export function CheckoutContent() {
         firstName: firstName.trim(),
         lastName: lastName.trim(),
         email: email.trim(),
-        country: country.trim(),
-        address: address.trim(),
+        country: country.trim() || "TN",
+        address: address.trim() || "Livraison non disponible",
         address2: address2.trim(),
-        city: city.trim(),
+        city: city.trim() || "Update Design",
         state: state.trim(),
         postalCode: postalCode.trim(),
-        notes: notes.trim(),
+        notes: ["Livraison n'est pas disponible.", notes.trim()].filter(Boolean).join("\n"),
         shipping,
         items: itemsPayload,
         total: cartTotal,
@@ -857,7 +843,7 @@ export function CheckoutContent() {
           <ChevronRight className="h-3 w-3 opacity-40" />
           <span>Paiement</span>
           <ChevronRight className="h-3 w-3 opacity-40" />
-          <span>Livraison</span>
+          <span>Confirmation</span>
         </nav>
 
         <div className="grid grid-cols-1 items-start gap-10 lg:grid-cols-[1fr_400px]">
@@ -879,7 +865,7 @@ export function CheckoutContent() {
                   lineHeight: 1.1,
                 }}
               >
-                Détails de livraison
+                Details de commande
               </h1>
             </header>
 
@@ -919,122 +905,37 @@ export function CheckoutContent() {
               </div>
             </section>
 
-            {/* SHIPPING Section */}
+            {/* DELIVERY NOTICE */}
             <section style={{ border: `1px solid rgba(196,162,62,0.2)`, background: '#fff' }}>
               <div
-                className="flex flex-wrap items-center justify-between gap-3 px-5 py-3.5"
+                className="flex items-center gap-3 px-5 py-3.5"
                 style={{ background: SLATE, borderLeft: `3px solid ${GOLD}` }}
               >
-                <div className="flex items-center gap-3">
-                  <Truck className="h-4 w-4" style={{ color: GOLD }} />
-                  <h2 style={{ fontFamily: BODY, fontSize: 10, letterSpacing: '0.22em', textTransform: 'uppercase', color: 'rgba(255,255,255,0.9)', fontWeight: 600 }}>
-                    Livraison
-                  </h2>
-                </div>
-                {isLoggedIn && addresses.length > 0 && (
-                  <select
-                    className="cursor-pointer px-3 py-1 text-[11px]"
-                    style={{ fontFamily: BODY, background: 'rgba(255,255,255,0.1)', border: `1px solid rgba(196,162,62,0.4)`, color: 'rgba(255,255,255,0.85)', borderRadius: '2px' }}
-                    value={selectedAddressId}
-                    onChange={(e) => setSelectedAddressId(e.target.value)}
-                  >
-                    {addresses.map((a) => (
-                      <option key={a.id} value={a.id} className="text-black bg-white">{a.city} — {a.address.slice(0, 26)}…</option>
-                    ))}
-                    <option value="new" className="text-black bg-white">+ Nouvelle adresse</option>
-                  </select>
-                )}
+                <Truck className="h-4 w-4" style={{ color: GOLD }} />
+                <h2 style={{ fontFamily: BODY, fontSize: 10, letterSpacing: '0.22em', textTransform: 'uppercase', color: 'rgba(255,255,255,0.9)', fontWeight: 600 }}>
+                  Livraison indisponible
+                </h2>
               </div>
 
               <div className="space-y-4 p-6">
-                <div>
-                  <label className={labelCls} style={{ fontFamily: BODY, color: 'rgba(28,26,20,0.5)' }}>
-                    Pays <span style={{ color: '#C62828' }}>*</span>
-                  </label>
-                  <select className={inputCls} style={inputStyle} value={country} onChange={(e) => { setCountry(e.target.value); setState("") }}>
-                    <option value="">Sélectionner le pays...</option>
-                    {COUNTRIES.map((c) => (<option key={c.code} value={c.code}>{c.name}</option>))}
-                  </select>
-                  {country && (
-                    <p className="mt-1.5" style={{ fontFamily: BODY, fontSize: 11, letterSpacing: '0.08em', color: GOLD }}>
-                      {country === "US" ? "Frais de port: $5.00" : "Livraison internationale: $20.00"}
-                    </p>
-                  )}
+                <div
+                  className="px-4 py-3.5"
+                  style={{ border: `1px solid rgba(196,162,62,0.25)`, background: CREAM }}
+                >
+                  <p style={{ fontFamily: BODY, fontSize: 13, fontWeight: 600, color: DARK }}>
+                    Livraison n&apos;est pas disponible pour le moment.
+                  </p>
+                  <p className="mt-1" style={{ fontFamily: BODY, fontSize: 12, color: 'rgba(28,26,20,0.55)', lineHeight: 1.6 }}>
+                    Passez votre commande sans adresse de livraison. Notre équipe vous contactera pour confirmer la disponibilité et la suite de la commande.
+                  </p>
                 </div>
 
                 <div>
                   <label className={labelCls} style={{ fontFamily: BODY, color: 'rgba(28,26,20,0.5)' }}>
-                    Adresse ligne 1 <span style={{ color: '#C62828' }}>*</span>
+                    Note pour la commande
                   </label>
-                  <input type="text" className={inputCls} style={inputStyle} placeholder="Rue, numéro, appartement..." value={address} onChange={(e) => setAddress(e.target.value)} />
+                  <textarea rows={3} className={inputCls} style={{ ...inputStyle, resize: 'none' }} placeholder="Ajoutez une précision si nécessaire..." value={notes} onChange={(e) => setNotes(e.target.value)} />
                 </div>
-
-                <div>
-                  <label className={labelCls} style={{ fontFamily: BODY, color: 'rgba(28,26,20,0.5)' }}>
-                    Adresse ligne 2 <span style={{ color: 'rgba(28,26,20,0.3)' }}>(optionnel)</span>
-                  </label>
-                  <input type="text" className={inputCls} style={inputStyle} placeholder="Étage, bâtiment, bureau..." value={address2} onChange={(e) => setAddress2(e.target.value)} />
-                </div>
-
-                <div>
-                  <label className={labelCls} style={{ fontFamily: BODY, color: 'rgba(28,26,20,0.5)' }}>
-                    {country === "US" ? "État" : "État / Province / Région"}
-                    {country === "US" && <span style={{ color: '#C62828' }}> *</span>}
-                  </label>
-                  {country === "US" ? (
-                    <select className={inputCls} style={inputStyle} value={state} onChange={(e) => setState(e.target.value)}>
-                      <option value="">Sélectionner l'état...</option>
-                      {US_STATES.map((s) => (<option key={s.code} value={s.code}>{s.name}</option>))}
-                    </select>
-                  ) : (
-                    <input type="text" className={inputCls} style={inputStyle} placeholder="État / Province / Région" value={state} onChange={(e) => setState(e.target.value)} />
-                  )}
-                </div>
-
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <label className={labelCls} style={{ fontFamily: BODY, color: 'rgba(28,26,20,0.5)' }}>
-                      Ville <span style={{ color: '#C62828' }}>*</span>
-                    </label>
-                    <input type="text" className={inputCls} style={inputStyle} placeholder="Tunis" value={city} onChange={(e) => setCity(e.target.value)} />
-                  </div>
-                  <div>
-                    <label className={labelCls} style={{ fontFamily: BODY, color: 'rgba(28,26,20,0.5)' }}>
-                      {country === "US" ? "Code ZIP" : "Code Postal"} <span style={{ color: '#C62828' }}>*</span>
-                    </label>
-                    <input
-                      type="text"
-                      inputMode="numeric"
-                      className={inputCls}
-                      style={inputStyle}
-                      placeholder={country === "US" ? "10001" : "1000"}
-                      value={postalCode}
-                      onChange={(e) => {
-                        if (country === "US") setPostalCode(e.target.value.replace(/\D/g, "").slice(0, 5))
-                        else setPostalCode(e.target.value.slice(0, 10))
-                      }}
-                    />
-                  </div>
-                </div>
-
-                <div>
-                  <label className={labelCls} style={{ fontFamily: BODY, color: 'rgba(28,26,20,0.5)' }}>
-                    Instructions spéciales
-                  </label>
-                  <textarea rows={2} className={inputCls} style={{ ...inputStyle, resize: 'none' }} placeholder="Code d'accès, étage, instructions de livraison..." value={notes} onChange={(e) => setNotes(e.target.value)} />
-                </div>
-
-                {isLoggedIn && (
-                  <button
-                    onClick={handleSaveAddress}
-                    disabled={!canSaveAddress}
-                    className="flex cursor-pointer items-center gap-2 transition-opacity hover:opacity-70 disabled:opacity-30"
-                    style={{ fontFamily: BODY, fontSize: 11, letterSpacing: '0.15em', textTransform: 'uppercase', color: GOLD, fontWeight: 600, background: 'none', border: 'none', padding: 0 }}
-                  >
-                    <Save size={12} style={{ color: GOLD }} />
-                    {isSavingAddress ? "Enregistrement..." : "Enregistrer cette adresse"}
-                  </button>
-                )}
               </div>
             </section>
 
@@ -1177,8 +1078,8 @@ export function CheckoutContent() {
                 </div>
                 <div className="flex justify-between">
                   <span style={{ fontFamily: BODY, fontSize: 11, letterSpacing: '0.12em', textTransform: 'uppercase', color: 'rgba(28,26,20,0.45)' }}>Livraison</span>
-                  <span style={{ fontFamily: BODY, fontSize: 14, fontWeight: 500, color: country ? GOLD : 'rgba(28,26,20,0.4)' }}>
-                    {country ? `+$${shipping.toFixed(2)}` : "Sélectionner le pays"}
+                  <span style={{ fontFamily: BODY, fontSize: 14, fontWeight: 500, color: 'rgba(28,26,20,0.55)' }}>
+                    Non disponible
                   </span>
                 </div>
                 <div className="flex items-end justify-between pt-2.5" style={{ borderTop: `1px solid rgba(196,162,62,0.15)` }}>

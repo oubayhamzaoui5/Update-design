@@ -1,529 +1,294 @@
 import type { Metadata } from 'next'
-import Link from 'next/link'
 import Image from 'next/image'
-import { Navbar } from '@/components/navbar'
+import Link from 'next/link'
+import { ArrowRight, Check, MessageCircle, ShieldCheck, Sun } from 'lucide-react'
+
 import Footer from '@/components/footer'
-import {
-  Layers,
-  Palette,
-  Ruler,
-  Settings,
-  ShieldCheck,
-  Star,
-  ArrowRight,
-} from 'lucide-react'
+import { Navbar } from '@/components/navbar'
 import { getParasolContent } from '@/lib/services/site-content.service'
+import type { ParasolContent } from '@/types/site-content'
 
 export const dynamic = 'force-dynamic'
 
-/* ─── SEO ─────────────────────────────────────────────────────────────── */
-const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? 'https://updatedesign.tn'
-
 export const metadata: Metadata = {
-  title: 'Parasols Professionnels — Hôtel, Terrasse & Piscine | Update Design Tunisie',
+  title: 'Parasols Professionnels & Hotellerie | Update Design Tunisie',
   description:
-    'Parasols professionnels haut de gamme pour hôtels, restaurants et espaces extérieurs en Tunisie. Structure aluminium thermolaqué, toiles Sunbrella® 35+ coloris, modèles déportés Dallas, Havana, Ibiza et Mauris. Devis sur mesure sous 24 h.',
-  keywords: [
-    'parasol professionnel tunisie',
-    'parasol hôtel tunisie',
-    'parasol piscine tunisie',
-    'parasol déporté tunisie',
-    'parasol aluminium tunisie',
-    'parasol toile sunbrella tunisie',
-    'parasol restaurant terrasse tunisie',
-    'update design parasol tunisie',
-    'fournisseur parasol tunisie',
-    'parasol sur mesure tunisie',
-    'parasol promoteur immobilier tunisie',
-  ],
-  openGraph: {
-    title: 'Parasols Professionnels — Update Design Tunisie',
-    description:
-      'Structure aluminium thermolaqué, toiles Sunbrella® 35+ coloris. Modèles déportés Dallas, Havana, Ibiza & Mauris — devis sous 24 h.',
-    url: `${siteUrl}/parasols`,
-    siteName: 'Update Design',
-    type: 'website',
-    locale: 'fr_TN',
-  },
-  twitter: {
-    card: 'summary_large_image',
-    title: 'Parasols Professionnels — Update Design Tunisie',
-    description:
-      'Structure aluminium thermolaqué, toiles Sunbrella® 35+ coloris, modèles déportés haut de gamme.',
-  },
+    'Parasols professionnels pour hotels, cafes, restaurants, piscines, terrasses et jardins. Selection de modeles et formulaire de devis sur mesure.',
   alternates: { canonical: '/parasols' },
 }
 
-/* ─── Tokens ──────────────────────────────────────────────────────────── */
 const DISPLAY = "var(--font-display), 'Cormorant Garamond', Georgia, serif"
-const BODY    = "'DM Sans', 'Outfit', system-ui, sans-serif"
-const GOLD    = '#C4A23E'
-const DARK    = '#1C1A14'
-const CREAM   = '#FDFAF5'
+const BODY = "'DM Sans', 'Outfit', system-ui, sans-serif"
+const GOLD = '#C4A23E'
+const DARK = '#14130F'
+const CREAM = '#F7F2E8'
+const PAPER = '#E9DDC9'
 
-/* ─── Feature icons (fixed by position) ──────────────────────────────── */
-const FEATURE_ICONS = [Layers, Palette, Ruler, Settings, ShieldCheck, Star]
+const DEFAULT_PARASOL_CONTENT: ParasolContent = {
+  hero: {
+    headline: 'Parasols',
+    italic: 'Premium',
+    body: "De la piscine d'hotel a la terrasse de restaurant, nos parasols associent structure aluminium, toiles techniques et modeles deportes pour composer une zone d'ombre durable.",
+    ctaLabel: 'Configurer mon parasol',
+    ctaHref: '/parasol',
+  },
+  models: [
+    { name: 'Dallas', img: '/dallas.webp', tagline: 'Compact & Fonctionnel', desc: 'Parasol deporte compact, ideal pour les espaces reduits. Facilement repositionnable.' },
+    { name: 'Havana', img: '/havana.webp', tagline: 'Elegance Asymetrique', desc: 'Design asymetrique elegant avec bras orientable a 360 degres. La reference des terrasses de restaurant.' },
+    { name: 'Ibiza', img: '/ibiza.webp', tagline: 'Premium Hotelier', desc: 'Parasol deporte premium avec finition haut de gamme. Concu pour les etablissements 4 et 5 etoiles.' },
+    { name: 'Mauris', img: '/mauris.webp', tagline: 'Grandes Surfaces', desc: 'Structure multi-tetes pour couvrir de larges surfaces. Ideal pour les plages privees et les piscines.' },
+  ],
+  features: [
+    { title: 'Structure Aluminium', body: 'Profiles aluminium thermolaque ultra-resistants a la corrosion saline, adaptes au bord de mer et aux zones cotieres tunisiennes.' },
+    { title: 'Toiles techniques', body: 'Toiles acryliques resistantes aux UV, a la pluie et aux usages intensifs en hotellerie, restauration et espaces prives.' },
+    { title: 'Dimensions Sur Mesure', body: 'Diametres, formes carrees ou rectangulaires et implantation ajustees selon la zone a couvrir.' },
+    { title: 'Installation Professionnelle', body: 'Accompagnement sur le choix du modele, du coloris, de la fixation et de la quantite selon votre projet.' },
+  ],
+  premium: {
+    headline: 'Concu pour durer,',
+    italic: 'pense pour plaire',
+    paragraph1: "Chaque parasol est choisi selon l'exposition, la circulation et l'intensite d'usage du lieu. La structure doit rester stable, lisible et facile a utiliser au quotidien.",
+    paragraph2: "La toile et les finitions permettent d'accorder l'ombre a l'identite du projet: hotel, cafe, piscine, villa, jardin ou terrasse professionnelle.",
+    features: [
+      'Structure aluminium thermolaque resistante aux intemperies',
+      'Toiles personnalisables selon coloris et usage',
+      '4 modeles deportes: Dallas, Havana, Ibiza, Mauris',
+      'Dimensions adaptees a la surface et a la circulation',
+      'Devis et installation possibles partout en Tunisie',
+    ],
+  },
+  quote: {
+    text: "L'ombre n'est pas un luxe.",
+    accent: "C'est une signature.",
+  },
+  cta: {
+    headline: "Donnez de l'ombre",
+    italic: 'a votre projet.',
+    body: 'Partagez vos dimensions, votre coloris prefere et la nature de votre projet. Nous revenons vers vous avec une proposition adaptee a votre espace.',
+    ctaLabel: 'Configurer mon parasol',
+    ctaHref: '/parasol',
+  },
+}
 
-/* ─── Page ────────────────────────────────────────────────────────────── */
-export default async function ParasolsPage() {
-  const c = getParasolContent()
+function mergeParasolContent(saved: ParasolContent): ParasolContent {
+  return {
+    hero: { ...DEFAULT_PARASOL_CONTENT.hero, ...saved?.hero },
+    models: saved?.models?.length ? saved.models : DEFAULT_PARASOL_CONTENT.models,
+    features: saved?.features?.length ? saved.features : DEFAULT_PARASOL_CONTENT.features,
+    premium: {
+      ...DEFAULT_PARASOL_CONTENT.premium,
+      ...saved?.premium,
+      features: saved?.premium?.features?.length ? saved.premium.features : DEFAULT_PARASOL_CONTENT.premium.features,
+    },
+    quote: { ...DEFAULT_PARASOL_CONTENT.quote, ...saved?.quote },
+    cta: { ...DEFAULT_PARASOL_CONTENT.cta, ...saved?.cta },
+  }
+}
+
+export default function ParasolsPage() {
+  const content = mergeParasolContent(getParasolContent())
+  const stats = [
+    { label: `${content.models.length}`, value: 'modeles exclusifs' },
+    { label: '35+', value: 'coloris de toile' },
+    { label: '2-6m', value: 'dimensions sur mesure' },
+    { label: 'TN', value: 'installation nationale' },
+  ]
 
   return (
-    <div style={{ fontFamily: BODY }}>
+    <div style={{ fontFamily: BODY, background: CREAM, color: DARK }}>
       <Navbar reserveSpace />
 
-      {/* ── HERO ─────────────────────────────────────────────────────── */}
-      <header
-        className="relative flex min-h-[92vh] flex-col justify-end overflow-hidden"
-        style={{ background: DARK }}
-      >
-        <div className="absolute inset-0">
-          <Image
-            src="/hero/parasols-landscape-new.png"
-            alt="Parasols professionnels haut de gamme — Update Design Tunisie"
-            fill
-            priority
-            sizes="100vw"
-            className="object-cover"
-          />
+      <main>
+        <header className="relative overflow-hidden" style={{ background: DARK, color: CREAM }}>
           <div
-            className="absolute inset-0"
+            className="absolute inset-0 opacity-[0.06]"
             style={{
-              background:
-                'linear-gradient(160deg, rgba(46,59,40,0.15) 0%, rgba(28,26,20,0.82) 70%, rgba(28,26,20,0.96) 100%)',
+              backgroundImage:
+                'linear-gradient(90deg,#C4A23E 1px,transparent 1px),linear-gradient(#C4A23E 1px,transparent 1px)',
+              backgroundSize: '72px 72px',
             }}
           />
-        </div>
-
-        <div className="relative mx-auto w-full max-w-[1400px] px-6 pb-16 md:px-10 md:pb-20">
-          <h1
-            style={{
-              fontFamily: DISPLAY,
-              fontSize: 'clamp(3rem, 7vw, 6.5rem)',
-              fontWeight: 400,
-              color: '#FDFAF5',
-              lineHeight: 0.92,
-              letterSpacing: '-0.02em',
-              marginBottom: 18,
-            }}
-          >
-            {c.hero.headline}<br />
-            <em style={{ fontStyle: 'italic', color: 'rgba(253,250,245,0.7)' }}>{c.hero.italic}</em>
-          </h1>
-          <span
-            style={{
-              display: 'inline-block',
-              fontFamily: BODY,
-              fontSize: 13,
-              letterSpacing: '0.22em',
-              textTransform: 'uppercase',
-              color: GOLD,
-              fontWeight: 700,
-              marginBottom: 24,
-            }}
-          >
-            OutStore®
-          </span>
-
-          <p
-            style={{
-              fontFamily: BODY,
-              fontSize: '1.05rem',
-              color: 'rgba(253,250,245,0.65)',
-              maxWidth: 520,
-              lineHeight: 1.7,
-              marginBottom: 36,
-            }}
-          >
-            {c.hero.body}
-          </p>
-
-          <Link
-            href={c.hero.ctaHref}
-            style={{
-              display: 'inline-flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              gap: 10,
-              background: GOLD,
-              color: '#fff',
-              fontFamily: BODY,
-              fontSize: 11,
-              fontWeight: 700,
-              letterSpacing: '0.18em',
-              textTransform: 'uppercase',
-              padding: '14px 28px',
-              transition: 'all 0.2s',
-            }}
-            className="w-full sm:w-auto hover:brightness-110 hover:shadow-lg"
-          >
-            {c.hero.ctaLabel} <ArrowRight size={13} />
-          </Link>
-        </div>
-      </header>
-
-      {/* ── MODELS ───────────────────────────────────────────────────── */}
-      <section className="py-20 md:py-28" style={{ background: CREAM }}>
-        <div className="mx-auto max-w-[1400px] px-6 md:px-10">
-          <div className="mb-12">
-            <p
-              style={{
-                fontFamily: BODY,
-                fontSize: 10,
-                letterSpacing: '0.22em',
-                textTransform: 'uppercase',
-                color: GOLD,
-                fontWeight: 700,
-                marginBottom: 12,
-              }}
-            >
-              Nos Modèles
-            </p>
-            <h2
-              style={{
-                fontFamily: DISPLAY,
-                fontSize: 'clamp(2rem, 4vw, 3.2rem)',
-                fontWeight: 400,
-                color: DARK,
-                lineHeight: 1.05,
-                letterSpacing: '-0.01em',
-                margin: 0,
-              }}
-            >
-              4 modèles déportés,<br />
-              <em style={{ fontStyle: 'italic', color: 'rgba(28,26,20,0.5)' }}>une seule exigence</em>
-            </h2>
-          </div>
-
-          <div className="grid grid-cols-1 gap-px sm:grid-cols-2 lg:grid-cols-4">
-            {c.models.map((m) => (
-              <article
-                key={m.name}
-                className="group flex flex-col overflow-hidden"
-                style={{ border: '1px solid rgba(196,162,62,0.15)' }}
-              >
-                <div className="relative overflow-hidden" style={{ aspectRatio: '3/2' }}>
-                  <Image
-                    src={m.img}
-                    alt={`Parasol ${m.name} — Update Design Tunisie`}
-                    fill
-                    sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
-                    className="object-cover transition-transform duration-500 group-hover:scale-[1.05]"
-                  />
-                  <div
-                    className="absolute inset-0"
-                    style={{
-                      background:
-                        'linear-gradient(to top, rgba(28,26,20,0.65) 0%, transparent 60%)',
-                    }}
-                  />
-                  <p
-                    className="absolute bottom-3 left-4"
-                    style={{
-                      fontFamily: BODY,
-                      fontSize: 9,
-                      fontWeight: 700,
-                      letterSpacing: '0.18em',
-                      textTransform: 'uppercase',
-                      color: GOLD,
-                    }}
-                  >
-                    {m.tagline}
-                  </p>
-                </div>
-
-                <div
-                  className="flex flex-1 flex-col gap-2 p-5"
-                  style={{ background: '#FDFAF5' }}
-                >
-                  <h3
-                    style={{
-                      fontFamily: DISPLAY,
-                      fontSize: '1.4rem',
-                      fontWeight: 400,
-                      color: DARK,
-                      margin: 0,
-                      letterSpacing: '-0.01em',
-                    }}
-                  >
-                    {m.name}
-                  </h3>
-                  <p
-                    style={{
-                      fontFamily: BODY,
-                      fontSize: '0.82rem',
-                      color: 'rgba(28,26,20,0.55)',
-                      lineHeight: 1.6,
-                      margin: 0,
-                    }}
-                  >
-                    {m.desc}
-                  </p>
-                </div>
-              </article>
-            ))}
-          </div>
-
-          <div className="mt-10 text-center">
-            <Link
-              href={c.hero.ctaHref}
-              style={{
-                fontFamily: BODY,
-                fontSize: 11,
-                fontWeight: 700,
-                letterSpacing: '0.18em',
-                textTransform: 'uppercase',
-                color: GOLD,
-                display: 'inline-flex',
-                alignItems: 'center',
-                gap: 8,
-              }}
-              className="hover:gap-3 transition-all duration-200"
-            >
-              {c.hero.ctaLabel} <ArrowRight size={12} />
-            </Link>
-          </div>
-        </div>
-      </section>
-
-      {/* ── FEATURES ─────────────────────────────────────────────────── */}
-      <section className="py-20 md:py-24" style={{ background: DARK }}>
-        <div className="mx-auto max-w-[1400px] px-6 md:px-10">
-          <div className="mb-12 flex flex-col gap-3 md:flex-row md:items-end md:justify-between">
+          <div className="relative mx-auto grid min-h-[76vh] max-w-[1500px] gap-12 px-6 py-20 md:px-10 lg:grid-cols-[0.9fr_1.1fr] lg:items-end lg:py-28">
             <div>
-              <p
+              <p className="mb-5 text-[10px] font-bold uppercase tracking-[0.34em]" style={{ color: GOLD }}>
+                Parasols professionnels
+              </p>
+              <h1
                 style={{
-                  fontFamily: BODY,
-                  fontSize: 10,
-                  letterSpacing: '0.22em',
-                  textTransform: 'uppercase',
-                  color: GOLD,
-                  fontWeight: 700,
-                  marginBottom: 12,
+                  fontFamily: DISPLAY,
+                  fontSize: 'clamp(3.2rem, 8vw, 7.2rem)',
+                  lineHeight: 0.86,
+                  fontWeight: 400,
                 }}
               >
-                Caractéristiques
+                {content.hero.headline}
+                <br />
+                <em style={{ color: 'rgba(247,242,232,0.52)', fontStyle: 'italic' }}>{content.hero.italic}</em>
+              </h1>
+              <p className="mt-8 max-w-[620px] text-base leading-8 text-white/64">
+                {content.hero.body}
+              </p>
+              <div className="mt-10 flex flex-col gap-3 sm:flex-row">
+                <Link href={content.hero.ctaHref} className="inline-flex items-center justify-center gap-3 px-7 py-4 text-[11px] font-bold uppercase tracking-[0.2em] text-white" style={{ background: GOLD }}>
+                  {content.hero.ctaLabel} <ArrowRight size={14} />
+                </Link>
+                <Link href="#modeles" className="inline-flex items-center justify-center gap-3 border border-white/20 px-7 py-4 text-[11px] font-bold uppercase tracking-[0.2em] text-white/90 transition hover:bg-white/10">
+                  Voir les modeles
+                </Link>
+              </div>
+            </div>
+
+            <div className="grid gap-4 sm:grid-cols-2">
+              {stats.map((item) => (
+                <div key={item.value} className="border border-[#C4A23E]/18 p-6">
+                  <p style={{ fontFamily: DISPLAY }} className="text-5xl leading-none">
+                    {item.label}
+                  </p>
+                  <p className="mt-3 text-[10px] font-bold uppercase tracking-[0.2em] text-white/50">{item.value}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+        </header>
+
+        <section id="modeles" className="py-8 md:py-10">
+          <div className="mx-auto max-w-[1500px] px-6 md:px-10">
+            <div className="mb-7 flex items-center gap-4">
+              <p className="text-[11px] font-bold uppercase tracking-[0.22em]" style={{ color: GOLD }}>Modeles</p>
+              <div className="h-px flex-1 bg-[#14130F]/30" />
+              <p className="text-[11px] font-bold uppercase tracking-[0.22em] text-[#14130F]/52">
+                {content.models.length} references
+              </p>
+            </div>
+
+            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+              {content.models.map((model, index) => (
+                <article key={`${model.name}-${index}`} className="group overflow-hidden bg-[#F7F2E8] transition duration-300 hover:-translate-y-1 hover:shadow-[0_18px_45px_rgba(20,19,15,0.12)]">
+                  <div className="relative aspect-[4/5] overflow-hidden bg-[#D5C6AD]">
+                    {model.img ? (
+                      <Image
+                        src={model.img}
+                        alt={`Parasol ${model.name}`}
+                        fill
+                        sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
+                        priority={index < 2}
+                        className="object-cover transition-transform duration-500 group-hover:scale-[1.04]"
+                      />
+                    ) : (
+                      <div className="flex h-full flex-col items-center justify-center gap-4 bg-[#14130F]/90 px-6 text-center">
+                        <Sun className="h-8 w-8" style={{ color: GOLD }} />
+                        <p className="text-[10px] font-bold uppercase tracking-[0.22em] text-white/52">Image a venir</p>
+                      </div>
+                    )}
+                    <div className="absolute inset-0 bg-[linear-gradient(to_top,rgba(20,19,15,0.62),transparent_58%)]" />
+                    <p className="absolute left-4 top-4 bg-black/30 px-3 py-2 text-[9px] font-bold uppercase tracking-[0.18em] text-white backdrop-blur-sm">
+                      {model.tagline}
+                    </p>
+                  </div>
+                  <div className="border-x border-b border-[#C4A23E]/20 p-5">
+                    <h3 style={{ fontFamily: DISPLAY }} className="text-3xl leading-none">{model.name}</h3>
+                    <p className="mt-4 text-sm leading-7 text-[#14130F]/60">{model.desc}</p>
+                  </div>
+                </article>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        <section className="py-16 md:py-24" style={{ background: DARK, color: CREAM }}>
+          <div className="mx-auto grid max-w-[1500px] gap-12 px-6 md:grid-cols-[0.9fr_1.1fr] md:px-10">
+            <div>
+              <p className="mb-5 text-[10px] font-bold uppercase tracking-[0.3em]" style={{ color: GOLD }}>
+                Qualite & durabilite
               </p>
               <h2
                 style={{
                   fontFamily: DISPLAY,
-                  fontSize: 'clamp(2rem, 4vw, 3rem)',
+                  fontSize: 'clamp(2.4rem, 5vw, 4.6rem)',
+                  lineHeight: 0.95,
                   fontWeight: 400,
-                  color: '#FDFAF5',
-                  lineHeight: 1.05,
-                  letterSpacing: '-0.01em',
-                  margin: 0,
                 }}
               >
-                Conçu pour durer,<br />
-                <em style={{ fontStyle: 'italic', color: 'rgba(253,250,245,0.5)' }}>pensé pour plaire</em>
+                {content.premium.headline}
+                <br />
+                <em style={{ color: 'rgba(247,242,232,0.5)' }}>{content.premium.italic}</em>
               </h2>
             </div>
-          </div>
-
-          <div className="grid grid-cols-1 gap-px sm:grid-cols-2 lg:grid-cols-3">
-            {c.features.map((f, idx) => {
-              const Icon = FEATURE_ICONS[idx % FEATURE_ICONS.length]
-              return (
-                <div
-                  key={f.title}
-                  className="group flex flex-col gap-4 p-8 transition-colors duration-200 hover:bg-white/[0.04]"
-                  style={{ border: '1px solid rgba(196,162,62,0.1)' }}
-                >
-                  <div
-                    style={{
-                      width: 40,
-                      height: 40,
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      border: `1px solid rgba(196,162,62,0.3)`,
-                      color: GOLD,
-                    }}
-                  >
-                    <Icon size={18} strokeWidth={1.5} />
-                  </div>
-                  <h3
-                    style={{
-                      fontFamily: DISPLAY,
-                      fontSize: '1.3rem',
-                      fontWeight: 400,
-                      color: '#FDFAF5',
-                      margin: 0,
-                      letterSpacing: '-0.01em',
-                    }}
-                  >
-                    {f.title}
-                  </h3>
-                  <p
-                    style={{
-                      fontFamily: BODY,
-                      fontSize: '0.85rem',
-                      color: 'rgba(253,250,245,0.5)',
-                      lineHeight: 1.7,
-                      margin: 0,
-                    }}
-                  >
-                    {f.body}
-                  </p>
+            <div className="grid gap-4">
+              {content.premium.features.map((item) => (
+                <div key={item} className="flex gap-4 border-b border-[#C4A23E]/15 pb-5 text-sm leading-7 text-white/65">
+                  <Check className="mt-1 h-4 w-4 shrink-0" style={{ color: GOLD }} />
+                  {item}
                 </div>
-              )
-            })}
-          </div>
-        </div>
-      </section>
-
-      {/* ── QUALITÉ & DURABILITÉ ─────────────────────────────────────── */}
-      <section className="py-20 md:py-28" style={{ background: DARK }}>
-        <div className="mx-auto max-w-[1400px] px-6 md:px-10">
-          <div className="grid grid-cols-1 gap-16 lg:grid-cols-2 lg:gap-24 items-center">
-
-            <div>
-              <p style={{ fontFamily: BODY, fontSize: 10, letterSpacing: '0.22em', textTransform: 'uppercase', color: GOLD, fontWeight: 700, marginBottom: 20 }}>
-                Qualité & Durabilité
-              </p>
-              <h2 style={{ fontFamily: DISPLAY, fontSize: 'clamp(2.2rem, 4vw, 3.4rem)', fontWeight: 400, color: '#FDFAF5', lineHeight: 1.05, letterSpacing: '-0.01em', marginBottom: 28 }}>
-                {c.premium.headline}<br />
-                <em style={{ fontStyle: 'italic', color: 'rgba(253,250,245,0.45)' }}>{c.premium.italic}</em>
-              </h2>
-              <div style={{ borderLeft: `2px solid rgba(196,162,62,0.3)`, paddingLeft: 20 }}>
-                <p style={{ fontFamily: BODY, fontSize: '0.92rem', color: 'rgba(253,250,245,0.65)', lineHeight: 1.85, marginBottom: 16 }}>
-                  {c.premium.paragraph1}
-                </p>
-                <p style={{ fontFamily: BODY, fontSize: '0.92rem', color: 'rgba(253,250,245,0.65)', lineHeight: 1.85 }}>
-                  {c.premium.paragraph2}
-                </p>
-              </div>
-            </div>
-
-            <ul className="flex flex-col gap-0" style={{ listStyle: 'none', padding: 0, margin: 0 }}>
-              {c.premium.features.map((feature, i) => (
-                <li
-                  key={i}
-                  className="flex items-start gap-4 py-5"
-                  style={{ borderBottom: '1px solid rgba(196,162,62,0.1)' }}
-                >
-                  <span style={{ width: 6, height: 6, background: GOLD, flexShrink: 0, marginTop: 6 }} />
-                  <p style={{ fontFamily: BODY, fontSize: '0.88rem', color: 'rgba(253,250,245,0.65)', lineHeight: 1.7, margin: 0 }}>{feature}</p>
-                </li>
               ))}
-            </ul>
-
+              <Link href={content.hero.ctaHref} className="mt-5 inline-flex w-fit items-center gap-3 px-7 py-4 text-[11px] font-bold uppercase tracking-[0.2em] text-white" style={{ background: GOLD }}>
+                {content.hero.ctaLabel} <ArrowRight size={14} />
+              </Link>
+            </div>
           </div>
-        </div>
-      </section>
+        </section>
 
-      {/* ── VISUAL BREAK — full-width image ──────────────────────────── */}
-      <div className="relative overflow-hidden" style={{ height: 420 }}>
-        <Image
-          src="/hero/parasols-landscape-new.png"
-          alt="Parasols haut de gamme au bord d'une piscine d'hôtel en Tunisie"
-          fill
-          sizes="100vw"
-          className="object-cover"
-        />
-        <div
-          className="absolute inset-0 flex items-center justify-center"
-          style={{ background: 'rgba(28,26,20,0.45)' }}
-        >
-          <blockquote
-            style={{
-              fontFamily: DISPLAY,
-              fontSize: 'clamp(1.6rem, 4vw, 3rem)',
-              fontWeight: 400,
-              color: '#FDFAF5',
-              textAlign: 'center',
-              lineHeight: 1.2,
-              letterSpacing: '-0.01em',
-              padding: '0 24px',
-              maxWidth: 700,
-            }}
-          >
-            &ldquo;{c.quote.text}<br />
-            <em style={{ color: GOLD }}>{c.quote.accent}&rdquo;</em>
-          </blockquote>
-        </div>
-      </div>
+        <section className="py-8 md:py-12" style={{ background: PAPER }}>
+          <div className="mx-auto max-w-[1500px] px-6 md:px-10">
+            <div className="mb-7 flex items-center gap-4">
+              <p className="text-[11px] font-bold uppercase tracking-[0.22em]" style={{ color: GOLD }}>Caracteristiques</p>
+              <div className="h-px flex-1 bg-[#14130F]/30" />
+            </div>
+            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+              {content.features.map((feature) => (
+                <article key={feature.title} className="bg-[#F7F2E8] p-6 transition duration-300 hover:shadow-[0_12px_32px_rgba(20,19,15,0.10)]">
+                  <ShieldCheck className="mb-8 h-6 w-6" style={{ color: GOLD }} />
+                  <h3 className="text-sm font-black uppercase tracking-[0.12em] text-[#14130F]">{feature.title}</h3>
+                  <p className="mt-4 text-sm leading-7 text-[#14130F]/58">{feature.body}</p>
+                </article>
+              ))}
+            </div>
+          </div>
+        </section>
 
-      {/* ── CTA BANNER ───────────────────────────────────────────────── */}
-      <section
-        className="relative overflow-hidden py-28"
-        style={{ background: DARK }}
-        aria-labelledby="parasols-cta-heading"
-      >
-        <div
-          className="pointer-events-none absolute inset-0 opacity-[0.06]"
-          style={{
-            backgroundImage: 'repeating-linear-gradient(45deg, #C4A23E 0, #C4A23E 1px, transparent 0, transparent 50%)',
-            backgroundSize: '28px 28px',
-          }}
-        />
+        <section className="relative min-h-[58vh] overflow-hidden" style={{ background: DARK, color: CREAM }}>
+          <Image
+            src="/editorial/terrace-dining.jpg"
+            alt="Terrasse de restaurant avec espace ombrage"
+            fill
+            sizes="100vw"
+            className="object-cover opacity-55"
+          />
+          <div className="absolute inset-0 bg-[linear-gradient(90deg,rgba(20,19,15,0.9),rgba(20,19,15,0.42))]" />
+          <div className="relative mx-auto flex min-h-[58vh] max-w-[1500px] flex-col justify-center px-6 py-20 md:px-10">
+            <p className="mb-5 text-[10px] font-bold uppercase tracking-[0.3em]" style={{ color: GOLD }}>
+              Signature exterieure
+            </p>
+            <blockquote style={{ fontFamily: DISPLAY, fontSize: 'clamp(2.8rem, 6vw, 5.6rem)', lineHeight: 0.94, fontWeight: 400 }}>
+              {content.quote.text}
+              <br />
+              <em style={{ color: GOLD, fontStyle: 'italic' }}>{content.quote.accent}</em>
+            </blockquote>
+          </div>
+        </section>
 
-        <div className="relative mx-auto max-w-[900px] px-6 text-center md:px-10">
-          <p
-            style={{
-              fontFamily: BODY,
-              fontSize: 10,
-              letterSpacing: '0.26em',
-              textTransform: 'uppercase',
-              color: GOLD,
-              fontWeight: 700,
-              marginBottom: 18,
-            }}
-          >
-            Votre Projet
-          </p>
-          <h2
-            id="parasols-cta-heading"
-            style={{
-              fontFamily: DISPLAY,
-              fontSize: 'clamp(2.4rem, 5vw, 4.5rem)',
-              fontWeight: 400,
-              color: CREAM,
-              lineHeight: 1.0,
-              letterSpacing: '-0.02em',
-              marginBottom: 20,
-            }}
-          >
-            {c.cta.headline}<br />
-            <em style={{ fontStyle: 'italic', color: GOLD }}>{c.cta.italic}</em>
-          </h2>
-          <p
-            style={{
-              fontFamily: BODY,
-              fontSize: '1rem',
-              color: 'rgba(253,250,245,0.6)',
-              maxWidth: 500,
-              margin: '0 auto 36px',
-              lineHeight: 1.7,
-            }}
-          >
-            {c.cta.body}
-          </p>
-
-          <Link
-            href={c.cta.ctaHref}
-            style={{
-              display: 'inline-flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              gap: 12,
-              background: GOLD,
-              color: '#fff',
-              fontFamily: BODY,
-              fontSize: 12,
-              fontWeight: 700,
-              letterSpacing: '0.18em',
-              textTransform: 'uppercase',
-              padding: '18px 38px',
-              transition: 'all 0.2s',
-            }}
-            className="w-full sm:w-auto hover:brightness-110 hover:shadow-xl"
-          >
-            {c.cta.ctaLabel} <ArrowRight size={14} />
-          </Link>
-        </div>
-      </section>
+        <section className="relative overflow-hidden py-20 md:py-24" style={{ background: PAPER }}>
+          <div className="mx-auto grid max-w-[1500px] gap-10 px-6 md:grid-cols-[0.82fr_1.18fr] md:px-10">
+            <div className="relative min-h-[360px] overflow-hidden border border-[#14130F]/12">
+              <Image src="/editorial/hotel-pool-parasols.jpg" alt="Projet parasol en espace piscine" fill sizes="(max-width: 768px) 100vw, 40vw" className="object-cover" />
+            </div>
+            <div className="flex flex-col justify-center py-6">
+              <MessageCircle className="mb-7 h-8 w-8" style={{ color: GOLD }} />
+              <h2 style={{ fontFamily: DISPLAY, fontSize: 'clamp(2.4rem, 5vw, 4.8rem)', lineHeight: 0.95, fontWeight: 400 }}>
+                {content.cta.headline}
+                <br />
+                <em style={{ color: 'rgba(20,19,15,0.5)' }}>{content.cta.italic}</em>
+              </h2>
+              <p className="mt-7 max-w-[620px] text-base leading-8 text-[#14130F]/62">
+                {content.cta.body}
+              </p>
+              <Link href={content.cta.ctaHref} className="mt-9 inline-flex w-fit items-center gap-3 px-8 py-4 text-[11px] font-bold uppercase tracking-[0.2em] text-white" style={{ background: GOLD }}>
+                {content.cta.ctaLabel} <ArrowRight size={14} />
+              </Link>
+            </div>
+          </div>
+        </section>
+      </main>
 
       <Footer />
     </div>

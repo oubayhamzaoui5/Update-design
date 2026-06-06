@@ -157,3 +157,102 @@ export type AboutContent = {
     secondaryHref:  string
   }
 }
+
+export type CatalogueStat = { label: string; value: string }
+export type CatalogueCard = { title: string; text: string; image: string }
+export type CatalogueTextBlock = {
+  eyebrow: string
+  headline: string
+  italic: string
+  body?: string
+}
+
+export type WoodProfileTextureRow = {
+  texture: string
+  name: string
+  color: string
+  models: string[]
+}
+
+export type WoodProfileContent = {
+  hero: {
+    eyebrow: string
+    headline: string
+    italic: string
+    body: string
+    primaryLabel: string
+    primaryHref: string
+    secondaryLabel: string
+    secondaryHref: string
+    stats: CatalogueStat[]
+  }
+  infoCards: string[]
+  textures: WoodProfileTextureRow[]
+  quality: {
+    eyebrow: string
+    headline: string
+    italic: string
+    body: string
+    items: CatalogueCard[]
+  }
+  advice: CatalogueTextBlock & {
+    points: string[]
+    ctaLabel: string
+    ctaHref: string
+  }
+}
+
+export type MarbleModel = {
+  ref: string
+  name: string
+  tone: string
+  src: string
+}
+
+export type MarbleAccessory = {
+  type: string
+  text: string
+  src: string
+  detail: string
+}
+
+export type MarbleLDetail = { type: string; src: string }
+export type MarbleLProfile = { name: string; src: string }
+
+export type MarblePanelsContent = {
+  hero: {
+    eyebrow: string
+    headline: string
+    italic: string
+    body: string
+    primaryLabel: string
+    primaryHref: string
+    secondaryLabel: string
+    secondaryHref: string
+    stats: CatalogueStat[]
+  }
+  usageNotes: string[]
+  references: CatalogueTextBlock & {
+    countLabel: string
+    models: MarbleModel[]
+  }
+  finishing: CatalogueTextBlock & {
+    accessories: MarbleAccessory[]
+    lDetailsLabel: string
+    lDetails: MarbleLDetail[]
+    lProfiles: MarbleLProfile[]
+  }
+  advice: CatalogueTextBlock & {
+    points: string[]
+    ctaLabel: string
+    ctaHref: string
+  }
+  proposal: {
+    image: string
+    imageAlt: string
+    headline: string
+    body: string
+    ctaLabel: string
+    ctaHref: string
+  }
+}

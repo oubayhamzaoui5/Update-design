@@ -1,5 +1,5 @@
 import Link from 'next/link'
-import { FileText, Home, User, Wind, Sun, ArrowRight, Eye } from 'lucide-react'
+import { FileText, Home, User, Wind, Sun, ArrowRight, Eye, Grid2X2, Layers } from 'lucide-react'
 
 const pages = [
   {
@@ -41,6 +41,26 @@ const pages = [
     sections:    ['Hero (titre, corps, CTA)', '4 Modèles (nom, accroche, description)', 'Grille Caractéristiques', 'Citation cinématique', 'Bannière CTA finale'],
     color:       '#B45309',
     bg:          '#FFFBEB',
+  },
+  {
+    href:        '/admin/contenu/profil-mural-effet-bois',
+    previewHref: '/profil-mural-effet-bois',
+    icon:        Grid2X2,
+    title:       'Profil mural effet bois',
+    description: 'Hero, references, textures, qualite et conseils projet.',
+    sections:    ['Hero + chiffres', 'Cartes explicatives', '20 textures et modeles', 'Qualite', 'Conseil projet'],
+    color:       '#8A6E53',
+    bg:          '#F7F2E8',
+  },
+  {
+    href:        '/admin/contenu/panneaux-effet-marbre',
+    previewHref: '/panneaux-effet-marbre',
+    icon:        Layers,
+    title:       'Panneaux effet marbre',
+    description: 'Hero, references MB, profils de finition, conseils et CTA.',
+    sections:    ['Hero + chiffres', 'Notes usage', '13 references MB', 'Profils I/T/U/L', 'Conseil et proposition'],
+    color:       '#374151',
+    bg:          '#F3F4F6',
   },
 ]
 

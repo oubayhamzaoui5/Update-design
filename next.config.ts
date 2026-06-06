@@ -18,7 +18,7 @@ const csp = [
   // next/font/google self-hosts fonts — no external font requests in production
   "font-src 'self' data: https://fonts.gstatic.com",
   [
-    "img-src 'self' data: blob: https://images.unsplash.com",
+    "img-src 'self' data: blob: https://images.unsplash.com https://www.sotuma.tn",
     pbOrigin,
   ].filter(Boolean).join(" "),
   [
@@ -68,6 +68,7 @@ addPattern(buildPattern("http://localhost:8090"));
 addPattern(buildPattern("http://51.68.124.47:8099"));
 if (pbUrl) addPattern(buildPattern(pbUrl));
 addPattern({ protocol: "https", hostname: "images.unsplash.com", pathname: "/**" });
+addPattern({ protocol: "https", hostname: "www.sotuma.tn", pathname: "/web/image/**" });
 
 const nextConfig: NextConfig = {
   /* config options here */
@@ -92,27 +93,26 @@ const nextConfig: NextConfig = {
       // Legacy French accent variant
       {
         source: '/Nouveaut\u00E9s',
-        destination: '/new-arrivals',
+        destination: '/boutique?sort=latest',
       },
     ]
   },
   async redirects() {
     return [
-      // Backward-compat: French URLs → English equivalents
-      { source: '/boutique/categorie/:slug*', destination: '/shop/:slug*', permanent: true },
-      { source: '/boutique', destination: '/shop', permanent: true },
-      { source: '/produit/:slug*', destination: '/product/:slug*', permanent: true },
-      { source: '/commande/confirmation', destination: '/checkout/confirmation', permanent: true },
-      { source: '/commandes', destination: '/orders', permanent: true },
-      { source: '/commande', destination: '/checkout', permanent: true },
-      { source: '/connexion', destination: '/login', permanent: true },
-      { source: '/inscription', destination: '/register', permanent: true },
-      { source: '/a-propos', destination: '/about', permanent: true },
-      { source: '/mon-compte', destination: '/account', permanent: true },
-      { source: '/reinitialisation', destination: '/reset-password', permanent: true },
-      { source: '/Nouveautes', destination: '/new-arrivals', permanent: true },
-      { source: '/Promotions', destination: '/promotions', permanent: true },
-      { source: '/Wishlist', destination: '/wishlist', permanent: true },
+      // Backward-compat: old English URLs -> current French/catalogue routes.
+      { source: '/shop/:slug*', destination: '/boutique/:slug*', permanent: true },
+      { source: '/product/:slug*', destination: '/produit/:slug*', permanent: true },
+      { source: '/checkout/confirmation', destination: '/paiement/confirmation', permanent: true },
+      { source: '/checkout', destination: '/paiement', permanent: true },
+      { source: '/orders', destination: '/commandes', permanent: true },
+      { source: '/login', destination: '/connexion', permanent: true },
+      { source: '/register', destination: '/inscription', permanent: true },
+      { source: '/about', destination: '/a-propos', permanent: true },
+      { source: '/account', destination: '/compte', permanent: true },
+      { source: '/reset-password', destination: '/reinitialisation-mot-de-passe', permanent: true },
+      { source: '/new-arrivals', destination: '/boutique?sort=latest', permanent: true },
+      { source: '/promotions', destination: '/boutique?promotions=1', permanent: true },
+      { source: '/wishlist', destination: '/boutique?wishlist=1', permanent: true },
     ]
   },
   async headers() {

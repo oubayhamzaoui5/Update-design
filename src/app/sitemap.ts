@@ -14,28 +14,58 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       priority: 1,
     },
     {
-      url: `${baseUrl}/shop`,
+      url: `${baseUrl}/boutique`,
       lastModified: new Date(),
       changeFrequency: 'daily',
       priority: 0.9,
     },
     {
-      url: `${baseUrl}/new-arrivals`,
-      lastModified: new Date(),
-      changeFrequency: 'daily',
-      priority: 0.8,
-    },
-    {
-      url: `${baseUrl}/promotions`,
-      lastModified: new Date(),
-      changeFrequency: 'daily',
-      priority: 0.8,
-    },
-    {
-      url: `${baseUrl}/wishlist`,
+      url: `${baseUrl}/profil-mural-effet-bois`,
       lastModified: new Date(),
       changeFrequency: 'weekly',
-      priority: 0.6,
+      priority: 0.8,
+    },
+    {
+      url: `${baseUrl}/panneaux-effet-marbre`,
+      lastModified: new Date(),
+      changeFrequency: 'weekly',
+      priority: 0.8,
+    },
+    {
+      url: `${baseUrl}/pvc-effet-bois-exterieur`,
+      lastModified: new Date(),
+      changeFrequency: 'weekly',
+      priority: 0.8,
+    },
+    {
+      url: `${baseUrl}/gazon-artificiel`,
+      lastModified: new Date(),
+      changeFrequency: 'weekly',
+      priority: 0.8,
+    },
+    {
+      url: `${baseUrl}/moulures-decoratives`,
+      lastModified: new Date(),
+      changeFrequency: 'weekly',
+      priority: 0.8,
+    },
+    {
+      url: `${baseUrl}/lampes`,
+      lastModified: new Date(),
+      changeFrequency: 'weekly',
+      priority: 0.8,
+    },
+    {
+      url: `${baseUrl}/store-bras`,
+      lastModified: new Date(),
+      changeFrequency: 'weekly',
+      priority: 0.8,
+    },
+    {
+      url: `${baseUrl}/parasols`,
+      lastModified: new Date(),
+      changeFrequency: 'weekly',
+      priority: 0.8,
     },
     {
       url: `${baseUrl}/blog`,
@@ -68,7 +98,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const categoryRoutes: MetadataRoute.Sitemap = categories
     .filter((c: any) => Boolean(c.slug))
     .map((c: any) => ({
-      url: `${baseUrl}/shop/${c.slug}`,
+      url: `${baseUrl}/boutique/${c.slug}`,
       lastModified: c.updated ? new Date(c.updated) : new Date(),
       changeFrequency: 'weekly' as const,
       priority: 0.8,
@@ -77,7 +107,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const productRoutes: MetadataRoute.Sitemap = products
     .filter((p: any) => Boolean(p.slug))
     .map((p: any) => ({
-      url: `${baseUrl}/product/${p.slug}`,
+      url: `${baseUrl}/produit/${p.slug}`,
       lastModified: p.updated ? new Date(p.updated) : new Date(),
       changeFrequency: 'weekly' as const,
       priority: 0.7,
@@ -92,5 +122,3 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
 
   return [...staticRoutes, ...categoryRoutes, ...productRoutes, ...blogRoutes]
 }
-
-

@@ -4,6 +4,7 @@ import { useState, useEffect, useMemo } from "react"
 import Link from "next/link"
 import { motion, AnimatePresence } from "framer-motion"
 import { ArrowRight } from "lucide-react"
+import { getCatalogueCategoryHref } from "@/lib/catalogue-page-links"
 
 interface MegaMenuProps {
   isOpen: boolean
@@ -191,7 +192,7 @@ export function MegaMenu({ isOpen, categories = [], onClose }: MegaMenuProps) {
                                   transition={{ delay: i * 0.04, duration: 0.2 }}
                                 >
                                   <Link
-                                    href={`/boutique/${child.slug}`}
+                                    href={getCatalogueCategoryHref(child)}
                                     onClick={onClose}
                                     className="group flex flex-col overflow-hidden transition-all hover:opacity-90"
                                     style={{ border: `1px solid rgba(196,162,62,0.18)` }}
@@ -228,7 +229,7 @@ export function MegaMenu({ isOpen, categories = [], onClose }: MegaMenuProps) {
                   {activeRoot && activeChildren.length === 0 && (
                     <div className="py-6">
                       <Link
-                        href={`/boutique/${activeRoot.slug}`}
+                        href={getCatalogueCategoryHref(activeRoot)}
                         onClick={onClose}
                         className="inline-flex items-center gap-2 text-sm font-semibold transition-opacity hover:opacity-70"
                         style={{ color: GOLD, fontFamily: BODY }}

@@ -61,37 +61,19 @@ const MODELES_DEPORTE = [
 ] as const
 
 const COULEURS_STRUCT = [
-  { id: 'Gris Givré Foncé', label: 'Gris Givré Foncé', img: '/GrisGivréFoncé.jpg' },
-  { id: 'Gris Givré',       label: 'Gris Givré',        img: '/Grisgivré.jpg'      },
-  { id: 'Marron Givré',     label: 'Marron Givré',      img: '/MarronGivré.jpg'    },
-  { id: 'Noir',             label: 'Noir',               hex: '#1A1A1A'             },
-] as const
-
-const DIMENSIONS_PISCINE = [
-  { id: '2.85x2.85', label: '2.85 × 2.85 m', img: '/parasol/dim-285.webp' },
-  { id: '2.50x2.50', label: '2.50 × 2.50 m', img: '/parasol/dim-250.webp' },
-  { id: '2.00x2.00', label: '2.00 × 2.00 m', img: '/parasol/dim-200.webp' },
-] as const
-
-const SOCLES = [
-  { id: 'Sans Socle', label: 'Sans Socle', img: '/parasol/socle-sans.webp',   desc: 'Fixation au sol intégrée.' },
-  { id: 'Fixe',       label: 'Fixe',       img: '/parasol/socle-fixe.webp',   desc: 'Dalle béton scellée au sol.' },
-  { id: 'Mobile',     label: 'Mobile',     img: '/parasol/socle-mobile.webp', desc: 'Base lestée déplaçable.' },
+  { id: 'Gris Givré Foncé', label: 'Gris Givré Foncé', swatch: '/GrisGivréFoncé.jpg' },
+  { id: 'Gris Givré',       label: 'Gris Givré',        swatch: '/Grisgivré.jpg'      },
+  { id: 'Marron Givré',     label: 'Marron Givré',      swatch: '/MarronGivré.jpg'    },
+  { id: 'Noir',             label: 'Noir',              hex: '#1A1A1A'                },
 ] as const
 
 // ── Config type ───────────────────────────────────────────────────────────────
 type Fabric         = typeof FABRICS[number]
-type TypeParasol    = 'Déporté' | 'Piscine'
 type ModeleDeporte  = typeof MODELES_DEPORTE[number]['id']
-type DimensionPiscine = typeof DIMENSIONS_PISCINE[number]['id']
-type Socle          = typeof SOCLES[number]['id']
 type CouleurStruct  = typeof COULEURS_STRUCT[number]['id']
 
 type Config = {
-  type:           TypeParasol | null
   modele:         ModeleDeporte | null
-  dimension:      DimensionPiscine | null
-  socle:          Socle | null
   couleurStruct:  CouleurStruct | null
   tissu:          Fabric | null
   logo:           boolean
@@ -99,17 +81,14 @@ type Config = {
 }
 
 const EMPTY: Config = {
-  type: null, modele: null, dimension: null, socle: null,
-  couleurStruct: null, tissu: null,
+  modele: null, couleurStruct: null, tissu: null,
   logo: false, logoFile: null,
 }
 
 // ── Step validation ───────────────────────────────────────────────────────────
 function isStepValid(step: number, c: Config): boolean {
   if (step === 0) {
-    if (!c.type) return false
-    if (c.type === 'Déporté') return c.modele !== null
-    if (c.type === 'Piscine') return c.dimension !== null && c.socle !== null
+    return c.modele !== null
   }
   if (step === 1) return c.couleurStruct !== null && c.tissu !== null
   return true
@@ -123,10 +102,80 @@ const MODEL_IMG: Record<string, string> = {
   Mauris: '/parasol/ParasolMauris.webp',
 }
 
+const STRUCTURE_IMG: Record<string, string> = {
+  'Gris Givré Foncé': '/parasol/structures/gris-givre-fonce.webp',
+  'Gris Givré': '/parasol/structures/gris-givre.webp',
+  'Marron Givré': '/parasol/structures/marron-givre.webp',
+  Noir: '/parasol/structures/noir.webp',
+}
+
+const DALLAS_FABRIC_IMG = new Set([
+  'SA1066_rouge',
+  'SA1067_Grape',
+  'SA1069_Optik',
+  'SA1070_Marmol',
+  'SA1489_Tropic',
+  'SA2013_Amarillo',
+  'SA2018_Azul',
+  'SA2024_Anis',
+  'SA2050_Naranja',
+  'SA2101_Granate',
+  'SA2129_Turkis',
+  'SA2143_Marfil',
+  'SA2145_Marino',
+  'SA2146_Marron',
+  'SA2170_Negro',
+  'SA2210_Rioja',
+  'SA2235_Azul-Real',
+  'SA2242_Verde',
+  'SA2245_Botella',
+  'SA2246_Verde-Claro',
+  'SA2296_Avena',
+  'SA2316_Cafe',
+  'SA2327_Basalto',
+  'SA2821_Silver',
+  'SA2826_Champagne',
+  'SA2828_Indigo',
+  'SA2829_Limon',
+  'SA2831_Mineral',
+  'SA2835_Pink',
+  'SA2838_Integral',
+  'SA2979_Perla',
+  'SA3582_Tweed-Negro',
+  'SA8157_Alabastro',
+  'SA8488_Antracita',
+])
+
+function getParasolPreviewSrc(config: Config) {
+  if (config.modele === 'Dallas' && config.tissu && DALLAS_FABRIC_IMG.has(config.tissu.id)) {
+    return `/parasol/dallas-fabrics/${config.tissu.id}.webp`
+  }
+
+  return config.modele ? (MODEL_IMG[config.modele] ?? MODEL_IMG.Dallas) : MODEL_IMG.Dallas
+}
+
+function getStructurePreviewSrc(config: Config) {
+  if (config.modele !== 'Dallas' || !config.tissu || !config.couleurStruct) return null
+
+  return STRUCTURE_IMG[config.couleurStruct] ?? null
+}
+
 function ParasolPreview({ config }: { config: Config }) {
-  const src = config.modele ? (MODEL_IMG[config.modele] ?? MODEL_IMG.Dallas) : MODEL_IMG.Dallas
+  const src = getParasolPreviewSrc(config)
+  const structureSrc = getStructurePreviewSrc(config)
   return (
-    <img key={src} src={src} alt="Aperçu parasol" className="w-full" style={{ objectFit: 'contain' }} />
+    <div key={`${src}-${structureSrc ?? 'base'}`} className="relative w-full">
+      <img src={src} alt="Aperçu parasol" className="w-full" style={{ objectFit: 'contain', opacity: 0.96 }} />
+      {structureSrc && (
+        <div
+          aria-hidden="true"
+          className="pointer-events-none absolute inset-0"
+          style={{ transform: 'scale(1.005)', transformOrigin: 'center top' }}
+        >
+          <img src={structureSrc} alt="" className="w-full" style={{ objectFit: 'contain' }} />
+        </div>
+      )}
+    </div>
   )
 }
 
@@ -170,10 +219,7 @@ export default function ParasolPage() {
 
   const summary = useMemo(() => {
     const rows: { label: string; value: string }[] = []
-    if (config.type)           rows.push({ label: 'Type',              value: config.type })
     if (config.modele)         rows.push({ label: 'Modèle',            value: config.modele })
-    if (config.dimension)      rows.push({ label: 'Dimension',         value: DIMENSIONS_PISCINE.find(d => d.id === config.dimension)?.label ?? '' })
-    if (config.socle)          rows.push({ label: 'Socle',             value: config.socle })
     if (config.couleurStruct)  rows.push({ label: 'Couleur structure', value: config.couleurStruct })
     if (config.tissu)          rows.push({ label: 'Tissu',             value: `${config.tissu.name} (${config.tissu.id})` })
     if (config.logo)           rows.push({ label: 'Impression logo',   value: config.logoFile?.name || 'Oui' })
@@ -284,158 +330,43 @@ export default function ParasolPage() {
                   Choisissez votre parasol
                 </h1>
                 <p style={{ fontFamily: BODY, fontSize: '0.85rem', color: 'rgba(28,26,20,0.55)', lineHeight: 1.75 }}>
-                  Sélectionnez le type et le modèle qui correspond à votre projet.
+                  Sélectionnez le modèle déporté qui correspond à votre projet.
                 </p>
               </div>
 
-              {/* Type selector */}
               <div>
-                <FieldLabel>Type de parasol</FieldLabel>
-                <div className="grid grid-cols-2 gap-3">
-                  {([
-                    {
-                      id: 'Déporté' as const,
-                      img: '/dallas.webp',
-                      desc: 'Mât excentré, aucune colonne centrale. Disponible en 1, 2 ou 4 têtes pour couvrir de petites à très grandes surfaces.',
-                    },
-                    {
-                      id: 'Piscine' as const,
-                      img: '/parasol/type-piscine.webp',
-                      desc: 'Mât central droit, conçu pour les bords de piscine. Compact, stable et facile à installer.',
-                    },
-                  ]).map((t) => {
-                    const active = config.type === t.id
+                <FieldLabel>Modèle</FieldLabel>
+                <div className="grid grid-cols-2 gap-4" style={{ paddingTop: 14 }}>
+                  {MODELES_DEPORTE.map((m) => {
+                    const active = config.modele === m.id
                     return (
                       <button
-                        key={t.id}
+                        key={m.id}
                         type="button"
-                        onClick={() => setConfig({ ...EMPTY, type: t.id })}
-                        className="flex flex-col items-start text-left transition-all cursor-pointer overflow-hidden"
+                        onClick={() => set('modele', m.id)}
+                        onMouseEnter={() => { const img = new Image(); img.src = m.img }}
+                        className="flex flex-col items-start text-left transition-all cursor-pointer"
                         style={{
                           border: `2px solid ${active ? GOLD : 'rgba(28,26,20,0.12)'}`,
                           background: active ? `${GOLD}08` : '#fff',
+                          position: 'relative', overflow: 'visible',
                         }}
                       >
                         <div className="w-full flex items-center justify-center" style={{ background: '#f7f5f0', height: 180 }}>
-                          <img src={t.img} alt={t.id} style={{ width: '100%', height: '100%', objectFit: 'contain', padding: 14 }} />
+                          <img src={m.img} alt={m.id} style={{ width: '100%', height: '100%', objectFit: 'contain', padding: 14 }} />
                         </div>
                         <div className="p-3 w-full">
                           <div className="flex items-center justify-between w-full mb-1">
-                            <span style={{ fontFamily: DISPLAY, fontSize: '1.2rem', fontWeight: 400, color: active ? DARK : 'rgba(28,26,20,0.6)' }}>{t.id}</span>
+                            <span style={{ fontFamily: DISPLAY, fontSize: '1.2rem', fontWeight: 400, color: active ? DARK : 'rgba(28,26,20,0.6)' }}>{m.id}</span>
                             {active && <span className="flex items-center justify-center" style={{ width: 18, height: 18, background: GOLD, borderRadius: '50%' }}><Check size={10} color="#fff" strokeWidth={3} /></span>}
                           </div>
-                          <p style={{ fontFamily: BODY, fontSize: '0.72rem', color: 'rgba(28,26,20,0.45)', lineHeight: 1.5 }}>{t.desc}</p>
+                          <p style={{ fontFamily: BODY, fontSize: '0.72rem', color: 'rgba(28,26,20,0.45)', lineHeight: 1.5 }}>{m.desc}</p>
                         </div>
                       </button>
                     )
                   })}
                 </div>
               </div>
-
-              {/* Déporté: model cards */}
-              {config.type === 'Déporté' && (
-                <div>
-                  <FieldLabel>Modèle</FieldLabel>
-                  <div className="grid grid-cols-2 gap-4" style={{ paddingTop: 14 }}>
-                    {MODELES_DEPORTE.map((m) => {
-                      const active = config.modele === m.id
-                      return (
-                        <button
-                          key={m.id}
-                          type="button"
-                          onClick={() => set('modele', m.id)}
-                          onMouseEnter={() => { const img = new Image(); img.src = m.img }}
-                          className="flex flex-col items-start text-left transition-all cursor-pointer"
-                          style={{
-                            border: `2px solid ${active ? GOLD : 'rgba(28,26,20,0.12)'}`,
-                            background: active ? `${GOLD}08` : '#fff',
-                            position: 'relative', overflow: 'visible',
-                          }}
-                        >
-                          <div className="w-full flex items-center justify-center" style={{ background: '#f7f5f0', height: 180 }}>
-                            <img src={m.img} alt={m.id} style={{ width: '100%', height: '100%', objectFit: 'contain', padding: 14 }} />
-                          </div>
-                          <div className="p-3 w-full">
-                            <div className="flex items-center justify-between w-full mb-1">
-                              <span style={{ fontFamily: DISPLAY, fontSize: '1.2rem', fontWeight: 400, color: active ? DARK : 'rgba(28,26,20,0.6)' }}>{m.id}</span>
-                              {active && <span className="flex items-center justify-center" style={{ width: 18, height: 18, background: GOLD, borderRadius: '50%' }}><Check size={10} color="#fff" strokeWidth={3} /></span>}
-                            </div>
-                            <p style={{ fontFamily: BODY, fontSize: '0.72rem', color: 'rgba(28,26,20,0.45)', lineHeight: 1.5 }}>{m.desc}</p>
-                          </div>
-                        </button>
-                      )
-                    })}
-                  </div>
-                </div>
-              )}
-
-              {/* Piscine: dimensions + quantité + socle */}
-              {config.type === 'Piscine' && (
-                <>
-                  <div>
-                    <FieldLabel>Dimensions</FieldLabel>
-                    <div className="grid grid-cols-3 gap-3">
-                      {DIMENSIONS_PISCINE.map((d) => {
-                        const active = config.dimension === d.id
-                        return (
-                          <button
-                            key={d.id}
-                            type="button"
-                            onClick={() => set('dimension', d.id)}
-                            className="flex flex-col items-start text-left transition-all cursor-pointer overflow-hidden"
-                            style={{
-                              border: `2px solid ${active ? GOLD : 'rgba(28,26,20,0.12)'}`,
-                              background: active ? `${GOLD}08` : '#fff',
-                            }}
-                          >
-                            <div className="w-full flex items-center justify-center" style={{ background: '#f7f5f0', height: 90 }}>
-                              <img src={d.img} alt={d.label} style={{ width: '100%', height: '100%', objectFit: 'contain', padding: 10 }} />
-                            </div>
-                            <div className="p-2.5 w-full">
-                              <div className="flex items-center justify-between w-full">
-                                <span style={{ fontFamily: BODY, fontSize: '0.75rem', fontWeight: 700, color: active ? DARK : 'rgba(28,26,20,0.6)' }}>{d.label}</span>
-                                {active && <Check size={12} color={GOLD} strokeWidth={3} />}
-                              </div>
-                            </div>
-                          </button>
-                        )
-                      })}
-                    </div>
-                  </div>
-
-                  <div>
-                    <FieldLabel>Socle</FieldLabel>
-                    <div className="grid grid-cols-3 gap-4">
-                      {SOCLES.map((s) => {
-                        const active = config.socle === s.id
-                        return (
-                          <button
-                            key={s.id}
-                            type="button"
-                            onClick={() => set('socle', s.id)}
-                            className="flex flex-col items-start text-left transition-all cursor-pointer overflow-hidden"
-                            style={{
-                              border: `2px solid ${active ? GOLD : 'rgba(28,26,20,0.12)'}`,
-                              background: active ? `${GOLD}08` : '#fff',
-                            }}
-                          >
-                            <div className="w-full flex items-center justify-center" style={{ background: '#f7f5f0', height: 110 }}>
-                              <img src={s.img} alt={s.id} style={{ width: '100%', height: '100%', objectFit: 'contain', padding: 12 }} />
-                            </div>
-                            <div className="p-3 w-full">
-                              <div className="flex items-center justify-between w-full mb-1">
-                                <span style={{ fontFamily: DISPLAY, fontSize: '1rem', fontWeight: 400, color: active ? DARK : 'rgba(28,26,20,0.6)' }}>{s.label}</span>
-                                {active && <span className="flex items-center justify-center" style={{ width: 16, height: 16, background: GOLD, borderRadius: '50%' }}><Check size={9} color="#fff" strokeWidth={3} /></span>}
-                              </div>
-                              <p style={{ fontFamily: BODY, fontSize: '0.72rem', color: 'rgba(28,26,20,0.45)', lineHeight: 1.5 }}>{s.desc}</p>
-                            </div>
-                          </button>
-                        )
-                      })}
-                    </div>
-                  </div>
-                </>
-              )}
             </div>
           )}
 
@@ -474,8 +405,8 @@ export default function ParasolPage() {
                           overflow: 'hidden',
                         }}
                       >
-                        {'img' in c && (
-                          <img src={c.img} alt={c.label} style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
+                        {'swatch' in c && (
+                          <img src={c.swatch} alt={c.label} style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
                         )}
                       </div>
                       <span style={{
@@ -603,7 +534,7 @@ export default function ParasolPage() {
                 <div className="flex items-center gap-3 py-3" style={{ borderBottom: '1px solid rgba(196,162,62,0.15)', marginBottom: 4 }}>
                   <div style={{ width: 3, height: 22, background: GOLD }} />
                   <p style={{ fontFamily: BODY, fontSize: 9, fontWeight: 700, letterSpacing: '0.2em', textTransform: 'uppercase', color: 'rgba(28,26,20,0.4)' }}>
-                    Ordre de fabrication — Parasol {config.type ?? ''}
+                    Ordre de fabrication — Parasol déporté
                   </p>
                 </div>
                 {summary.map((row) => (

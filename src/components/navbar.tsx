@@ -8,6 +8,7 @@ import Image from "next/image"
 import { usePathname, useRouter } from "next/navigation"
 import { NavbarCart } from "@/components/navbar-cart"
 import { MegaMenu, type NavCategory } from "@/components/mega-menu"
+import { getCatalogueCategoryHref } from "@/lib/catalogue-page-links"
 import {
   ShoppingBag,
   CircleUser,
@@ -69,7 +70,7 @@ function LogoSwap({ size = 60, dark = false }: { size?: number; dark?: boolean }
   const imgSize = Math.round(size * 0.38)
   return (
     <span className="inline-flex items-center gap-2 select-none">
-      <Image src="/logow.webp" alt="Update Design logo" width={imgSize} height={imgSize} className="object-contain" />
+      <Image src="/logow.webp" alt="Update Design logo" width={imgSize} height={imgSize} className="object-contain" unoptimized />
       <span
         className="inline-flex flex-col leading-none"
         style={{ fontFamily: DISPLAY_FONT, letterSpacing: "0.08em" }}
@@ -414,7 +415,7 @@ export function Navbar(props: NavbarProps) {
         return (
           <div key={category.id}>
             <div className="flex items-center justify-between">
-              <Link href={`/boutique/${category.slug}`} className="text-sm font-light tracking-wide transition-colors hover:opacity-60" style={{ color: UD_DARK, fontFamily: BODY_FONT }} onClick={(e) => e.stopPropagation()}>
+              <Link href={getCatalogueCategoryHref(category)} className="text-sm font-light tracking-wide transition-colors hover:opacity-60" style={{ color: UD_DARK, fontFamily: BODY_FONT }} onClick={(e) => e.stopPropagation()}>
                 {category.name}
               </Link>
               {children.length > 0 && (
@@ -482,7 +483,7 @@ export function Navbar(props: NavbarProps) {
 
               {/* Nav links */}
               <div className="flex items-center gap-8 flex-1">
-                {/* Shop — hover triggers mega menu */}
+                {/* Catalogue — hover triggers mega menu */}
                 <div
                   className="relative"
                   onMouseEnter={() => { if (megaMenuTimeoutRef.current) clearTimeout(megaMenuTimeoutRef.current); setIsDesktopMenuOpen(true) }}
@@ -495,13 +496,13 @@ export function Navbar(props: NavbarProps) {
                     style={{ color: isDesktopMenuOpen ? UD_GOLD : linkColor, fontFamily: BODY_FONT }}
                     aria-expanded={isDesktopMenuOpen}
                   >
-                    Boutique
+                    Catalogue
                     <span className="absolute -bottom-0.5 left-0 h-px transition-all duration-300 group-hover:w-full" style={{ width: isDesktopMenuOpen ? "100%" : "0%", background: UD_GOLD }} />
                   </button>
                   {isDesktopMenuOpen && <div className="absolute left-1/2 -translate-x-1/2 top-full w-[200vw] h-4" />}
                 </div>
 
-                {[{ href: "/#story", label: "À Propos" }, { href: "/#contact", label: "Contact" }, { href: "/blog", label: "Blog" }].map(({ href, label }) => (
+                {[{ href: "/contact", label: "Contact" }, { href: "/blog", label: "Blog" }].map(({ href, label }) => (
                   <Link
                     key={href}
                     href={href}
@@ -615,7 +616,11 @@ export function Navbar(props: NavbarProps) {
                   style={{ background: UD_CREAM, borderTop: "1px solid rgba(196,162,62,0.12)" }}
                 >
                   <div className="p-6 space-y-5">
-                    {[{ href: "/boutique", label: "Boutique" }, { href: "/#story", label: "À Propos" }, { href: "/#contact", label: "Contact" }, { href: "/blog", label: "Blog" }].map(({ href, label }, i) => (
+                    {[
+                      { href: "/boutique", label: "Catalogue" },
+                      { href: "/contact", label: "Contact" },
+                      { href: "/blog", label: "Blog" },
+                    ].map(({ href, label }, i) => (
                       <motion.div key={href} initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: i * 0.06, duration: 0.2 }}>
                         <Link href={href} onClick={() => setIsMenuOpen(false)} className="block text-[13px] font-semibold tracking-[0.2em] uppercase transition-colors" style={{ color: "rgba(28,26,20,0.6)", fontFamily: BODY_FONT }}
                           onMouseEnter={(e) => (e.currentTarget.style.color = UD_GOLD)} onMouseLeave={(e) => (e.currentTarget.style.color = "rgba(28,26,20,0.6)")}>

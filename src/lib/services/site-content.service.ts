@@ -2,6 +2,7 @@ import 'server-only'
 import fs from 'fs'
 import path from 'path'
 import type { HomepageContent, AboutContent, StoreBrasContent, ParasolContent } from '@/types/site-content'
+import { createServerPb } from '@/lib/pb'
 
 // ─── File paths ───────────────────────────────────────────────────────────────
 // NOTE: works on self-hosted Node.js servers. Not compatible with Vercel's
@@ -79,4 +80,52 @@ export function getParasolContent(): ParasolContent {
 export function saveParasolContent(data: ParasolContent): void {
   ensureDir()
   fs.writeFileSync(PARASOL_FILE, JSON.stringify(data, null, 2), 'utf-8')
+}
+
+async function getAdminPb() {
+  const pb = createServerPb()
+  const email = process.env.PB_ADMIN_EMAIL
+  const password = process.env.PB_ADMIN_PASSWORD
+
+  if (!email || !password) {
+    throw new Error('Identifiants administrateur PocketBase manquants.')
+  }
+
+  await pb.collection('_superusers').authWithPassword(email, password)
+  return pb
+}
+
+function mergeContent<T extends Record<string, unknown>>(fallback: T, saved: unknown): T {
+  if (!saved || typeof saved !== 'object' || Array.isArray(saved)) return fallback
+  return { ...fallback, ...(saved as Partial<T>) }
+}
+
+export async function getSitePageContent<T extends Record<string, unknown>>(slug: string, fallback: T): Promise<T> {
+  try {
+    const pb = createServerPb()
+    const record = await pb.collection('site_pages').getFirstListItem(`slug="${slug}"`, {
+      requestKey: null,
+    })
+
+    return mergeContent(fallback, record.content)
+  } catch {
+    return fallback
+  }
+}
+
+export async function saveSitePageContent<T extends Record<string, unknown>>(
+  slug: string,
+  title: string,
+  content: T,
+): Promise<void> {
+  const pb = await getAdminPb()
+
+  try {
+    const existing = await pb.collection('site_pages').getFirstListItem(`slug="${slug}"`, {
+      requestKey: null,
+    })
+    await pb.collection('site_pages').update(existing.id, { slug, title, content }, { requestKey: null })
+  } catch {
+    await pb.collection('site_pages').create({ slug, title, content }, { requestKey: null })
+  }
 }

@@ -53,9 +53,9 @@ export async function POST(req: NextRequest) {
     const state = asText(body.state)
     const postalCode = asText(body.postalCode)
     const notes = asText(body.notes)
-    const shipping = asNumber(body.shipping, 5)
+    const shipping = asNumber(body.shipping, 0)
 
-    if (!firstName || !lastName || !country || !address || !city) {
+    if (!firstName || !lastName) {
       return NextResponse.json({ message: 'Missing required fields.' }, { status: 400 })
     }
 
@@ -118,11 +118,11 @@ export async function POST(req: NextRequest) {
       lastName,
       email,
       phone: '',
-      address: [address, address2].filter(Boolean).join(', '),
-      city,
+      address: [address || 'Livraison non disponible', address2].filter(Boolean).join(', '),
+      city: city || 'Update Design',
       postalCode,
       notes,
-      country,
+      country: country || 'TN',
       state,
       paymentMode: 'stripe',
       status: 'paid',
@@ -130,7 +130,7 @@ export async function POST(req: NextRequest) {
       total,
       currency: 'USD',
       userName: `${firstName} ${lastName}`.trim(),
-      location: `${city}, ${state ? state + ', ' : ''}${country}`.trim(),
+      location: [city || 'Update Design', state, country || 'TN'].filter(Boolean).join(', '),
     }, { requestKey: null })
 
     const orderId = String(created.id ?? '')
@@ -142,8 +142,8 @@ export async function POST(req: NextRequest) {
     if (stripeSecretKey) {
       const lineItemsParams: Record<string, string> = {
         'mode': 'payment',
-        'success_url': `${appUrl}/checkout/confirmation?id=${orderId}`,
-        'cancel_url': `${appUrl}/checkout?cancelled=1`,
+        'success_url': `${appUrl}/paiement/confirmation?id=${orderId}`,
+        'cancel_url': `${appUrl}/paiement?cancelled=1`,
         'line_items[0][price_data][currency]': 'usd',
         'line_items[0][price_data][product_data][name]': `Update Design Commande #${orderId.slice(-6).toUpperCase()}`,
         'line_items[0][price_data][unit_amount]': String(Math.round(total * 100)),

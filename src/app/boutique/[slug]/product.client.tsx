@@ -1,4 +1,4 @@
-'use client'
+﻿'use client'
 
 import { useEffect, useMemo, useRef, useState } from 'react'
 import Link from 'next/link'
@@ -11,7 +11,6 @@ import { Navbar } from '@/components/navbar'
 import InstallationSteps from '@/components/shop/installation-steps'
 import ShopProductCard from '@/app/boutique/_components/shop-product-card'
 import { getPb } from '@/lib/pb'
-import { hasInstallationStepsCategory } from '@/lib/shop/product-category-match'
 import type { ProductListItem, ShopCategory } from '@/lib/services/product.service'
 import {
   addToCartForUser,
@@ -20,14 +19,16 @@ import {
   toggleWishlistForProduct,
 } from '@/lib/shop/client-api'
 
-// ── Brand tokens ─────────────────────────────────────────────────────────────
+// â”€â”€ Brand tokens â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 const DISPLAY = "var(--font-display), 'Cormorant Garamond', Georgia, serif"
 const BODY    = "'DM Sans', 'Outfit', system-ui, sans-serif"
 const GOLD    = '#C4A23E'
-const DARK    = '#1C1A14'
-const CREAM   = '#FDFAF5'
+const DARK    = '#14130F'
+const CREAM   = '#F7F2E8'
+const PAPER   = '#E9DDC9'
+const CARD_FOOTER_BG = '#D5D0C6'
 
-// ── Types ─────────────────────────────────────────────────────────────────────
+// â”€â”€ Types â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 type DetailItem = { label: string; value: string }
 type VariantKey = Record<string, string>
 
@@ -46,15 +47,35 @@ type GuestCartItem = {
   quantity: number
 }
 
+type InlineCartProduct = {
+  id: string
+  slug: string
+  name: string
+  sku?: string
+  images?: string[]
+  imageUrls?: string[]
+  price?: number
+  promoPrice?: number | null
+  currency?: string
+  stock?: number
+}
+
+type InlineCartItem = {
+  id: string
+  quantity: number
+  product: InlineCartProduct | null
+  source: 'server' | 'guest'
+}
+
 type VariantResolved = {
   id: string
   value: string
   resolvedValue: { type: 'image' | 'color' | 'text'; url?: string; value?: string }
 }
 
-// ── Helpers ───────────────────────────────────────────────────────────────────
-const FLAVOR_KEYS = ['saveur', 'flavor', 'flavour', 'goût', 'gout', 'arome', 'arôme', 'taste', 'parfum']
-const COUNT_KEYS  = ['count', 'quantité', 'quantite', 'qty', 'portion', 'serving', 'size', 'taille', 'poids', 'weight', 'gramme', 'pack', 'capsule', 'sachet', 'boîte', 'boite', 'unité', 'unite']
+// â”€â”€ Helpers â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+const FLAVOR_KEYS = ['saveur', 'flavor', 'flavour', 'goÃ»t', 'gout', 'arome', 'arÃ´me', 'taste', 'parfum']
+const COUNT_KEYS  = ['count', 'quantitÃ©', 'quantite', 'qty', 'portion', 'serving', 'size', 'taille', 'poids', 'weight', 'gramme', 'pack', 'capsule', 'sachet', 'boÃ®te', 'boite', 'unitÃ©', 'unite']
 
 function isFlavorKey(k: string) { return FLAVOR_KEYS.some((f) => k.toLowerCase().includes(f)) }
 function isCountKey(k: string)  { return COUNT_KEYS.some((c) => k.toLowerCase().includes(c)) }
@@ -93,8 +114,14 @@ function resolveVariantDisplay(variantKey: VariantKey | undefined, variantValues
     .filter(Boolean)
     .join(' / ')
 }
+function getInlineCartUnitPrice(product: InlineCartProduct | null): number {
+  if (!product) return 0
+  const price = typeof product.price === 'number' ? product.price : 0
+  const promo = typeof product.promoPrice === 'number' ? product.promoPrice : null
+  return promo != null && promo > 0 && promo < price ? promo : price
+}
 
-// ── Main Component ────────────────────────────────────────────────────────────
+// â”€â”€ Main Component â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 export default function ProductClient({
   product,
   imageUrls,
@@ -131,12 +158,15 @@ export default function ProductClient({
   const [isWishLoading, setIsWishLoading]             = useState(false)
   const [isAddingRelatedId, setIsAddingRelatedId]     = useState<string | null>(null)
   const [relatedInCartIds, setRelatedInCartIds]       = useState<Set<string>>(new Set())
+  const [inlineCartItems, setInlineCartItems]         = useState<InlineCartItem[]>([])
+  const [isInlineCartLoading, setIsInlineCartLoading] = useState(true)
   const [shareCopied, setShareCopied]                 = useState(false)
   const [activeTab, setActiveTab]                     = useState<'description' | 'details'>('details')
   const [currentImageIdx, setCurrentImageIdx]         = useState(0)
   const [displayImageIdx, setDisplayImageIdx]         = useState(0)
   const [isImageFading, setIsImageFading]             = useState(false)
   const leftPanelRef  = useRef<HTMLDivElement | null>(null)
+  const inlineCartRef = useRef<HTMLDivElement | null>(null)
   const [panelFixedStyle, setPanelFixedStyle] = useState<{ top: number; left: number; width: number } | null>(null)
 
   const defaultVariant = useMemo<ProductWithDetails | null>(() => {
@@ -161,21 +191,29 @@ export default function ProductClient({
   const isInStock            = availability.inStock
   const maxSelectableQuantity = isInStock ? Math.max(1, availability.stock) : 1
 
-  const shouldRenderInstallationSteps = useMemo(() => hasInstallationStepsCategory(product, categories), [product, categories])
-
-  const installationStep3Image = useMemo(() => {
+  const productCategoryTokens = useMemo(() => {
     const productCategoryIds   = new Set(product.categories ?? [])
-    const productCategoryTokens = categories
+    return categories
       .filter((c) => productCategoryIds.has(c.id))
       .flatMap((c) => [c.slug, c.name])
       .map((v) => v.toLowerCase())
-    return productCategoryTokens.some((t) => t.includes('marbre') || t.includes('marble')) ? '/step3_1.webp' : '/step3.webp'
   }, [product.categories, categories])
 
-  const alsoLikeProducts = useMemo(() => {
-    const explicitIds = new Set(explicitRelatedProducts.map((p) => p.id))
-    return relatedProducts.filter((p) => !explicitIds.has(p.id)).slice(0, 4)
-  }, [explicitRelatedProducts, relatedProducts])
+  const isMarbleProduct = useMemo(
+    () => productCategoryTokens.some((t) => t.includes('marbre') || t.includes('marble')),
+    [productCategoryTokens]
+  )
+  const isWoodProfileProduct = useMemo(
+    () =>
+      productCategoryTokens.some((t) =>
+        (t.includes('profil') || t.includes('profile') || t.includes('pvc')) &&
+        (t.includes('bois') || t.includes('wood'))
+      ) ||
+      [product.slug, product.name, product.sku ?? ''].some((t) => t.toLowerCase().includes('effet-bois')),
+    [product.name, product.sku, product.slug, productCategoryTokens]
+  )
+
+  const shouldRenderInstallationSteps = isWoodProfileProduct && !isMarbleProduct
 
   const fromCategorySlug = searchParams.get('category')
   const originCategory   = useMemo(() => {
@@ -186,7 +224,7 @@ export default function ProductClient({
     return bySlug
   }, [categories, fromCategorySlug, product.categories])
 
-  // ── Meta Pixel ───────────────────────────────────────────────────────────────
+  // â”€â”€ Meta Pixel â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   useEffect(() => {
     if (!metaPixelId) return
     const pixelId = metaPixelId
@@ -211,7 +249,7 @@ export default function ProductClient({
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [metaPixelId, product.id])
 
-  // ── Image fading ─────────────────────────────────────────────────────────────
+  // â”€â”€ Image fading â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   useEffect(() => {
     if (currentImageIdx === displayImageIdx) return
     setIsImageFading(true)
@@ -224,7 +262,7 @@ export default function ProductClient({
 
   useEffect(() => { setQuantity((prev) => Math.max(1, Math.min(prev, maxSelectableQuantity))) }, [maxSelectableQuantity])
 
-  // ── Pin left panel when cart drawer opens ────────────────────────────────────
+  // â”€â”€ Pin left panel when cart drawer opens â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   useEffect(() => {
     const onCartOpen  = () => { if (leftPanelRef.current) { const { top, left, width } = leftPanelRef.current.getBoundingClientRect(); setPanelFixedStyle({ top, left, width }) } }
     const onCartClose = () => { requestAnimationFrame(() => setPanelFixedStyle(null)) }
@@ -233,7 +271,7 @@ export default function ProductClient({
     return () => { window.removeEventListener('cart:drawer:open', onCartOpen); window.removeEventListener('cart:drawer:close', onCartClose) }
   }, [])
 
-  // ── Cart sync ────────────────────────────────────────────────────────────────
+  // â”€â”€ Cart sync â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   useEffect(() => {
     let cancelled = false
     const sync = async () => {
@@ -246,6 +284,76 @@ export default function ProductClient({
     window.addEventListener('cart:updated', sync); window.addEventListener('focus', sync)
     return () => { cancelled = true; window.removeEventListener('cart:updated', sync); window.removeEventListener('focus', sync) }
   }, [product.id])
+
+  useEffect(() => {
+    let cancelled = false
+
+    const mapProduct = (prod: any): InlineCartProduct | null => {
+      if (!prod) return null
+      return {
+        id: prod.id ?? '',
+        slug: prod.slug ?? '',
+        name: prod.name ?? '',
+        sku: prod.sku ?? '',
+        images: Array.isArray(prod.images) ? prod.images : [],
+        imageUrls: Array.isArray(prod.imageUrls) ? prod.imageUrls : [],
+        price: typeof prod.price === 'number' ? prod.price : Number(prod.price ?? 0),
+        promoPrice: prod.promoPrice == null ? null : Number(prod.promoPrice),
+        currency: prod.currency ?? 'DT',
+        stock: typeof prod.stock === 'number' ? prod.stock : Number(prod.stock ?? 0),
+      }
+    }
+
+    const loadInlineCart = async () => {
+      setIsInlineCartLoading(true)
+      try {
+        const serverRes = await fetch('/api/shop/cart', { cache: 'no-store' })
+        if (serverRes.ok) {
+          const data = await serverRes.json().catch(() => ({}))
+          const rows = Array.isArray(data?.items) ? data.items : []
+          if (!cancelled) {
+            setInlineCartItems(rows.map((item: any) => ({
+              id: item.id ?? '',
+              quantity: Math.max(1, Number(item.quantity ?? 1)),
+              product: mapProduct(item.product),
+              source: 'server' as const,
+            })))
+          }
+          return
+        }
+
+        const guest = getGuestCart()
+        const result: InlineCartItem[] = []
+        for (const item of guest) {
+          try {
+            const res = await fetch(`/api/shop/products/id/${item.productId}`, { cache: 'no-store' })
+            if (!res.ok) continue
+            const data = await res.json().catch(() => ({}))
+            result.push({
+              id: item.productId,
+              quantity: Math.max(1, Number(item.quantity ?? 1)),
+              product: mapProduct(data?.product),
+              source: 'guest',
+            })
+          } catch {}
+        }
+        if (!cancelled) setInlineCartItems(result)
+      } catch {
+        if (!cancelled) setInlineCartItems([])
+      } finally {
+        if (!cancelled) setIsInlineCartLoading(false)
+      }
+    }
+
+    void loadInlineCart()
+    window.addEventListener('cart:updated', loadInlineCart)
+    window.addEventListener('focus', loadInlineCart)
+    return () => {
+      cancelled = true
+      window.removeEventListener('cart:updated', loadInlineCart)
+      window.removeEventListener('focus', loadInlineCart)
+    }
+  }, [])
 
   useEffect(() => {
     let cancelled = false
@@ -273,7 +381,7 @@ export default function ProductClient({
     return () => { cancelled = true }
   }, [product.id])
 
-  // ── Handlers ─────────────────────────────────────────────────────────────────
+  // â”€â”€ Handlers â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   const handleAddToCart = async () => {
     if (!isInStock) return
     const safeQty = Math.max(1, Math.min(quantity, maxSelectableQuantity))
@@ -290,7 +398,7 @@ export default function ProductClient({
       if (safeQty !== quantity) setQuantity(safeQty)
       setIsInCart(true)
       window.dispatchEvent(new Event('cart:updated'))
-      window.dispatchEvent(new Event('cart:open'))
+      window.setTimeout(() => inlineCartRef.current?.scrollIntoView({ behavior: 'smooth', block: 'nearest' }), 120)
       const w = window as Window & { fbq?: (...args: unknown[]) => void }
       if (metaPixelId && typeof w.fbq === 'function') {
         w.fbq('track', 'AddToCart', { content_ids: [product.id], content_type: 'product', content_name: product.name, value: product.promoPrice ?? product.price, currency: product.currency ?? 'TND', num_items: safeQty })
@@ -310,7 +418,10 @@ export default function ProductClient({
   }
 
   const handleAddRelatedToCart = async (relatedProductId: string) => {
-    if (relatedInCartIds.has(relatedProductId)) { window.dispatchEvent(new Event('cart:open')); return }
+    if (relatedInCartIds.has(relatedProductId)) {
+      inlineCartRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' })
+      return
+    }
     try {
       setIsAddingRelatedId(relatedProductId)
       try { await addToCartForUser(relatedProductId, 1) }
@@ -321,8 +432,54 @@ export default function ProductClient({
         setGuestCart(current)
       }
       setRelatedInCartIds((prev) => new Set(prev).add(relatedProductId))
-      window.dispatchEvent(new Event('cart:updated')); window.dispatchEvent(new Event('cart:open'))
+      window.dispatchEvent(new Event('cart:updated'))
+      window.setTimeout(() => inlineCartRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' }), 120)
     } finally { setIsAddingRelatedId(null) }
+  }
+
+  const handleInlineUpdateQuantity = async (item: InlineCartItem, newQty: number) => {
+    if (newQty < 1) {
+      await handleInlineRemoveItem(item)
+      return
+    }
+    const maxQty = item.product?.stock != null ? Math.max(1, item.product.stock) : 99
+    const safeQty = Math.max(1, Math.min(newQty, maxQty))
+    setInlineCartItems((items) => items.map((row) => row.id === item.id ? { ...row, quantity: safeQty } : row))
+    try {
+      if (item.source === 'server') {
+        const res = await fetch('/api/shop/cart', {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ itemId: item.id, quantity: safeQty }),
+        })
+        if (!res.ok) throw new Error('Update failed')
+      } else {
+        const current = getGuestCart()
+        const idx = current.findIndex((row) => row.productId === item.id)
+        if (idx >= 0) {
+          current[idx].quantity = safeQty
+          setGuestCart(current)
+        }
+      }
+      window.dispatchEvent(new Event('cart:updated'))
+    } catch {
+      window.dispatchEvent(new Event('cart:updated'))
+    }
+  }
+
+  const handleInlineRemoveItem = async (item: InlineCartItem) => {
+    setInlineCartItems((items) => items.filter((row) => row.id !== item.id))
+    try {
+      if (item.source === 'server') {
+        const res = await fetch(`/api/shop/cart?itemId=${encodeURIComponent(item.id)}`, { method: 'DELETE' })
+        if (!res.ok) throw new Error('Remove failed')
+      } else {
+        setGuestCart(getGuestCart().filter((row) => row.productId !== item.id))
+      }
+      window.dispatchEvent(new Event('cart:updated'))
+    } catch {
+      window.dispatchEvent(new Event('cart:updated'))
+    }
   }
 
   const handleShareClick = async () => {
@@ -334,10 +491,45 @@ export default function ProductClient({
     } catch { setShareCopied(false) }
   }
 
-  // ── Derived ──────────────────────────────────────────────────────────────────
+  // â”€â”€ Derived â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   const activeProduct = selectedVariant ?? product
+  const activeVariantKey = selectedVariant?.variantKey ?? product.variantKey ?? {}
+  const compatibleVariantValuesMap = useMemo(() => {
+    if (variants.length === 0) return variantValuesMap
+
+    const variantKeys = Object.keys(variants[0]?.variantKey ?? {})
+    const nextMap: Record<string, VariantResolved[]> = {}
+
+    for (const key of variantKeys) {
+      const compatibleRawValues = new Set<string>()
+      const otherSelections = Object.entries(activeVariantKey).filter(
+        ([otherKey, value]) => otherKey !== key && typeof value === 'string' && value.length > 0
+      )
+
+      for (const variant of variants) {
+        const currentKey = variant.variantKey ?? {}
+        const matchesOtherSelections = otherSelections.every(([otherKey, value]) => currentKey[otherKey] === value)
+        const currentValue = currentKey[key]
+
+        if (matchesOtherSelections && typeof currentValue === 'string' && currentValue.length > 0) {
+          compatibleRawValues.add(currentValue)
+        }
+      }
+
+      const allValues = variantValuesMap[key] ?? []
+      const compatibleValues = allValues.filter((value) => compatibleRawValues.has(value.value))
+      nextMap[key] = compatibleValues.length > 0 ? compatibleValues : allValues
+    }
+
+    return nextMap
+  }, [activeVariantKey, variantValuesMap, variants])
   const hasPromo      = typeof activeProduct.promoPrice === 'number' && activeProduct.promoPrice > 0 && activeProduct.promoPrice < activeProduct.price
   const displayPrice  = hasPromo ? activeProduct.promoPrice! : activeProduct.price
+  const inlineCartSubtotal = useMemo(
+    () => inlineCartItems.reduce((sum, item) => sum + getInlineCartUnitPrice(item.product) * item.quantity, 0),
+    [inlineCartItems]
+  )
+  const inlineCartCurrency = inlineCartItems.find((item) => item.product?.currency)?.product?.currency ?? activeProduct.currency ?? 'DT'
 
   const backHref = originCategory
     ? `/boutique/${originCategory.slug}`
@@ -345,29 +537,31 @@ export default function ProductClient({
     : searchParams.get('nouveautes') === '1' ? '/boutique?nouveautes=1'
     : '/boutique'
 
-  // ── Render ───────────────────────────────────────────────────────────────────
+  // â”€â”€ Render â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   return (
-    <div style={{ background: CREAM, minHeight: '100vh' }}>
-      <Navbar />
+    <div style={{ background: CREAM, minHeight: '100vh', fontFamily: BODY, color: DARK }}>
+      <Navbar reserveSpace />
 
-      {/* ── Hero split ──────────────────────────────────────────────────────── */}
-      <div className="flex flex-col lg:flex-row">
+      {/* â”€â”€ Hero split â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
+      <div className="flex flex-col lg:flex-row" style={{ background: CREAM }}>
 
         {/* LEFT: Sticky image panel */}
         <div
           ref={leftPanelRef}
-          className="relative lg:w-[52%] lg:sticky lg:top-0 lg:h-screen flex flex-col"
+          className="relative flex flex-col lg:sticky lg:top-0 lg:h-screen lg:w-[44%]"
           style={{
-            background: '#ffffff',
+            background: PAPER,
+            color: DARK,
             ...(panelFixedStyle ? { position: 'fixed', top: panelFixedStyle.top, left: panelFixedStyle.left, width: panelFixedStyle.width } : {}),
           }}
         >
+          <div className="absolute inset-0 opacity-[0.10]" style={{ backgroundImage: 'linear-gradient(90deg,#C4A23E 1px,transparent 1px),linear-gradient(#C4A23E 1px,transparent 1px)', backgroundSize: '72px 72px' }} />
           {/* Back link */}
-          <div className="absolute z-20" style={{ top: 'calc(var(--navbar-offset-desktop, 80px) + 1rem)', left: '1.5rem' }}>
+          <div className="absolute left-5 top-6 z-20 md:left-8">
             <Link
               href={backHref}
-              className="inline-flex items-center gap-1.5 cursor-pointer transition-opacity hover:opacity-50"
-              style={{ fontFamily: BODY, fontSize: 10, fontWeight: 600, letterSpacing: '0.18em', textTransform: 'uppercase', color: 'rgba(28,26,20,0.4)' }}
+              className="inline-flex cursor-pointer items-center gap-2 border px-4 py-3 transition hover:bg-white/70"
+              style={{ fontFamily: BODY, fontSize: 10, fontWeight: 700, letterSpacing: '0.18em', textTransform: 'uppercase', color: 'rgba(20,19,15,0.62)', borderColor: 'rgba(20,19,15,0.12)' }}
             >
               <ArrowLeft size={12} /> Retour
             </Link>
@@ -375,18 +569,28 @@ export default function ProductClient({
 
           {/* Main image area */}
           <div
-            className="relative flex flex-1 items-center justify-center px-10 pb-10 lg:px-14 lg:pb-14"
-            style={{ paddingTop: 'calc(var(--navbar-offset-desktop, 80px) + 1.5rem)', minHeight: 420 }}
+            className="relative flex flex-1 flex-col items-center justify-center gap-4 px-6 pb-8 pt-24 md:px-10 lg:px-12 lg:pb-10 lg:pt-24"
+            style={{ minHeight: 390 }}
           >
-<div className="relative w-full aspect-square" style={{ maxWidth: 'min(100%, 520px)' }}>
+            {imageUrls.length > 1 && (
+              <div className="flex w-full items-center justify-between" style={{ maxWidth: 'min(100%, 430px)' }}>
+                <span style={{ fontFamily: BODY, fontSize: 10, fontWeight: 800, letterSpacing: '0.18em', textTransform: 'uppercase', color: GOLD }}>
+                  Photos produit & inspirations
+                </span>
+                <span className="border bg-white/70 px-2.5 py-1" style={{ fontFamily: BODY, fontSize: 10, fontWeight: 700, color: 'rgba(20,19,15,0.52)', borderColor: 'rgba(20,19,15,0.10)' }}>
+                  {displayImageIdx + 1}/{imageUrls.length}
+                </span>
+              </div>
+            )}
+            <div className="relative w-full aspect-square border border-[#C4A23E]/20 bg-white shadow-[0_30px_80px_rgba(20,19,15,0.10)]" style={{ maxWidth: 'min(100%, 430px)' }}>
               <Image
                 key={imageUrls[displayImageIdx] ?? '/placeholder-square.png'}
                 src={imageUrls[displayImageIdx] ?? '/placeholder-square.png'}
                 alt={product.name}
                 fill
                 priority
-                className={`object-cover transition-opacity duration-200 ${isImageFading ? 'opacity-0' : 'opacity-100'}`}
-                sizes="(max-width: 1024px) 100vw, 52vw"
+                className={`object-contain p-8 transition-opacity duration-200 ${isImageFading ? 'opacity-0' : 'opacity-100'}`}
+                sizes="(max-width: 1024px) 100vw, 40vw"
               />
             </div>
 
@@ -396,8 +600,8 @@ export default function ProductClient({
                 <button
                   type="button"
                   onClick={() => setCurrentImageIdx((i) => (i - 1 + imageUrls.length) % imageUrls.length)}
-                  aria-label="Image précédente"
-                  className="absolute left-2 top-1/2 -translate-y-1/2 z-20 cursor-pointer p-0.5 text-3xl font-black leading-none text-black transition hover:opacity-60 sm:left-3 sm:text-4xl lg:left-4 lg:p-1 lg:text-5xl"
+                  aria-label="Image prÃ©cÃ©dente"
+                  className="absolute left-2 top-1/2 z-20 -translate-y-1/2 cursor-pointer border border-[#14130F]/10 bg-white/80 px-3 py-1 text-3xl font-light leading-none text-[#14130F]/70 shadow-sm transition hover:bg-white hover:text-[#14130F] sm:left-3 sm:text-4xl lg:left-4 lg:text-5xl"
                 >
                   <span aria-hidden="true">&#8249;</span>
                 </button>
@@ -405,7 +609,7 @@ export default function ProductClient({
                   type="button"
                   onClick={() => setCurrentImageIdx((i) => (i + 1) % imageUrls.length)}
                   aria-label="Image suivante"
-                  className="absolute right-2 top-1/2 -translate-y-1/2 z-20 cursor-pointer p-0.5 text-3xl font-black leading-none text-black transition hover:opacity-60 sm:right-3 sm:text-4xl lg:right-4 lg:p-1 lg:text-5xl"
+                  className="absolute right-2 top-1/2 z-20 -translate-y-1/2 cursor-pointer border border-[#14130F]/10 bg-white/80 px-3 py-1 text-3xl font-light leading-none text-[#14130F]/70 shadow-sm transition hover:bg-white hover:text-[#14130F] sm:right-3 sm:text-4xl lg:right-4 lg:text-5xl"
                 >
                   <span aria-hidden="true">&#8250;</span>
                 </button>
@@ -415,22 +619,23 @@ export default function ProductClient({
 
           {/* Thumbnail strip */}
           {imageUrls.length > 1 && (
-            <div className="flex justify-center gap-2 px-6 pb-7 flex-wrap">
+            <div className="relative z-10 flex flex-wrap justify-center gap-2 px-6 pb-7">
               {imageUrls.map((img, i) => (
                 <button
                   key={img + i}
                   type="button"
                   onClick={() => setCurrentImageIdx(i)}
                   aria-label={`Image ${i + 1}`}
-                  className="relative cursor-pointer overflow-hidden transition-all duration-200"
+                  className="relative cursor-pointer overflow-hidden transition-all duration-300 hover:-translate-y-0.5"
                   style={{
-                    width: 60, height: 60, flexShrink: 0,
-                    border: i === currentImageIdx ? `2px solid ${GOLD}` : '2px solid rgba(28,26,20,0.12)',
-                    opacity: i === currentImageIdx ? 1 : 0.55,
+                    width: 68, height: 68, flexShrink: 0,
+                    border: i === currentImageIdx ? `2px solid ${GOLD}` : '2px solid rgba(20,19,15,0.12)',
+                    opacity: i === currentImageIdx ? 1 : 0.74,
                     background: '#fff',
+                    boxShadow: i === currentImageIdx ? '0 10px 24px rgba(20,19,15,0.12)' : 'none',
                   }}
                 >
-                  <Image src={img} alt={`${product.name} ${i + 1}`} fill className="object-cover" sizes="60px" />
+                  <Image src={img} alt={`${product.name} ${i + 1}`} fill className="object-contain p-1.5" sizes="68px" />
                 </button>
               ))}
             </div>
@@ -438,13 +643,14 @@ export default function ProductClient({
         </div>
 
         {/* Spacer when left panel is fixed */}
-        {panelFixedStyle && <div className="lg:w-[52%] shrink-0" aria-hidden="true" />}
+        {panelFixedStyle && <div className="shrink-0 lg:w-[44%]" aria-hidden="true" />}
 
         {/* RIGHT: Content panel */}
         <div
-          className="flex flex-col lg:w-[48%] px-5 pt-8 pb-20 lg:px-12 xl:px-16 lg:pt-28"
+          className="flex flex-col px-5 pb-20 pt-8 md:px-10 lg:w-[56%] lg:px-12 lg:pt-16 xl:px-16"
           style={{ background: CREAM }}
         >
+          <div className="w-full border border-[#14130F]/10 bg-[#F7F2E8] p-5 md:p-7 lg:p-8" style={{ boxShadow: '0 18px 55px rgba(20,19,15,0.08)' }}>
           {/* Category + breadcrumb */}
           {categoryName && (
             <p style={{ fontFamily: BODY, fontSize: 12, fontWeight: 700, letterSpacing: '0.18em', textTransform: 'uppercase', color: GOLD, marginBottom: 12 }}>
@@ -453,28 +659,28 @@ export default function ProductClient({
           )}
 
           {/* Product name */}
-          <h1 style={{ fontFamily: DISPLAY, fontSize: 'clamp(1.9rem, 3.2vw, 3rem)', fontWeight: 400, color: DARK, lineHeight: 1.05, letterSpacing: '-0.01em', marginBottom: 8 }}>
+          <h1 style={{ fontFamily: DISPLAY, fontSize: 'clamp(2.5rem, 5vw, 5rem)', fontWeight: 400, color: DARK, lineHeight: 0.92, marginBottom: 14 }}>
             {product.name}
           </h1>
 
-          <div className="flex items-center gap-4 mb-5" style={{ minHeight: 18 }}>
+          <div className="mb-6 flex flex-wrap items-center gap-3" style={{ minHeight: 18 }}>
             {activeProduct.sku && (
-              <span style={{ fontFamily: BODY, fontSize: 11, color: 'rgba(28,26,20,0.35)', letterSpacing: '0.08em' }}>
-                Réf. {activeProduct.sku}
+              <span className="border border-[#14130F]/12 px-3 py-1.5" style={{ fontFamily: BODY, fontSize: 10, color: 'rgba(20,19,15,0.48)', letterSpacing: '0.14em', fontWeight: 700, textTransform: 'uppercase' }}>
+                RÃ©f. {activeProduct.sku}
               </span>
             )}
-            <div className="flex items-center gap-1.5">
+            <div className="flex items-center gap-1.5 border border-[#14130F]/12 px-3 py-1.5">
               <span style={{ width: 7, height: 7, borderRadius: '50%', background: isInStock ? '#2E9A5F' : '#C0392B', flexShrink: 0, display: 'inline-block' }} />
               <span style={{ fontFamily: BODY, fontSize: 11, fontWeight: 600, letterSpacing: '0.08em', color: isInStock ? '#2E9A5F' : '#C0392B' }}>
-                {isInStock ? `En stock${availability.stock > 0 && availability.stock <= 5 ? ` — Plus que ${availability.stock}` : ''}` : 'Rupture de stock'}
+                {isInStock ? `En stock${availability.stock > 0 && availability.stock <= 5 ? ` â€” Plus que ${availability.stock}` : ''}` : 'Rupture de stock'}
               </span>
             </div>
           </div>
 
           {/* Price + Quantity */}
-          <div className="flex items-center justify-between mb-6">
+          <div className="mb-7 flex flex-col gap-4 border-y border-[#C4A23E]/20 py-5 sm:flex-row sm:items-center sm:justify-between">
             <div className="flex items-baseline gap-4">
-              <span style={{ fontFamily: BODY, fontSize: '1.6rem', fontWeight: 800, color: GOLD, letterSpacing: '-0.01em' }}>
+              <span style={{ fontFamily: DISPLAY, fontSize: 'clamp(2rem, 4vw, 3.2rem)', fontWeight: 400, color: GOLD, lineHeight: 1 }}>
                 {displayPrice.toFixed(2)} {activeProduct.currency}
               </span>
               {hasPromo && (
@@ -484,7 +690,7 @@ export default function ProductClient({
               )}
             </div>
             {/* Qty stepper */}
-            <div className="flex items-center" style={{ border: `1px solid rgba(196,162,62,0.35)` }}>
+            <div className="flex w-fit items-center bg-white/45" style={{ border: `1px solid rgba(196,162,62,0.35)` }}>
               <button
                 type="button"
                 onClick={() => setQuantity((v) => Math.max(1, v - 1))}
@@ -494,7 +700,7 @@ export default function ProductClient({
                 onMouseEnter={(e) => { if (quantity > 1) (e.currentTarget).style.background = `${GOLD}18` }}
                 onMouseLeave={(e) => { (e.currentTarget).style.background = 'transparent' }}
               >
-                −
+                âˆ’
               </button>
               <span style={{ fontFamily: BODY, fontSize: '0.88rem', fontWeight: 700, color: DARK, width: 40, textAlign: 'center' }}>
                 {quantity}
@@ -516,18 +722,18 @@ export default function ProductClient({
           {/* Description preview */}
           {product.description && (
             <p
-              className="line-clamp-3"
-              style={{ fontFamily: BODY, fontSize: '0.85rem', color: 'rgba(28,26,20,0.6)', lineHeight: 1.75, marginBottom: 16 }}
+              className="line-clamp-4"
+              style={{ fontFamily: BODY, fontSize: '0.95rem', color: 'rgba(20,19,15,0.64)', lineHeight: 1.85, marginBottom: 22 }}
             >
               {product.description.replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim()}
             </p>
           )}
 
-          {/* Caractéristiques */}
+          {/* CaractÃ©ristiques */}
           {hasDetails && (
-            <div className="mb-6">
+            <div className="mb-7 border border-[#14130F]/10 bg-white/35 p-4">
               <p style={{ fontFamily: BODY, fontSize: 10, fontWeight: 700, letterSpacing: '0.18em', textTransform: 'uppercase', color: 'rgba(28,26,20,0.4)', marginBottom: 8 }}>
-                Caractéristiques
+                CaractÃ©ristiques
               </p>
               <div>
                 {details.map((item, i) => (
@@ -554,7 +760,7 @@ export default function ProductClient({
           {variants.length > 0 && (
             <div className="mb-8 space-y-6">
               {Object.keys(variants[0].variantKey ?? {}).map((key) => {
-                const values    = variantValuesMap[key] ?? []
+                const values    = compatibleVariantValuesMap[key] ?? variantValuesMap[key] ?? []
                 const isFlavor  = isFlavorKey(key)
                 const isCount   = isCountKey(key)
                 return (
@@ -567,15 +773,15 @@ export default function ProductClient({
                     {!isFlavor && !isCount && values[0]?.resolvedValue.type === 'color' && (
                       <div className="flex flex-wrap gap-3">
                         {values.map((value) => {
-                          const nextVariant = { ...(selectedVariant?.variantKey ?? {}), [key]: value.value }
+                          const nextVariant = { ...activeVariantKey, [key]: value.value }
                           const keyStr      = variantKeyToString(nextVariant)
                           const variantLink = variantUrlMap[keyStr] ?? `/produit/${product.slug}`
-                          const isSelected  = selectedVariant?.variantKey?.[key] === value.value
+                          const isSelected  = activeVariantKey[key] === value.value
                           return (
                             <Link key={value.id} href={variantLink} onClick={disableSmoothScrollForNextNavigation}>
                               <div
                                 title={value.resolvedValue.value ?? value.value}
-                                className="cursor-pointer transition-all"
+                                className="cursor-pointer transition-all hover:scale-105"
                                 style={{
                                   width: 32, height: 32, borderRadius: '50%',
                                   backgroundColor: value.resolvedValue.value,
@@ -591,26 +797,26 @@ export default function ProductClient({
 
                     {/* Text / image pills */}
                     {(!isFlavor || true) && values[0]?.resolvedValue.type !== 'color' && (
-                      <div className="flex flex-wrap gap-2">
+                      <div className="flex flex-wrap gap-2.5">
                         {values.map((value) => {
-                          const nextVariant = { ...(selectedVariant?.variantKey ?? {}), [key]: value.value }
+                          const nextVariant = { ...activeVariantKey, [key]: value.value }
                           const keyStr      = variantKeyToString(nextVariant)
                           const variantLink = variantUrlMap[keyStr] ?? `/produit/${product.slug}`
-                          const isSelected  = selectedVariant?.variantKey?.[key] === value.value
+                          const isSelected  = activeVariantKey[key] === value.value
                           const display     = value.resolvedValue.value ?? value.value
                           return (
                             <Link key={value.id} href={variantLink} onClick={disableSmoothScrollForNextNavigation}>
                               <span
-                                className="inline-flex cursor-pointer items-center justify-center px-4 py-2 transition-all"
+                                className="inline-flex cursor-pointer items-center justify-center px-4 py-2.5 transition-all hover:-translate-y-0.5 hover:shadow-sm"
                                 style={{
-                                  fontFamily: BODY, fontSize: 11, fontWeight: 600, letterSpacing: '0.1em',
+                                  fontFamily: BODY, fontSize: 11, fontWeight: 700, letterSpacing: '0.12em', textTransform: 'uppercase',
                                   border: `1px solid ${isSelected ? GOLD : 'rgba(28,26,20,0.2)'}`,
-                                  background: isSelected ? GOLD : 'transparent',
+                                  background: isSelected ? GOLD : 'rgba(255,255,255,0.32)',
                                   color: isSelected ? '#fff' : DARK,
                                 }}
                               >
                                 {value.resolvedValue.type === 'image' && value.resolvedValue.url && (
-                                  <span className="relative mr-2 inline-block" style={{ width: 18, height: 18 }}>
+                                  <span className="relative mr-2 inline-block border border-black/10 bg-white" style={{ width: 26, height: 26 }}>
                                     <Image src={value.resolvedValue.url} alt={display} fill unoptimized className="object-cover" />
                                   </span>
                                 )}
@@ -634,21 +840,22 @@ export default function ProductClient({
               <button disabled className="w-full py-4 opacity-60" style={{ background: GOLD, fontFamily: BODY, fontSize: 11, fontWeight: 700, letterSpacing: '0.2em', textTransform: 'uppercase', color: '#fff' }}>
                 Chargement...
               </button>
-            ) : isInCart ? (
+            ) : isInCart && isInStock ? (
               <button
                 type="button"
-                onClick={() => window.dispatchEvent(new Event('cart:open'))}
-                className="w-full cursor-pointer flex items-center justify-center gap-2.5 py-4 transition-opacity hover:opacity-80"
+                onClick={handleAddToCart}
+                disabled={isAdding}
+                className="flex w-full cursor-pointer items-center justify-center gap-2.5 py-4 transition hover:-translate-y-0.5 hover:shadow-[0_16px_35px_rgba(20,19,15,0.18)]"
                 style={{ background: DARK, fontFamily: BODY, fontSize: 11, fontWeight: 700, letterSpacing: '0.2em', textTransform: 'uppercase', color: '#fff' }}
               >
-                <ShoppingBag size={15} strokeWidth={1.5} /> Voir le panier
+                <ShoppingBag size={15} strokeWidth={1.5} /> {isAdding ? 'Ajout en cours...' : 'Ajouter encore'}
               </button>
             ) : isInStock ? (
               <button
                 type="button"
                 onClick={handleAddToCart}
                 disabled={isAdding}
-                className="w-full cursor-pointer flex items-center justify-center gap-2.5 py-4 transition-opacity hover:opacity-85 active:scale-[0.99] disabled:opacity-50 disabled:cursor-not-allowed"
+                className="flex w-full cursor-pointer items-center justify-center gap-2.5 py-4 transition hover:-translate-y-0.5 hover:shadow-[0_16px_35px_rgba(196,162,62,0.28)] active:scale-[0.99] disabled:cursor-not-allowed disabled:opacity-50"
                 style={{ background: GOLD, fontFamily: BODY, fontSize: 11, fontWeight: 700, letterSpacing: '0.2em', textTransform: 'uppercase', color: '#fff' }}
               >
                 <ShoppingBag size={15} strokeWidth={1.5} />
@@ -674,7 +881,7 @@ export default function ProductClient({
                 style={{ border: `1px solid rgba(196,162,62,0.3)`, fontFamily: BODY, fontSize: 10, fontWeight: 600, letterSpacing: '0.15em', textTransform: 'uppercase', color: DARK }}
               >
                 <Heart size={13} strokeWidth={1.5} className={isWishlisted ? 'fill-[#C4A23E] text-[#C4A23E]' : ''} />
-                {isWishlisted ? 'Sauvegardé' : 'Sauvegarder'}
+                {isWishlisted ? 'SauvegardÃ©' : 'Sauvegarder'}
               </button>
               <button
                 type="button"
@@ -683,45 +890,120 @@ export default function ProductClient({
                 style={{ border: `1px solid rgba(196,162,62,0.3)`, fontFamily: BODY, fontSize: 10, fontWeight: 600, letterSpacing: '0.15em', textTransform: 'uppercase', color: DARK }}
               >
                 {shareCopied ? <Check size={13} strokeWidth={1.5} color="#2E9A5F" /> : <Share2 size={13} strokeWidth={1.5} />}
-                {shareCopied ? 'Copié !' : 'Partager'}
+                {shareCopied ? 'CopiÃ© !' : 'Partager'}
               </button>
             </div>
           </div>
 
+          {/* Inline cart */}
+          <div ref={inlineCartRef} className="mb-6 border border-[#14130F]/10 bg-white/45 p-4">
+            <div className="mb-3 flex items-start justify-between gap-4">
+              <div>
+                <p style={{ fontFamily: BODY, fontSize: 10, fontWeight: 700, letterSpacing: '0.18em', textTransform: 'uppercase', color: GOLD, marginBottom: 4 }}>
+                  Votre sÃ©lection
+                </p>
+                <p style={{ fontFamily: BODY, fontSize: 12, color: 'rgba(20,19,15,0.55)', lineHeight: 1.55 }}>
+                  Livraison n&apos;est pas disponible pour le moment. Validez la commande et notre Ã©quipe vous contacte pour la suite.
+                </p>
+              </div>
+              <span className="shrink-0 border border-[#C4A23E]/25 px-2.5 py-1" style={{ fontFamily: BODY, fontSize: 10, fontWeight: 700, color: GOLD }}>
+                {inlineCartItems.length}
+              </span>
+            </div>
+
+            {isInlineCartLoading ? (
+              <p style={{ fontFamily: BODY, fontSize: 12, color: 'rgba(20,19,15,0.45)' }}>Chargement du panier...</p>
+            ) : inlineCartItems.length === 0 ? (
+              <p style={{ fontFamily: BODY, fontSize: 12, color: 'rgba(20,19,15,0.45)' }}>Ajoutez un article pour prÃ©parer votre commande.</p>
+            ) : (
+              <>
+                <div className="max-h-[310px] space-y-3 overflow-y-auto pr-1">
+                  {inlineCartItems.map((item) => {
+                    const prod = item.product
+                    const imgSrc = prod?.imageUrls?.[0] ?? '/placeholder-square.png'
+                    const unitPrice = getInlineCartUnitPrice(prod)
+                    const maxQty = prod?.stock != null ? Math.max(1, prod.stock) : 99
+                    return (
+                      <div key={item.id} className="flex gap-3 border-b border-[#C4A23E]/10 pb-3 last:border-b-0 last:pb-0">
+                        <Link href={prod?.slug ? `/produit/${prod.slug}` : '#'} className="relative h-16 w-16 shrink-0 cursor-pointer overflow-hidden border border-[#C4A23E]/20 bg-white">
+                          <Image src={imgSrc} alt={prod?.name ?? 'Produit'} fill sizes="64px" className="object-cover transition duration-300 hover:scale-105" />
+                        </Link>
+                        <div className="min-w-0 flex-1">
+                          <Link href={prod?.slug ? `/produit/${prod.slug}` : '#'} className="line-clamp-2 cursor-pointer transition-opacity hover:opacity-65" style={{ fontFamily: BODY, fontSize: 13, fontWeight: 700, color: DARK }}>
+                            {prod?.name ?? 'Produit'}
+                          </Link>
+                          {prod?.sku && <p style={{ fontFamily: BODY, fontSize: 10, color: 'rgba(20,19,15,0.38)', marginTop: 2 }}>RÃ©f. {prod.sku}</p>}
+                          <div className="mt-2 flex items-center justify-between gap-3">
+                            <div className="flex items-center bg-white/70" style={{ border: `1px solid rgba(196,162,62,0.32)` }}>
+                              <button type="button" onClick={() => void handleInlineUpdateQuantity(item, item.quantity - 1)} disabled={item.quantity <= 1} className="flex h-7 w-7 cursor-pointer items-center justify-center transition hover:bg-[#C4A23E]/10 disabled:cursor-not-allowed disabled:opacity-35">-</button>
+                              <span style={{ fontFamily: BODY, fontSize: 12, fontWeight: 700, width: 26, textAlign: 'center', color: DARK }}>{item.quantity}</span>
+                              <button type="button" onClick={() => void handleInlineUpdateQuantity(item, item.quantity + 1)} disabled={item.quantity >= maxQty} className="flex h-7 w-7 cursor-pointer items-center justify-center transition hover:bg-[#C4A23E]/10 disabled:cursor-not-allowed disabled:opacity-35">+</button>
+                            </div>
+                            <div className="text-right">
+                              <p style={{ fontFamily: BODY, fontSize: 12, fontWeight: 700, color: GOLD }}>
+                                {(unitPrice * item.quantity).toFixed(2)} {prod?.currency ?? inlineCartCurrency}
+                              </p>
+                              <button type="button" onClick={() => void handleInlineRemoveItem(item)} className="cursor-pointer transition-opacity hover:opacity-60" style={{ fontFamily: BODY, fontSize: 9, fontWeight: 700, letterSpacing: '0.14em', textTransform: 'uppercase', color: '#C0392B' }}>
+                                Retirer
+                              </button>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    )
+                  })}
+                </div>
+                <div className="mt-4 flex items-center justify-between border-t border-[#C4A23E]/15 pt-4">
+                  <span style={{ fontFamily: BODY, fontSize: 10, fontWeight: 700, letterSpacing: '0.16em', textTransform: 'uppercase', color: 'rgba(20,19,15,0.48)' }}>Sous-total</span>
+                  <span style={{ fontFamily: BODY, fontSize: 15, fontWeight: 800, color: DARK }}>{inlineCartSubtotal.toFixed(2)} {inlineCartCurrency}</span>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => router.push('/paiement')}
+                  className="mt-4 flex w-full cursor-pointer items-center justify-center gap-2 py-3.5 transition hover:-translate-y-0.5 hover:shadow-[0_14px_30px_rgba(196,162,62,0.24)]"
+                  style={{ background: GOLD, color: '#fff', fontFamily: BODY, fontSize: 10, fontWeight: 800, letterSpacing: '0.18em', textTransform: 'uppercase' }}
+                >
+                  Passer la commande
+                </button>
+              </>
+            )}
+          </div>
+
           {/* Trust strip */}
-          <div className="grid grid-cols-3 gap-3 mb-10" style={{ borderTop: `1px solid rgba(196,162,62,0.2)`, paddingTop: 20 }}>
+          <div className="mb-2 grid grid-cols-3 gap-px" style={{ borderTop: `1px solid rgba(196,162,62,0.2)`, paddingTop: 20 }}>
             {[
-              { icon: Truck,       label: 'Livraison Tunisie' },
-              { icon: ShieldCheck, label: 'Qualité garantie'  },
+              { icon: Truck,       label: 'Livraison indisponible' },
+              { icon: ShieldCheck, label: 'QualitÃ© garantie'  },
               { icon: RotateCcw,   label: 'Retour facile'     },
             ].map(({ icon: Icon, label }) => (
-              <div key={label} className="flex flex-col items-center gap-2 text-center">
+              <div key={label} className="flex flex-col items-center gap-2 bg-white/35 p-3 text-center">
                 <Icon size={18} strokeWidth={1.25} color={`${GOLD}90`} />
                 <span style={{ fontFamily: BODY, fontSize: 9, fontWeight: 600, letterSpacing: '0.12em', textTransform: 'uppercase', color: 'rgba(28,26,20,0.4)' }}>{label}</span>
               </div>
             ))}
           </div>
+          </div>
 
         </div>
       </div>
 
-      {/* ── Installation Steps ──────────────────────────────────────────────── */}
+      {/* â”€â”€ Installation Steps â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
       {shouldRenderInstallationSteps && (
         <div style={{ background: '#FAF6EE', borderTop: `1px solid rgba(196,162,62,0.2)` }}>
-          <InstallationSteps step3Image={installationStep3Image} />
+          <InstallationSteps />
         </div>
       )}
 
-      {/* ── Related Products (explicit) ─────────────────────────────────────── */}
+      {/* â”€â”€ Related Products (explicit) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
       {explicitRelatedProducts.length > 0 && (
         <section style={{ background: CREAM, borderTop: `1px solid rgba(196,162,62,0.2)` }} className="py-20 md:py-24">
           <div className="mx-auto max-w-[1400px] px-6 md:px-10">
             <div className="mb-10">
               <p style={{ fontFamily: BODY, fontSize: 10, letterSpacing: '0.22em', textTransform: 'uppercase', color: GOLD, fontWeight: 700, marginBottom: 8 }}>
-                Complétez votre espace
+                ComplÃ©tez votre espace
               </p>
               <h2 style={{ fontFamily: DISPLAY, fontSize: 'clamp(1.8rem, 3vw, 2.8rem)', fontWeight: 400, color: DARK, lineHeight: 1.05, letterSpacing: '-0.01em' }}>
-                Produits associés
+                Produits associÃ©s
               </h2>
             </div>
             <div className="grid grid-cols-2 gap-5 md:grid-cols-4">
@@ -739,7 +1021,7 @@ export default function ProductClient({
                       color: '#fff',
                     }}
                   >
-                    {relatedInCartIds.has(p.id) ? 'Voir le panier' : isAddingRelatedId === p.id ? 'Ajout...' : 'Ajouter'}
+                    {relatedInCartIds.has(p.id) ? 'Deja ajoute' : isAddingRelatedId === p.id ? 'Ajout...' : 'Ajouter'}
                   </button>
                 </div>
               ))}
@@ -748,35 +1030,6 @@ export default function ProductClient({
         </section>
       )}
 
-      {/* ── Also Like ───────────────────────────────────────────────────────── */}
-      {alsoLikeProducts.length > 0 && (
-        <section style={{ background: '#FAF6EE', borderTop: `1px solid rgba(196,162,62,0.2)` }} className="py-20 md:py-24">
-          <div className="mx-auto max-w-[1400px] px-6 md:px-10">
-            <div className="mb-10 flex items-end justify-between">
-              <div>
-                <p style={{ fontFamily: BODY, fontSize: 10, letterSpacing: '0.22em', textTransform: 'uppercase', color: GOLD, fontWeight: 700, marginBottom: 8 }}>
-                  Vous aimerez aussi
-                </p>
-                <h2 style={{ fontFamily: DISPLAY, fontSize: 'clamp(1.8rem, 3vw, 2.8rem)', fontWeight: 400, color: DARK, lineHeight: 1.05, letterSpacing: '-0.01em' }}>
-                  Autres suggestions
-                </h2>
-              </div>
-              <Link
-                href="/boutique"
-                className="hidden md:inline-flex items-center gap-2 cursor-pointer transition-opacity hover:opacity-60"
-                style={{ fontFamily: BODY, fontSize: 10, fontWeight: 600, letterSpacing: '0.15em', textTransform: 'uppercase', color: 'rgba(28,26,20,0.4)' }}
-              >
-                Voir tout →
-              </Link>
-            </div>
-            <div className="grid grid-cols-2 gap-5 md:grid-cols-4">
-              {alsoLikeProducts.map((p, i) => (
-                <ShopProductCard key={p.id} product={p} productHref={`/produit/${p.slug}`} prioritizeImage={i < 2} />
-              ))}
-            </div>
-          </div>
-        </section>
-      )}
 
       <Footer />
     </div>
