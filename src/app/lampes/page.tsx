@@ -1,6 +1,7 @@
 import type { Metadata } from 'next'
 
 import StaticCataloguePage from '@/components/catalogue/static-category-page'
+import { getStaticCatalogueProductsByCategory } from '@/lib/services/static-catalogue-products.service'
 
 export const metadata: Metadata = {
   title: 'Lampes & Tubes Neon LED | Update Design Tunisie',
@@ -8,7 +9,7 @@ export const metadata: Metadata = {
   alternates: { canonical: '/lampes' },
 }
 
-const products = [
+const fallbackProducts = [
   { code: 'TN150PRIMA', name: 'TUBE NEON LED 30W 8000K 150mm', note: 'Tube LED grand format' },
   { code: 'TN120PRIMA-8', name: 'TUBE NEON LED 30W 8000K 120mm', note: 'Blanc froid' },
   { code: 'TN120PRIMA-4', name: 'TUBE NEON LED 30W 4000K 120mm', note: 'Blanc neutre' },
@@ -22,7 +23,10 @@ const models = [
   { code: '120-150CM', name: 'Tube LED grand format', note: 'Lignes continues pour bureaux, boutiques et chantiers' },
 ]
 
-export default function LampesPage() {
+export default async function LampesPage() {
+  const products = await getStaticCatalogueProductsByCategory('lampes')
+  const catalogueProducts = products.length > 0 ? products : fallbackProducts
+
   return (
     <StaticCataloguePage
       eyebrow="Eclairage technique"
@@ -34,12 +38,12 @@ export default function LampesPage() {
       productImage="https://images.unsplash.com/photo-1558618666-fcd25c85cd64?auto=format&fit=crop&w=900&q=80"
       productImageAlt="tube led et eclairage lineaire"
       stats={[
-        { value: String(products.length), label: 'references LED' },
+        { value: String(catalogueProducts.length), label: 'references LED' },
         { value: '60-150', label: 'formats cm' },
         { value: '4000K', label: 'a 8000K' },
       ]}
       models={models}
-      products={products}
+      products={catalogueProducts}
       features={[
         { title: 'Formats utiles', text: 'Une selection courte pour couvrir les longueurs les plus demandees en installation interieure.' },
         { title: 'Lumiere claire', text: 'References 4000K et 8000K pour choisir entre rendu neutre et blanc froid.' },

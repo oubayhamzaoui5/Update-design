@@ -1,6 +1,7 @@
 import type { Metadata } from 'next'
 
 import StaticCataloguePage from '@/components/catalogue/static-category-page'
+import { getStaticCatalogueProductsByCategory } from '@/lib/services/static-catalogue-products.service'
 
 export const metadata: Metadata = {
   title: 'Moulures Decoratives | Catalogue Update Design Tunisie',
@@ -8,7 +9,7 @@ export const metadata: Metadata = {
   alternates: { canonical: '/moulures-decoratives' },
 }
 
-const products = [
+const fallbackProducts = [
   { code: 'MD240-20C', name: 'Moulures bombage central 20mm', note: 'Profil central' },
   { code: 'MD240-20L', name: 'Moulures bombage central 20mm', note: 'Profil lineaire' },
   { code: 'MD240-20C', name: 'Moulures bombage central 40mm', note: 'Relief plus visible' },
@@ -22,7 +23,10 @@ const models = [
   { code: '100MM', name: 'Plinthe centrale 100mm', note: 'Base decorative pour finition basse' },
 ]
 
-export default function MouluresDecorativesPage() {
+export default async function MouluresDecorativesPage() {
+  const products = await getStaticCatalogueProductsByCategory('moulures')
+  const catalogueProducts = products.length > 0 ? products : fallbackProducts
+
   return (
     <StaticCataloguePage
       eyebrow="Finitions interieures"
@@ -34,12 +38,12 @@ export default function MouluresDecorativesPage() {
       productImage="https://images.unsplash.com/photo-1600210491892-03d54c0aaf87?auto=format&fit=crop&w=900&q=80"
       productImageAlt="detail de mur interieur avec moulures"
       stats={[
-        { value: String(products.length), label: 'references' },
+        { value: String(catalogueProducts.length), label: 'references' },
         { value: '20/40', label: 'reliefs mm' },
         { value: '100', label: 'plinthe mm' },
       ]}
       models={models}
-      products={products}
+      products={catalogueProducts}
       features={[
         { title: 'Relief propre', text: 'Profils pour creer une ligne decorative sans surcharge visuelle.' },
         { title: 'Pose interieure', text: 'Adapte aux murs, tetes de lit, salons, halls et espaces commerciaux.' },

@@ -1,6 +1,7 @@
 import type { Metadata } from 'next'
 
 import StaticCataloguePage from '@/components/catalogue/static-category-page'
+import { getAccessoryProductsForCategory, getStaticCatalogueProductsByCategory } from '@/lib/services/static-catalogue-products.service'
 
 export const metadata: Metadata = {
   title: 'PVC Effet Bois Exterieur | Catalogue Update Design Tunisie',
@@ -8,7 +9,7 @@ export const metadata: Metadata = {
   alternates: { canonical: '/pvc-effet-bois-exterieur' },
 }
 
-const products = [
+const fallbackProducts = [
   { code: 'EX04-RW/BK', name: 'PROFILET EXT EN WPC 219*2900mm BRAW BLACK', note: 'Bicolore' },
   { code: 'EX04-WT/BK', name: 'PROFILET EXT EN WPC 219*2900mm WHITE BLACK', note: 'Bicolore' },
   { code: 'EX04-TK/BK', name: 'PROFILET EXT EN WPC 219*2900mm TEAK BLACK', note: 'Bicolore' },
@@ -33,7 +34,11 @@ const models = [
   { code: 'EX05', name: 'Profile WPC plein ton', note: 'Teak, black, white, brawn et finitions unies', image: '/categories/ext-profiles.png' },
 ]
 
-export default function PvcEffetBoisExterieurPage() {
+export default async function PvcEffetBoisExterieurPage() {
+  const products = await getStaticCatalogueProductsByCategory('woodExterior')
+  const accessoryProducts = await getAccessoryProductsForCategory('woodExterior')
+  const catalogueProducts = products.length > 0 ? products : fallbackProducts
+
   return (
     <StaticCataloguePage
       eyebrow="Bardage exterieur WPC"
@@ -45,12 +50,13 @@ export default function PvcEffetBoisExterieurPage() {
       productImage="/categories/ext-profiles.png"
       productImageAlt="lames effet bois exterieur"
       stats={[
-        { value: String(products.length), label: 'references WPC' },
+        { value: String(catalogueProducts.length), label: 'references WPC' },
         { value: '150', label: 'lames mm' },
         { value: '219', label: 'profiles mm' },
       ]}
       models={models}
-      products={products}
+      products={catalogueProducts}
+      accessoryProducts={accessoryProducts}
       features={[
         { title: 'Usage facade', text: 'Profiles et lames prevus pour habiller des surfaces exterieures et zones semi-exposees.' },
         { title: 'Finitions bois', text: 'Teak, coffee, grey, black et white pour composer une facade sobre ou contrastee.' },

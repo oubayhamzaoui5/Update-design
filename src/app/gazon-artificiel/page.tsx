@@ -1,6 +1,7 @@
 import type { Metadata } from 'next'
 
 import StaticCataloguePage from '@/components/catalogue/static-category-page'
+import { getStaticCatalogueProductsByCategory } from '@/lib/services/static-catalogue-products.service'
 
 export const metadata: Metadata = {
   title: 'Gazon Artificiel | Catalogue Update Design Tunisie',
@@ -8,7 +9,7 @@ export const metadata: Metadata = {
   alternates: { canonical: '/gazon-artificiel' },
 }
 
-const products = [
+const fallbackProducts = [
   { code: 'GAZ10/4M', name: 'GAZON ARTIFICIEL 10MM/4M', note: 'Rouleau largeur 4m' },
   { code: 'GAZ25/2M', name: 'GAZON ARTIFICIEL 25MM/2M', note: 'Rouleau largeur 2m' },
   { code: 'GAZ25/4M', name: 'GAZON ARTIFICIEL 25MM/4M', note: 'Rouleau largeur 4m' },
@@ -26,7 +27,10 @@ const models = [
   { code: '35-45MM', name: 'Gazon premium', note: 'Densite plus haute pour jardins, piscines et terrasses', image: 'https://images.unsplash.com/photo-1599231092330-9f6a7f85b805?auto=format&fit=crop&w=900&q=80' },
 ]
 
-export default function GazonArtificielPage() {
+export default async function GazonArtificielPage() {
+  const products = await getStaticCatalogueProductsByCategory('gazon')
+  const catalogueProducts = products.length > 0 ? products : fallbackProducts
+
   return (
     <StaticCataloguePage
       eyebrow="Exterieur & jardin"
@@ -38,12 +42,12 @@ export default function GazonArtificielPage() {
       productImage="https://images.unsplash.com/photo-1598971861713-54ad16a7e72e?auto=format&fit=crop&w=900&q=80"
       productImageAlt="rouleau de gazon artificiel"
       stats={[
-        { value: String(products.length), label: 'references gazon' },
+        { value: String(catalogueProducts.length), label: 'references gazon' },
         { value: '10-45', label: 'hauteurs mm' },
         { value: '2/4m', label: 'largeurs' },
       ]}
       models={models}
-      products={products}
+      products={catalogueProducts}
       features={[
         { title: 'Plusieurs hauteurs', text: 'Du 10mm pratique au 45mm premium pour ajuster confort, densite et budget.' },
         { title: 'Largeurs chantier', text: 'Formats 2m et 4m pour reduire les joints selon la surface.' },

@@ -44,6 +44,7 @@ type StaticCataloguePageProps = {
   models?: StaticCatalogueProduct[]
   products: StaticCatalogueProduct[]
   accessories: StaticCatalogueAccessory[]
+  accessoryProducts?: StaticCatalogueProduct[]
   features: StaticCatalogueFeature[]
   application: string[]
 }
@@ -61,6 +62,7 @@ export default function StaticCataloguePage({
   models,
   products,
   accessories,
+  accessoryProducts = [],
   features,
   application,
 }: StaticCataloguePageProps) {
@@ -205,8 +207,8 @@ export default function StaticCataloguePage({
             </div>
 
             <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-              {products.map((product) => (
-                <article key={`${product.code}-${product.name}`} className="group overflow-hidden border border-[#14130F]/10 bg-[#FCFCFD] transition duration-300 hover:-translate-y-1 hover:border-[#C4A23E]/45 hover:shadow-[0_18px_45px_rgba(20,19,15,0.12)]">
+              {products.map((product, index) => (
+                <article key={`${product.code}-${product.name}-${index}`} className="group overflow-hidden border border-[#14130F]/10 bg-[#FCFCFD] transition duration-300 hover:-translate-y-1 hover:border-[#C4A23E]/45 hover:shadow-[0_18px_45px_rgba(20,19,15,0.12)]">
                   <div className="relative aspect-[4/3] overflow-hidden bg-white">
                     <Image
                       src={product.image ?? productImage}
@@ -275,9 +277,50 @@ export default function StaticCataloguePage({
               <p className="text-[11px] font-bold uppercase tracking-[0.22em]" style={{ color: GOLD }}>Accessoires</p>
               <div className="h-px flex-1 bg-[#14130F]/30" />
               <p className="text-[11px] font-bold uppercase tracking-[0.22em] text-[#14130F]/52">
-                Par categorie
+                {accessoryProducts.length > 0 ? `${accessoryProducts.length} references` : 'Par categorie'}
               </p>
             </div>
+
+            {accessoryProducts.length > 0 && (
+              <div className="mb-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+                {accessoryProducts.map((product, index) => (
+                  <article key={`${product.code}-${product.name}-${index}`} className="group overflow-hidden border border-[#14130F]/10 bg-[#FCFCFD] transition duration-300 hover:-translate-y-1 hover:border-[#C4A23E]/45 hover:shadow-[0_18px_45px_rgba(20,19,15,0.12)]">
+                    <div className="relative aspect-[4/3] overflow-hidden bg-white">
+                      <Image
+                        src={product.image ?? productImage}
+                        alt={`${product.name} - accessoire`}
+                        fill
+                        sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
+                        className="object-cover transition duration-700 group-hover:scale-[1.045]"
+                      />
+                      <div className="absolute inset-0 bg-[linear-gradient(to_top,rgba(20,19,15,0.34),transparent_58%)]" />
+                      <p className="absolute left-4 top-4 bg-black/35 px-3 py-2 text-[9px] font-bold uppercase tracking-[0.18em] text-white backdrop-blur-sm">
+                        Ref. {product.code}
+                      </p>
+                    </div>
+                    <div
+                      className="flex min-h-[178px] flex-col justify-between border-t border-[#14130F]/10 p-5"
+                      style={{
+                        backgroundColor: '#D5D0C6',
+                        backgroundImage:
+                          'radial-gradient(rgba(20,19,15,0.08) 0.7px, transparent 0.7px), linear-gradient(135deg, rgba(255,255,255,0.32), rgba(20,19,15,0.035))',
+                        backgroundSize: '7px 7px, 100% 100%',
+                      }}
+                    >
+                      <div>
+                        <p className="text-[10px] font-bold uppercase tracking-[0.22em]" style={{ color: GOLD }}>
+                          Ref. {product.code}
+                        </p>
+                        <h3 className="mt-5 text-lg font-black leading-tight text-[#14130F]">{product.name}</h3>
+                      </div>
+                      <p className="mt-8 text-xs font-semibold uppercase tracking-[0.16em] text-[#14130F]/42">
+                        {product.note ?? 'Accessoire catalogue'}
+                      </p>
+                    </div>
+                  </article>
+                ))}
+              </div>
+            )}
 
             <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
               {accessories.map((item) => (
