@@ -17,6 +17,7 @@ export type StaticCatalogueProduct = {
   name: string
   note?: string
   image?: string
+  variants?: string[]
 }
 
 export type StaticCatalogueAccessory = {
@@ -202,7 +203,7 @@ export default function StaticCataloguePage({
               <p className="text-[11px] font-bold uppercase tracking-[0.22em]" style={{ color: GOLD }}>Textures</p>
               <div className="h-px flex-1 bg-[#14130F]/24" />
               <p className="text-[11px] font-bold uppercase tracking-[0.22em] text-[#14130F]/52">
-                {products.length} produits
+                {products.length} texture{products.length > 1 ? 's' : ''}
               </p>
             </div>
 
@@ -236,6 +237,15 @@ export default function StaticCataloguePage({
                         Ref. {product.code}
                       </p>
                       <h3 className="mt-5 text-lg font-black leading-tight text-[#14130F]">{product.name}</h3>
+                      {product.variants && product.variants.length > 0 && (
+                        <div className="mt-5 flex flex-wrap gap-2">
+                          {product.variants.map((variant) => (
+                            <span key={variant} className="border border-[#14130F]/14 bg-white/35 px-2.5 py-1 text-[10px] font-bold uppercase tracking-[0.14em] text-[#14130F]/58">
+                              {variant}
+                            </span>
+                          ))}
+                        </div>
+                      )}
                     </div>
                     <p className="mt-8 text-xs font-semibold uppercase tracking-[0.16em] text-[#14130F]/42">
                       {product.note ?? 'Catalogue statique'}

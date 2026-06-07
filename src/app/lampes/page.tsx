@@ -1,7 +1,7 @@
 import type { Metadata } from 'next'
 
 import StaticCataloguePage from '@/components/catalogue/static-category-page'
-import { getStaticCatalogueProductsByCategory } from '@/lib/services/static-catalogue-products.service'
+import { groupCatalogueProducts, getStaticCatalogueProductsByCategory } from '@/lib/services/static-catalogue-products.service'
 
 export const metadata: Metadata = {
   title: 'Lampes & Tubes Neon LED | Update Design Tunisie',
@@ -25,7 +25,20 @@ const models = [
 
 export default async function LampesPage() {
   const products = await getStaticCatalogueProductsByCategory('lampes')
-  const catalogueProducts = products.length > 0 ? products : fallbackProducts
+  const sourceProducts = products.length > 0 ? products : fallbackProducts
+  const catalogueProducts = groupCatalogueProducts(sourceProducts, (product) => {
+    const temp = product.name.match(/(\d{4}K)/i)?.[1] ?? '8000K'
+    const power = product.name.match(/(\d+)\s*W/i)?.[1]
+    const size = product.name.match(/(\d+)\s*(?:mm|cm)/i)?.[1] ?? product.code.replace(/^TN/i, '')
+
+    return {
+      code: temp,
+      name: `Lumiere ${temp}`,
+      note: temp === '4000K' ? 'Blanc neutre' : 'Blanc froid',
+      variant: `${size}cm${power ? ` - ${power}W` : ''}`,
+      image: product.image,
+    }
+  })
 
   return (
     <StaticCataloguePage
@@ -38,7 +51,7 @@ export default async function LampesPage() {
       productImage="https://images.unsplash.com/photo-1558618666-fcd25c85cd64?auto=format&fit=crop&w=900&q=80"
       productImageAlt="tube led et eclairage lineaire"
       stats={[
-        { value: String(catalogueProducts.length), label: 'references LED' },
+        { value: String(sourceProducts.length), label: 'references LED' },
         { value: '60-150', label: 'formats cm' },
         { value: '4000K', label: 'a 8000K' },
       ]}

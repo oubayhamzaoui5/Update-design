@@ -22,8 +22,43 @@ export async function getStaticCatalogueProductsByCategory(
   return getExcelCatalogueProducts(category).map((product) => ({
     code: product.code,
     name: product.name,
-    note: product.price > 0 ? `${product.price} DT` : 'Reference catalogue',
-  }))
+      note: product.price > 0 ? `${product.price} DT` : 'Reference catalogue',
+    }))
+}
+
+export function groupCatalogueProducts(
+  products: StaticCatalogueProduct[],
+  getGroup: (product: StaticCatalogueProduct) => {
+    code: string
+    name: string
+    note?: string
+    variant: string
+    image?: string
+  }
+): StaticCatalogueProduct[] {
+  const grouped = new Map<string, StaticCatalogueProduct>()
+
+  for (const product of products) {
+    const group = getGroup(product)
+    const current = grouped.get(group.code)
+
+    if (current) {
+      if (!current.variants?.includes(group.variant)) {
+        current.variants = [...(current.variants ?? []), group.variant]
+      }
+      continue
+    }
+
+    grouped.set(group.code, {
+      code: group.code,
+      name: group.name,
+      note: group.note,
+      image: group.image ?? product.image,
+      variants: [group.variant],
+    })
+  }
+
+  return Array.from(grouped.values())
 }
 
 const ACCESSORY_MATCHERS = {

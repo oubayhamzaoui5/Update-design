@@ -1,7 +1,7 @@
 import type { Metadata } from 'next'
 
 import StaticCataloguePage from '@/components/catalogue/static-category-page'
-import { getAccessoryProductsForCategory, getStaticCatalogueProductsByCategory } from '@/lib/services/static-catalogue-products.service'
+import { groupCatalogueProducts, getAccessoryProductsForCategory, getStaticCatalogueProductsByCategory } from '@/lib/services/static-catalogue-products.service'
 
 export const metadata: Metadata = {
   title: 'PVC Effet Bois Exterieur | Catalogue Update Design Tunisie',
@@ -37,7 +37,32 @@ const models = [
 export default async function PvcEffetBoisExterieurPage() {
   const products = await getStaticCatalogueProductsByCategory('woodExterior')
   const accessoryProducts = await getAccessoryProductsForCategory('woodExterior')
-  const catalogueProducts = products.length > 0 ? products : fallbackProducts
+  const sourceProducts = products.length > 0 ? products : fallbackProducts
+  const catalogueProducts = groupCatalogueProducts(sourceProducts, (product) => {
+    const code = product.code.toUpperCase()
+    const finish =
+      code.includes('/BK') ? 'bicolore black' :
+      code.includes('TEAK') || code.endsWith('-TK') ? 'teak' :
+      code.includes('COFFE') || code.endsWith('-RW') ? 'coffee' :
+      code.includes('GRAY') || code.endsWith('-GR') ? 'grey' :
+      code.endsWith('-WT') ? 'white' :
+      code.endsWith('-BK') ? 'black' :
+      code.endsWith('-AT') ? 'AT' :
+      code.endsWith('-D2') ? 'MC' :
+      product.note ?? product.code
+    const family =
+      code.startsWith('EX01') ? 'Lame 150x2900mm' :
+      code.startsWith('EX04') ? 'Profile 219x2900mm bicolore' :
+      'Profile 219x2900mm'
+
+    return {
+      code: finish.toUpperCase(),
+      name: `Finition ${finish}`,
+      note: 'Texture WPC exterieur',
+      variant: family,
+      image: product.image,
+    }
+  })
 
   return (
     <StaticCataloguePage
@@ -50,7 +75,7 @@ export default async function PvcEffetBoisExterieurPage() {
       productImage="/categories/ext-profiles.png"
       productImageAlt="lames effet bois exterieur"
       stats={[
-        { value: String(catalogueProducts.length), label: 'references WPC' },
+        { value: String(sourceProducts.length), label: 'references WPC' },
         { value: '150', label: 'lames mm' },
         { value: '219', label: 'profiles mm' },
       ]}

@@ -135,12 +135,27 @@ export default async function PanneauxEffetMarbrePage() {
   const backendProducts = await getStaticCatalogueProductsByCategory('marble')
   const accessoryProducts = await getAccessoryProductsForCategory('marble')
   const referenceModels = backendProducts.length > 0
-    ? backendProducts.map((product) => ({
-        ref: product.code,
-        name: product.name.replace(/^P-PVC\s+/i, '').replace(/\s+/g, ' ').trim(),
-        tone: product.code.includes('/') ? product.code.split('/')[1] : 'PVC',
-        src: product.image ?? marbleFallbackImage(product.code),
-      }))
+    ? Array.from(backendProducts.reduce((groups, product) => {
+        const [baseRef, sizeCode] = product.code.split('/')
+        const ref = baseRef.trim().toUpperCase()
+        const size = sizeCode === '244' ? '1220x2440mm' : '1220x2900mm'
+        const current = groups.get(ref)
+
+        if (current) {
+          if (!current.variants.includes(size)) current.variants.push(size)
+          return groups
+        }
+
+        groups.set(ref, {
+          ref,
+          name: ref,
+          tone: 'PVC',
+          src: product.image ?? marbleFallbackImage(ref),
+          variants: [size],
+        })
+
+        return groups
+      }, new Map<string, { ref: string; name: string; tone: string; src: string; variants: string[] }>()).values())
     : content.references.models
 
   const marbleHref = (ref: string) => {
@@ -252,7 +267,10 @@ export default async function PanneauxEffetMarbrePage() {
             </div>
 
             <div className="grid justify-start gap-4 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-5">
-              {referenceModels.map((model, index) => (
+              {referenceModels.map((model, index) => {
+                const variants = (model as { variants?: string[] }).variants ?? []
+
+                return (
                 <article key={model.ref} className="group overflow-hidden bg-[#F7F2E8] transition duration-300 hover:shadow-[0_12px_32px_rgba(20,19,15,0.10)]">
                   <Link href={marbleHref(model.ref)} className="block cursor-pointer">
                   <div className="relative aspect-square overflow-hidden">
@@ -272,6 +290,15 @@ export default async function PanneauxEffetMarbrePage() {
                         <p className="mt-1 text-[10px] font-bold uppercase tracking-[0.22em]" style={{ color: GOLD }}>
                           Ref. {model.ref}
                         </p>
+                        {variants.length > 0 && (
+                          <div className="mt-3 flex flex-wrap gap-1.5">
+                            {variants.map((variant) => (
+                              <span key={variant} className="border border-[#14130F]/14 bg-white/35 px-2 py-1 text-[9px] font-bold uppercase tracking-[0.12em] text-[#14130F]/52">
+                                {variant}
+                              </span>
+                            ))}
+                          </div>
+                        )}
                       </div>
                       <span className="shrink-0 border border-[#14130F]/14 px-2 py-0.5 text-[9px] font-bold uppercase tracking-[0.16em] text-[#14130F]/52">
                         {model.tone}
@@ -280,7 +307,7 @@ export default async function PanneauxEffetMarbrePage() {
                   </div>
                   </Link>
                 </article>
-              ))}
+              )})}
             </div>
           </div>
         </section>

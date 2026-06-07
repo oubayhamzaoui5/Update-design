@@ -9,7 +9,7 @@ import ProfileCatalogueClient from '@/components/catalogue/profile-catalogue-cli
 import { DEFAULT_WOOD_PROFILE_CONTENT } from '@/lib/site-page-defaults'
 import { getSitePageContent } from '@/lib/services/site-content.service'
 import { getProductHrefBySku } from '@/lib/services/catalogue-links.service'
-import { getAccessoryProductsForCategory, getStaticCatalogueProductsByCategory } from '@/lib/services/static-catalogue-products.service'
+import { getAccessoryProductsForCategory } from '@/lib/services/static-catalogue-products.service'
 
 export const dynamic = 'force-dynamic'
 
@@ -130,7 +130,6 @@ export default async function ProfilMuralEffetBoisPage() {
     getSitePageContent('profil-mural-effet-bois', DEFAULT_WOOD_PROFILE_CONTENT),
     getProductHrefBySku(),
   ])
-  const excelProducts = await getStaticCatalogueProductsByCategory('woodInterior')
   const accessoryProducts = await getAccessoryProductsForCategory('woodInterior')
 
   return (
@@ -175,64 +174,6 @@ export default async function ProfilMuralEffetBoisPage() {
         </header>
 
 <ProfileCatalogueClient rows={content.textures} productHrefBySku={productHrefBySku} />
-
-        {excelProducts.length > 0 && (
-          <section className="py-8 md:py-12">
-            <div className="mx-auto max-w-[1500px] px-6 md:px-10">
-              <div className="mb-7 flex items-center gap-4">
-                <p className="text-[11px] font-bold uppercase tracking-[0.22em]" style={{ color: GOLD }}>References catalogue</p>
-                <div className="h-px flex-1 bg-[#14130F]/30" />
-                <p className="text-[11px] font-bold uppercase tracking-[0.22em] text-[#14130F]/52">
-                  {excelProducts.length} produits
-                </p>
-              </div>
-
-              <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-                {excelProducts.map((product, index) => {
-                  const sku = product.code.toUpperCase()
-                  const href = productHrefBySku[sku] ?? `/produit/pvc-effet-bois-${sku.toLowerCase().replace(/[^a-z0-9]+/g, '-')}`
-
-                  return (
-                    <Link key={`${product.code}-${index}`} href={href} className="group overflow-hidden border border-[#14130F]/10 bg-[#FCFCFD] transition duration-300 hover:-translate-y-1 hover:border-[#C4A23E]/45 hover:shadow-[0_18px_45px_rgba(20,19,15,0.12)]">
-                      <div className="relative aspect-[4/3] overflow-hidden bg-white">
-                        <Image
-                          src="/categories/int-profiles.png"
-                          alt={product.name}
-                          fill
-                          sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
-                          className="object-cover transition duration-700 group-hover:scale-[1.045]"
-                        />
-                        <div className="absolute inset-0 bg-[linear-gradient(to_top,rgba(20,19,15,0.34),transparent_58%)]" />
-                        <p className="absolute left-4 top-4 bg-black/35 px-3 py-2 text-[9px] font-bold uppercase tracking-[0.18em] text-white backdrop-blur-sm">
-                          Ref. {product.code}
-                        </p>
-                      </div>
-                      <div
-                        className="flex min-h-[150px] flex-col justify-between border-t border-[#14130F]/10 p-5"
-                        style={{
-                          backgroundColor: '#D5D0C6',
-                          backgroundImage:
-                            'radial-gradient(rgba(20,19,15,0.08) 0.7px, transparent 0.7px), linear-gradient(135deg, rgba(255,255,255,0.32), rgba(20,19,15,0.035))',
-                          backgroundSize: '7px 7px, 100% 100%',
-                        }}
-                      >
-                        <div>
-                          <p className="text-[10px] font-bold uppercase tracking-[0.22em]" style={{ color: GOLD }}>
-                            Ref. {product.code}
-                          </p>
-                          <h3 className="mt-5 text-lg font-black leading-tight text-[#14130F]">{product.name}</h3>
-                        </div>
-                        <p className="mt-8 text-xs font-semibold uppercase tracking-[0.16em] text-[#14130F]/42">
-                          {product.note ?? 'Reference catalogue'}
-                        </p>
-                      </div>
-                    </Link>
-                  )
-                })}
-              </div>
-            </div>
-          </section>
-        )}
 
         {accessoryProducts.length > 0 && (
           <section className="py-8 md:py-12" style={{ background: PAPER }}>

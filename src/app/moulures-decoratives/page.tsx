@@ -1,7 +1,7 @@
 import type { Metadata } from 'next'
 
 import StaticCataloguePage from '@/components/catalogue/static-category-page'
-import { getStaticCatalogueProductsByCategory } from '@/lib/services/static-catalogue-products.service'
+import { groupCatalogueProducts, getStaticCatalogueProductsByCategory } from '@/lib/services/static-catalogue-products.service'
 
 export const metadata: Metadata = {
   title: 'Moulures Decoratives | Catalogue Update Design Tunisie',
@@ -25,7 +25,20 @@ const models = [
 
 export default async function MouluresDecorativesPage() {
   const products = await getStaticCatalogueProductsByCategory('moulures')
-  const catalogueProducts = products.length > 0 ? products : fallbackProducts
+  const sourceProducts = products.length > 0 ? products : fallbackProducts
+  const catalogueProducts = groupCatalogueProducts(sourceProducts, (product) => {
+    const size = product.name.match(/(\d+)\s*mm/i)?.[1] ?? product.code.match(/-(\d+)/)?.[1] ?? product.code
+    const plinthe = /plinthe/i.test(product.name)
+    const profile = product.code.endsWith('L') ? 'lineaire' : 'central'
+
+    return {
+      code: plinthe ? 'PLINTHE' : 'BOMBAGE',
+      name: plinthe ? 'Plinthe centrale' : 'Bombage central',
+      note: plinthe ? 'Finition basse decorative' : 'Relief mural decoratif',
+      variant: `${size}mm ${plinthe ? 'plinthe' : profile}`,
+      image: product.image,
+    }
+  })
 
   return (
     <StaticCataloguePage
@@ -38,7 +51,7 @@ export default async function MouluresDecorativesPage() {
       productImage="https://images.unsplash.com/photo-1600210491892-03d54c0aaf87?auto=format&fit=crop&w=900&q=80"
       productImageAlt="detail de mur interieur avec moulures"
       stats={[
-        { value: String(catalogueProducts.length), label: 'references' },
+        { value: String(sourceProducts.length), label: 'references' },
         { value: '20/40', label: 'reliefs mm' },
         { value: '100', label: 'plinthe mm' },
       ]}

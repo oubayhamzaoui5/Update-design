@@ -1,7 +1,7 @@
 import type { Metadata } from 'next'
 
 import StaticCataloguePage from '@/components/catalogue/static-category-page'
-import { getStaticCatalogueProductsByCategory } from '@/lib/services/static-catalogue-products.service'
+import { groupCatalogueProducts, getStaticCatalogueProductsByCategory } from '@/lib/services/static-catalogue-products.service'
 
 export const metadata: Metadata = {
   title: 'Gazon Artificiel | Catalogue Update Design Tunisie',
@@ -29,7 +29,20 @@ const models = [
 
 export default async function GazonArtificielPage() {
   const products = await getStaticCatalogueProductsByCategory('gazon')
-  const catalogueProducts = products.length > 0 ? products : fallbackProducts
+  const sourceProducts = products.length > 0 ? products : fallbackProducts
+  const catalogueProducts = groupCatalogueProducts(sourceProducts, (product) => {
+    const height = product.name.match(/(\d+)\s*MM/i)?.[1] ?? product.code.match(/GAZ(\d+)/i)?.[1] ?? product.code
+    const premium = /premium|GAZ\d+P/i.test(`${product.name} ${product.code}`)
+    const width = product.code.includes('/4M') ? 'Largeur 4m' : 'Largeur 2m'
+
+    return {
+      code: `${height}${premium ? 'P' : ''}`,
+      name: `Gazon ${height}mm${premium ? ' premium' : ''}`,
+      note: premium ? 'Texture dense premium' : 'Texture standard',
+      variant: width,
+      image: product.image,
+    }
+  })
 
   return (
     <StaticCataloguePage
@@ -42,7 +55,7 @@ export default async function GazonArtificielPage() {
       productImage="https://images.unsplash.com/photo-1598971861713-54ad16a7e72e?auto=format&fit=crop&w=900&q=80"
       productImageAlt="rouleau de gazon artificiel"
       stats={[
-        { value: String(catalogueProducts.length), label: 'references gazon' },
+        { value: String(sourceProducts.length), label: 'references gazon' },
         { value: '10-45', label: 'hauteurs mm' },
         { value: '2/4m', label: 'largeurs' },
       ]}
