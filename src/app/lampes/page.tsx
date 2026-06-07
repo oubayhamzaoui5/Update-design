@@ -1,6 +1,7 @@
 import type { Metadata } from 'next'
 
 import StaticCataloguePage from '@/components/catalogue/static-category-page'
+import { getEditableCatalogueContent } from '@/lib/services/editable-catalogue.service'
 import { groupCatalogueProducts, getStaticCatalogueProductsByCategory } from '@/lib/services/static-catalogue-products.service'
 
 export const metadata: Metadata = {
@@ -39,6 +40,13 @@ export default async function LampesPage() {
       image: product.image,
     }
   })
+  const fallbackAccessories = [
+    { name: 'Supports de fixation', text: 'Clips et supports adaptes aux longueurs de tubes pour une pose droite.', image: 'https://images.unsplash.com/photo-1621905252507-b35492cc74b4?auto=format&fit=crop&w=700&q=80', tag: 'Pose' },
+    { name: 'Connecteurs electriques', text: 'Raccords et bornes pour installation propre par l electricien.', image: 'https://images.unsplash.com/photo-1615873968403-89e068629265?auto=format&fit=crop&w=700&q=80', tag: 'Raccord' },
+    { name: 'Goulottes', text: 'Passage de cable discret sur murs, plafonds ou arriere-boutiques.', image: 'https://images.unsplash.com/photo-1581092160562-40aa08e78837?auto=format&fit=crop&w=700&q=80', tag: 'Cable' },
+    { name: 'Consommables chantier', text: 'Visserie et petites fournitures prevues selon support existant.', image: 'https://images.unsplash.com/photo-1504148455328-c376907d081c?auto=format&fit=crop&w=700&q=80', tag: 'Finition' },
+  ]
+  const editable = await getEditableCatalogueContent('lampes', { models, products: catalogueProducts, accessories: fallbackAccessories })
 
   return (
     <StaticCataloguePage
@@ -55,19 +63,14 @@ export default async function LampesPage() {
         { value: '60-150', label: 'formats cm' },
         { value: '4000K', label: 'a 8000K' },
       ]}
-      models={models}
-      products={catalogueProducts}
+      models={editable.models}
+      products={editable.products}
       features={[
         { title: 'Formats utiles', text: 'Une selection courte pour couvrir les longueurs les plus demandees en installation interieure.' },
         { title: 'Lumiere claire', text: 'References 4000K et 8000K pour choisir entre rendu neutre et blanc froid.' },
         { title: 'Pose rapide', text: 'Produits simples a integrer dans les projets de renovation ou de remise a niveau.' },
       ]}
-      accessories={[
-        { name: 'Supports de fixation', text: 'Clips et supports adaptes aux longueurs de tubes pour une pose droite.', image: 'https://images.unsplash.com/photo-1621905252507-b35492cc74b4?auto=format&fit=crop&w=700&q=80', tag: 'Pose' },
-        { name: 'Connecteurs electriques', text: 'Raccords et bornes pour installation propre par l electricien.', image: 'https://images.unsplash.com/photo-1615873968403-89e068629265?auto=format&fit=crop&w=700&q=80', tag: 'Raccord' },
-        { name: 'Goulottes', text: 'Passage de cable discret sur murs, plafonds ou arriere-boutiques.', image: 'https://images.unsplash.com/photo-1581092160562-40aa08e78837?auto=format&fit=crop&w=700&q=80', tag: 'Cable' },
-        { name: 'Consommables chantier', text: 'Visserie et petites fournitures prevues selon support existant.', image: 'https://images.unsplash.com/photo-1504148455328-c376907d081c?auto=format&fit=crop&w=700&q=80', tag: 'Finition' },
-      ]}
+      accessories={editable.accessories}
       application={[
         'Selectionner la temperature de couleur selon usage: accueil, stock, atelier ou showroom.',
         'Prevoir les longueurs par zone pour limiter les raccords visibles.',

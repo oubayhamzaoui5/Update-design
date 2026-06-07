@@ -14,6 +14,7 @@ import {
   ShieldCheck,
   Settings,
   KeyRound,
+  Layers,
 } from "lucide-react"
 import { useRouter } from "next/navigation"
 import Image from "next/image"
@@ -103,6 +104,7 @@ export default function Sidebar() {
         <NavLink href="/admin" icon={LayoutDashboard} label="Tableau de bord" />
         <NavLink href="/admin/produits" icon={Package} label="Produits" />
         <NavLink href="/admin/categories" icon={FolderTree} label="Categories" />
+        <NavLink href="/admin/catalogue" icon={Layers} label="Catalogue" />
         <NavLink href="/admin/variables" icon={Sliders} label="Variables" />
 
         <p

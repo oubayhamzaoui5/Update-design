@@ -9,6 +9,7 @@ import ProfileCatalogueClient from '@/components/catalogue/profile-catalogue-cli
 import { DEFAULT_WOOD_PROFILE_CONTENT } from '@/lib/site-page-defaults'
 import { getSitePageContent } from '@/lib/services/site-content.service'
 import { getProductHrefBySku } from '@/lib/services/catalogue-links.service'
+import { getEditableCatalogueContent } from '@/lib/services/editable-catalogue.service'
 import { getAccessoryProductsForCategory } from '@/lib/services/static-catalogue-products.service'
 
 export const dynamic = 'force-dynamic'
@@ -131,6 +132,17 @@ export default async function ProfilMuralEffetBoisPage() {
     getProductHrefBySku(),
   ])
   const accessoryProducts = await getAccessoryProductsForCategory('woodInterior')
+  const editable = await getEditableCatalogueContent('profil-mural-effet-bois', {
+    models: [],
+    products: [],
+    accessories: accessoryProducts.map((product) => ({
+      name: product.name,
+      text: product.note ?? 'Accessoire profil bois',
+      image: product.image ?? '/categories/int-accessoires.png',
+      tag: `Ref. ${product.code}`,
+      variants: product.variants,
+    })),
+  })
 
   return (
     <div style={{ fontFamily: BODY, background: CREAM, color: DARK }}>
@@ -175,30 +187,30 @@ export default async function ProfilMuralEffetBoisPage() {
 
 <ProfileCatalogueClient rows={content.textures} productHrefBySku={productHrefBySku} />
 
-        {accessoryProducts.length > 0 && (
+        {editable.accessories.length > 0 && (
           <section className="py-8 md:py-12" style={{ background: PAPER }}>
             <div className="mx-auto max-w-[1500px] px-6 md:px-10">
               <div className="mb-7 flex items-center gap-4">
                 <p className="text-[11px] font-bold uppercase tracking-[0.22em]" style={{ color: GOLD }}>Accessoires profil bois</p>
                 <div className="h-px flex-1 bg-[#14130F]/30" />
                 <p className="text-[11px] font-bold uppercase tracking-[0.22em] text-[#14130F]/52">
-                  {accessoryProducts.length} familles
+                  {editable.accessories.length} familles
                 </p>
               </div>
 
               <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-                {accessoryProducts.map((product, index) => (
-                  <article key={`${product.code}-${index}`} className="group cursor-pointer border border-[#14130F]/12 bg-[#F7F2E8] p-3 transition duration-300 hover:-translate-y-1 hover:border-[#C4A23E]/50 hover:shadow-[0_14px_34px_rgba(20,19,15,0.12)]">
+                {editable.accessories.map((product, index) => (
+                  <article key={`${product.name}-${index}`} className="group cursor-pointer border border-[#14130F]/12 bg-[#F7F2E8] p-3 transition duration-300 hover:-translate-y-1 hover:border-[#C4A23E]/50 hover:shadow-[0_14px_34px_rgba(20,19,15,0.12)]">
                     <div className="relative aspect-square overflow-hidden border border-[#14130F]/10 bg-white">
                       <Image
-                        src="/categories/int-accessoires.png"
+                        src={product.image}
                         alt={product.name}
                         fill
                         sizes="(max-width:640px) 50vw, (max-width:1024px) 33vw, 25vw"
                         className="object-cover transition duration-500 group-hover:scale-[1.05]"
                       />
                       <p className="absolute left-3 top-3 bg-black/35 px-3 py-2 text-[9px] font-bold uppercase tracking-[0.18em] text-white backdrop-blur-sm">
-                        Ref. {product.code}
+                        {product.tag ?? 'Accessoire'}
                       </p>
                     </div>
                     <div className="px-2 py-4">
@@ -206,7 +218,7 @@ export default async function ProfilMuralEffetBoisPage() {
                         <h3 className="text-sm font-black uppercase tracking-[0.14em] text-[#14130F]">{product.name}</h3>
                       </div>
                       <p className="text-sm leading-6 text-[#14130F]/58">
-                        {product.note ?? 'Accessoire catalogue'}
+                        {product.text}
                       </p>
                       {product.variants && product.variants.length > 0 && (
                         <div className="mt-4 flex flex-wrap gap-2">

@@ -1,6 +1,7 @@
 import type { Metadata } from 'next'
 
 import StaticCataloguePage from '@/components/catalogue/static-category-page'
+import { getEditableCatalogueContent } from '@/lib/services/editable-catalogue.service'
 import { groupCatalogueProducts, getStaticCatalogueProductsByCategory } from '@/lib/services/static-catalogue-products.service'
 
 export const metadata: Metadata = {
@@ -43,6 +44,16 @@ export default async function GazonArtificielPage() {
       image: product.image,
     }
   })
+  const editable = await getEditableCatalogueContent('gazon-artificiel', {
+    models,
+    products: catalogueProducts,
+    accessories: [
+      { name: 'Bande de jonction', text: 'Pour raccorder deux lez et garder une surface propre.', image: 'https://images.unsplash.com/photo-1581578731548-c64695cc6952?auto=format&fit=crop&w=700&q=80', tag: 'Jonction' },
+      { name: 'Colle gazon', text: 'Fixation des jonctions ou zones exposees au deplacement.', image: 'https://images.unsplash.com/photo-1604762512526-b6ce1b9e8ef6?auto=format&fit=crop&w=700&q=80', tag: 'Fixation' },
+      { name: 'Clous et agrafes', text: 'Maintien peripherique sur support adapte.', image: 'https://images.unsplash.com/photo-1504148455328-c376907d081c?auto=format&fit=crop&w=700&q=80', tag: 'Maintien' },
+      { name: 'Sable de lestage', text: 'Aide au maintien et au redressement selon le type de gazon.', image: 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=700&q=80', tag: 'Stabilite' },
+    ],
+  })
 
   return (
     <StaticCataloguePage
@@ -59,19 +70,14 @@ export default async function GazonArtificielPage() {
         { value: '10-45', label: 'hauteurs mm' },
         { value: '2/4m', label: 'largeurs' },
       ]}
-      models={models}
-      products={catalogueProducts}
+      models={editable.models}
+      products={editable.products}
       features={[
         { title: 'Plusieurs hauteurs', text: 'Du 10mm pratique au 45mm premium pour ajuster confort, densite et budget.' },
         { title: 'Largeurs chantier', text: 'Formats 2m et 4m pour reduire les joints selon la surface.' },
         { title: 'Usage exterieur', text: 'Solution decorative pour zones de passage, terrasses et espaces de presentation.' },
       ]}
-      accessories={[
-        { name: 'Bande de jonction', text: 'Pour raccorder deux lez et garder une surface propre.', image: 'https://images.unsplash.com/photo-1581578731548-c64695cc6952?auto=format&fit=crop&w=700&q=80', tag: 'Jonction' },
-        { name: 'Colle gazon', text: 'Fixation des jonctions ou zones exposees au deplacement.', image: 'https://images.unsplash.com/photo-1604762512526-b6ce1b9e8ef6?auto=format&fit=crop&w=700&q=80', tag: 'Fixation' },
-        { name: 'Clous et agrafes', text: 'Maintien peripherique sur support adapte.', image: 'https://images.unsplash.com/photo-1504148455328-c376907d081c?auto=format&fit=crop&w=700&q=80', tag: 'Maintien' },
-        { name: 'Sable de lestage', text: 'Aide au maintien et au redressement selon le type de gazon.', image: 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=700&q=80', tag: 'Stabilite' },
-      ]}
+      accessories={editable.accessories}
       application={[
         'Mesurer largeur et longueur utiles avant choix 2m ou 4m.',
         'Prevoir evacuation d eau et support stable avant pose.',

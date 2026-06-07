@@ -1,6 +1,7 @@
 import type { Metadata } from 'next'
 
 import StaticCataloguePage from '@/components/catalogue/static-category-page'
+import { getEditableCatalogueContent } from '@/lib/services/editable-catalogue.service'
 import { groupCatalogueProducts, getAccessoryProductsForCategory, getStaticCatalogueProductsByCategory } from '@/lib/services/static-catalogue-products.service'
 
 export const metadata: Metadata = {
@@ -63,6 +64,17 @@ export default async function PvcEffetBoisExterieurPage() {
       image: product.image,
     }
   })
+  const editable = await getEditableCatalogueContent('pvc-effet-bois-exterieur', {
+    models,
+    products: catalogueProducts,
+    accessories: accessoryProducts.map((product) => ({
+      name: product.name,
+      text: product.note ?? 'Accessoire WPC exterieur',
+      image: product.image ?? '/categories/int-accessoires.png',
+      tag: `Ref. ${product.code}`,
+      variants: product.variants,
+    })),
+  })
 
   return (
     <StaticCataloguePage
@@ -79,20 +91,14 @@ export default async function PvcEffetBoisExterieurPage() {
         { value: '150', label: 'lames mm' },
         { value: '219', label: 'profiles mm' },
       ]}
-      models={models}
-      products={catalogueProducts}
-      accessoryProducts={accessoryProducts}
+      models={editable.models}
+      products={editable.products}
       features={[
         { title: 'Usage facade', text: 'Profiles et lames prevus pour habiller des surfaces exterieures et zones semi-exposees.' },
         { title: 'Finitions bois', text: 'Teak, coffee, grey, black et white pour composer une facade sobre ou contrastee.' },
         { title: 'Longueur projet', text: 'Formats 2900mm pour couvrir rapidement de grandes surfaces.' },
       ]}
-      accessories={[
-        { name: 'Clips de fixation', text: 'Maintien des lames WPC avec jeu regulier et finition propre.', image: 'https://images.unsplash.com/photo-1504148455328-c376907d081c?auto=format&fit=crop&w=700&q=80', tag: 'Fixation' },
-        { name: 'Rails et tasseaux', text: 'Support de pose pour ventilation et alignement du bardage.', image: '/sotuma/profiles/2403-l24.jpg', tag: 'Support' },
-        { name: 'Profils de rive', text: 'Finitions laterales, angles sortants et arrets de facade.', image: 'https://images.unsplash.com/photo-1600585154526-990dced4db0d?auto=format&fit=crop&w=700&q=80', tag: 'Rive' },
-        { name: 'Visserie inox', text: 'Fixation adaptee aux contraintes exterieures.', image: 'https://images.unsplash.com/photo-1513467535987-fd81bc7d62f8?auto=format&fit=crop&w=700&q=80', tag: 'Inox' },
-      ]}
+      accessories={editable.accessories}
       application={[
         'Prevoir un support stable, ventile et aligne avant pose.',
         'Choisir les profils de rive avec la couleur des lames.',

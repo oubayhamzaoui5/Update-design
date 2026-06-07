@@ -1,6 +1,7 @@
 import type { Metadata } from 'next'
 
 import StaticCataloguePage from '@/components/catalogue/static-category-page'
+import { getEditableCatalogueContent } from '@/lib/services/editable-catalogue.service'
 import { groupCatalogueProducts, getStaticCatalogueProductsByCategory } from '@/lib/services/static-catalogue-products.service'
 
 export const metadata: Metadata = {
@@ -39,6 +40,13 @@ export default async function MouluresDecorativesPage() {
       image: product.image,
     }
   })
+  const fallbackAccessories = [
+    { name: 'Colle de montage', text: 'Fixation adaptee aux supports interieurs prepares.', image: 'https://images.unsplash.com/photo-1581092160562-40aa08e78837?auto=format&fit=crop&w=700&q=80', tag: 'Pose' },
+    { name: 'Mastic de finition', text: 'Traitement des joints, angles et raccords avant peinture.', image: 'https://images.unsplash.com/photo-1562259949-e8e7689d7828?auto=format&fit=crop&w=700&q=80', tag: 'Joint' },
+    { name: 'Coupes d angle', text: 'Accessoires et consommables pour jonctions nettes.', image: 'https://images.unsplash.com/photo-1586864387967-d02ef85d93e8?auto=format&fit=crop&w=700&q=80', tag: 'Angle' },
+    { name: 'Primaire peinture', text: 'Preparation de surface selon finition souhaitee.', image: 'https://images.unsplash.com/photo-1562259949-e8e7689d7828?auto=format&fit=crop&w=700&q=80', tag: 'Peinture' },
+  ]
+  const editable = await getEditableCatalogueContent('moulures-decoratives', { models, products: catalogueProducts, accessories: fallbackAccessories })
 
   return (
     <StaticCataloguePage
@@ -55,19 +63,14 @@ export default async function MouluresDecorativesPage() {
         { value: '20/40', label: 'reliefs mm' },
         { value: '100', label: 'plinthe mm' },
       ]}
-      models={models}
-      products={catalogueProducts}
+      models={editable.models}
+      products={editable.products}
       features={[
         { title: 'Relief propre', text: 'Profils pour creer une ligne decorative sans surcharge visuelle.' },
         { title: 'Pose interieure', text: 'Adapte aux murs, tetes de lit, salons, halls et espaces commerciaux.' },
         { title: 'Peinture possible', text: 'Finition personnalisable selon ambiance et couleur du projet.' },
       ]}
-      accessories={[
-        { name: 'Colle de montage', text: 'Fixation adaptee aux supports interieurs prepares.', image: 'https://images.unsplash.com/photo-1581092160562-40aa08e78837?auto=format&fit=crop&w=700&q=80', tag: 'Pose' },
-        { name: 'Mastic de finition', text: 'Traitement des joints, angles et raccords avant peinture.', image: 'https://images.unsplash.com/photo-1562259949-e8e7689d7828?auto=format&fit=crop&w=700&q=80', tag: 'Joint' },
-        { name: 'Coupes d angle', text: 'Accessoires et consommables pour jonctions nettes.', image: 'https://images.unsplash.com/photo-1586864387967-d02ef85d93e8?auto=format&fit=crop&w=700&q=80', tag: 'Angle' },
-        { name: 'Primaire peinture', text: 'Preparation de surface selon finition souhaitee.', image: 'https://images.unsplash.com/photo-1562259949-e8e7689d7828?auto=format&fit=crop&w=700&q=80', tag: 'Peinture' },
-      ]}
+      accessories={editable.accessories}
       application={[
         'Tracer les axes avant pose pour garder des alignements reguliers.',
         'Prevoir coupes d angle pour cadres muraux et plinthes.',

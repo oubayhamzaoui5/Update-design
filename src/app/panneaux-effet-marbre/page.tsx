@@ -8,6 +8,7 @@ import { Navbar } from '@/components/navbar'
 import { DEFAULT_MARBLE_PANELS_CONTENT } from '@/lib/site-page-defaults'
 import { getSitePageContent } from '@/lib/services/site-content.service'
 import { getProductHrefBySku } from '@/lib/services/catalogue-links.service'
+import { getEditableCatalogueContent } from '@/lib/services/editable-catalogue.service'
 import { getStaticCatalogueProductsByCategory } from '@/lib/services/static-catalogue-products.service'
 import { slugify } from '@/utils/slug'
 
@@ -133,7 +134,7 @@ export default async function PanneauxEffetMarbrePage() {
     getProductHrefBySku(),
   ])
   const backendProducts = await getStaticCatalogueProductsByCategory('marble')
-  const referenceModels = backendProducts.length > 0
+  const fallbackReferenceModels = backendProducts.length > 0
     ? Array.from(backendProducts.reduce((groups, product) => {
         const [baseRef, sizeCode] = product.code.split('/')
         const ref = baseRef.trim().toUpperCase()
@@ -156,6 +157,39 @@ export default async function PanneauxEffetMarbrePage() {
         return groups
       }, new Map<string, { ref: string; name: string; tone: string; src: string; variants: string[] }>()).values())
     : content.references.models
+  const editable = await getEditableCatalogueContent('panneaux-effet-marbre', {
+    models: marblePanelModels.map((item) => ({
+      code: item.model,
+      name: item.model,
+      note: item.text,
+      image: item.image,
+    })),
+    products: fallbackReferenceModels.map((item) => ({
+      code: item.ref,
+      name: item.name,
+      note: item.tone,
+      image: item.src,
+      variants: (item as { variants?: string[] }).variants,
+    })),
+    accessories: [
+      { name: 'Type I', text: 'Jonction droite entre deux panneaux.', image: '/accessories/type-i-gold.png', tag: 'Jonction', variants: ['Gold', 'Bronze', 'Black', 'Brown'] },
+      { name: 'Type T', text: 'Raccord visible pour une finition nette.', image: '/accessories/type-t-gold.png', tag: 'Raccord', variants: ['Gold', 'Bronze', 'Black', 'Brown'] },
+      { name: 'Type U', text: 'Encadrement et finition de bord.', image: '/accessories/type-u-gold.png', tag: 'Bord', variants: ['Gold', 'Bronze', 'Black', 'Brown'] },
+      { name: 'Type L', text: 'Angles et bordures propres.', image: '/accessories/type-l-gold.png', tag: 'Angle', variants: ['Black', 'Purple', 'Gold', 'Silver', 'Grey', 'White'] },
+    ],
+  })
+  const panelModels = editable.models.map((item) => ({
+    model: item.name,
+    image: item.image ?? '/categories/int-marbre.png',
+    text: item.note ?? `Ref. ${item.code}`,
+  }))
+  const referenceModels = editable.products.map((item) => ({
+    ref: item.code,
+    name: item.name,
+    tone: item.note ?? 'PVC',
+    src: item.image ?? marbleFallbackImage(item.code),
+    variants: item.variants ?? [],
+  }))
 
   const marbleHref = (ref: string) => {
     const sku = ref.toUpperCase()
@@ -223,7 +257,7 @@ export default async function PanneauxEffetMarbrePage() {
         <section className="py-16 md:py-24" style={{ background: PAPER }}>
           <div className="mx-auto max-w-[1500px] px-6 md:px-10">
             <div className="grid gap-4 md:grid-cols-2">
-              {marblePanelModels.map((item) => (
+              {panelModels.map((item) => (
                 <article key={item.model} className="overflow-hidden border border-[#14130F]/10 bg-[#FCFCFD] transition duration-300 hover:-translate-y-1 hover:border-[#C4A23E]/45 hover:shadow-[0_18px_45px_rgba(20,19,15,0.12)]">
                   <div className="relative aspect-square bg-[#FCFCFD]">
                     <Image
