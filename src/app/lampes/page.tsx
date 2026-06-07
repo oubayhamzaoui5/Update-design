@@ -18,9 +18,9 @@ const fallbackProducts = [
 ]
 
 const models = [
-  { code: '60CM', name: 'Tube LED 60cm', note: 'Format compact pour zones secondaires' },
-  { code: '90CM', name: 'Tube LED 90cm', note: 'Format intermediaire pour ateliers et reserves' },
-  { code: '120-150CM', name: 'Tube LED grand format', note: 'Lignes continues pour bureaux, boutiques et chantiers' },
+  { code: '60CM', name: 'Tube LED 60cm', note: 'Format compact pour zones secondaires', image: '/categories/led-neon-t8.png' },
+  { code: '90CM', name: 'Tube LED 90cm', note: 'Format intermediaire pour ateliers et reserves', image: '/categories/led-neon-t8.png' },
+  { code: '120-150CM', name: 'Tube LED grand format', note: 'Lignes continues pour bureaux, boutiques et chantiers', image: '/categories/led-neon-t8.png' },
 ]
 
 export default async function LampesPage() {
@@ -48,7 +48,7 @@ export default async function LampesPage() {
       intro="Tubes neon LED pour boutiques, reserves, ateliers, bureaux et espaces professionnels qui demandent une lumiere reguliere et simple a remplacer."
       image="https://images.unsplash.com/photo-1513506003901-1e6a229e2d15?auto=format&fit=crop&w=1400&q=80"
       imageAlt="Luminaire suspendu dans un interieur professionnel"
-      productImage="https://images.unsplash.com/photo-1558618666-fcd25c85cd64?auto=format&fit=crop&w=900&q=80"
+      productImage="/categories/led-neon-t8.png"
       productImageAlt="tube led et eclairage lineaire"
       stats={[
         { value: String(sourceProducts.length), label: 'references LED' },

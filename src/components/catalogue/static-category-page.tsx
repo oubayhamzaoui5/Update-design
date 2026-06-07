@@ -174,7 +174,7 @@ export default function StaticCataloguePage({
             <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
               {visibleModels.map((model) => (
                 <article key={`model-${model.code}-${model.name}`} className="overflow-hidden border border-[#14130F]/10 bg-[#FCFCFD] transition duration-300 hover:-translate-y-1 hover:border-[#C4A23E]/45 hover:shadow-[0_18px_45px_rgba(20,19,15,0.12)]">
-                  <div className="relative aspect-[16/8] overflow-hidden bg-white">
+                  <div className="relative aspect-square overflow-hidden bg-white">
                     <Image
                       src={model.image ?? productImage}
                       alt={`${model.name} - ${productImageAlt}`}
@@ -220,7 +220,7 @@ export default function StaticCataloguePage({
             <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
               {products.map((product, index) => (
                 <article key={`${product.code}-${product.name}-${index}`} className="group overflow-hidden border border-[#14130F]/10 bg-[#FCFCFD] transition duration-300 hover:-translate-y-1 hover:border-[#C4A23E]/45 hover:shadow-[0_18px_45px_rgba(20,19,15,0.12)]">
-                  <div className="relative aspect-[4/3] overflow-hidden bg-white">
+                  <div className="relative aspect-square overflow-hidden bg-white">
                     <Image
                       src={product.image ?? productImage}
                       alt={`${product.name} - ${productImageAlt}`}

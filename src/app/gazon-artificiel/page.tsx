@@ -22,9 +22,9 @@ const fallbackProducts = [
 ]
 
 const models = [
-  { code: '10MM', name: 'Gazon 10mm', note: 'Pratique pour zones decoratives et evenements', image: 'https://images.unsplash.com/photo-1598971861713-54ad16a7e72e?auto=format&fit=crop&w=900&q=80' },
-  { code: '25MM', name: 'Gazon 25mm', note: 'Equilibre budget, confort et surface visible', image: 'https://images.unsplash.com/photo-1558904541-efa843a96f01?auto=format&fit=crop&w=900&q=80' },
-  { code: '35-45MM', name: 'Gazon premium', note: 'Densite plus haute pour jardins, piscines et terrasses', image: 'https://images.unsplash.com/photo-1599231092330-9f6a7f85b805?auto=format&fit=crop&w=900&q=80' },
+  { code: '10MM', name: 'Gazon 10mm', note: 'Pratique pour zones decoratives et evenements', image: '/categories/ext-gazon.png' },
+  { code: '25MM', name: 'Gazon 25mm', note: 'Equilibre budget, confort et surface visible', image: '/categories/ext-gazon.png' },
+  { code: '35-45MM', name: 'Gazon premium', note: 'Densite plus haute pour jardins, piscines et terrasses', image: '/categories/ext-gazon.png' },
 ]
 
 export default async function GazonArtificielPage() {
@@ -52,7 +52,7 @@ export default async function GazonArtificielPage() {
       intro="Rouleaux de gazon artificiel pour terrasses, jardins, bords de piscine, evenements, showrooms et espaces professionnels sans entretien lourd."
       image="https://images.unsplash.com/photo-1558904541-efa843a96f01?auto=format&fit=crop&w=1400&q=80"
       imageAlt="Surface de gazon vert en exterieur"
-      productImage="https://images.unsplash.com/photo-1598971861713-54ad16a7e72e?auto=format&fit=crop&w=900&q=80"
+      productImage="/categories/ext-gazon.png"
       productImageAlt="rouleau de gazon artificiel"
       stats={[
         { value: String(sourceProducts.length), label: 'references gazon' },

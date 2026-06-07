@@ -71,7 +71,7 @@ export default function ProfileCatalogueClient({
 <div className="grid gap-4 md:grid-cols-3">
             {modelDetails.map((item) => (
               <article key={item.model} className="overflow-hidden border border-[#14130F]/10 bg-[#FCFCFD] transition duration-300 hover:-translate-y-1 hover:border-[#C4A23E]/45 hover:shadow-[0_18px_45px_rgba(20,19,15,0.12)]">
-                <div className="relative aspect-[16/8] bg-[#FCFCFD]">
+                <div className="relative aspect-square bg-[#FCFCFD]">
                   <Image src={item.image} alt={`Detail modele ${item.model}`} fill sizes="(max-width: 768px) 100vw, 33vw" className="object-contain p-5" />
                 </div>
                 <div className="border-t border-[#14130F]/10 bg-[#D5D0C6] p-5">

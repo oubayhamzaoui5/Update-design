@@ -225,7 +225,7 @@ export default async function PanneauxEffetMarbrePage() {
             <div className="grid gap-4 md:grid-cols-2">
               {marblePanelModels.map((item) => (
                 <article key={item.model} className="overflow-hidden border border-[#14130F]/10 bg-[#FCFCFD] transition duration-300 hover:-translate-y-1 hover:border-[#C4A23E]/45 hover:shadow-[0_18px_45px_rgba(20,19,15,0.12)]">
-                  <div className="relative aspect-[16/8] bg-[#FCFCFD]">
+                  <div className="relative aspect-square bg-[#FCFCFD]">
                     <Image
                       src={item.image}
                       alt={`Modele panneau effet marbre ${item.model}`}

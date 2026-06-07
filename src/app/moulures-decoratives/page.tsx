@@ -18,9 +18,9 @@ const fallbackProducts = [
 ]
 
 const models = [
-  { code: '20MM', name: 'Bombage central 20mm', note: 'Relief fin pour cadres muraux discrets' },
-  { code: '40MM', name: 'Bombage central 40mm', note: 'Relief plus present pour composition marquee' },
-  { code: '100MM', name: 'Plinthe centrale 100mm', note: 'Base decorative pour finition basse' },
+  { code: '20MM', name: 'Bombage central 20mm', note: 'Relief fin pour cadres muraux discrets', image: '/categories/int-moulures.png' },
+  { code: '40MM', name: 'Bombage central 40mm', note: 'Relief plus present pour composition marquee', image: '/categories/int-moulures.png' },
+  { code: '100MM', name: 'Plinthe centrale 100mm', note: 'Base decorative pour finition basse', image: '/categories/int-moulures.png' },
 ]
 
 export default async function MouluresDecorativesPage() {
@@ -48,7 +48,7 @@ export default async function MouluresDecorativesPage() {
       intro="Moulures et plinthes decoratives pour structurer murs, plafonds, encadrements et projets interieurs avec un relief net."
       image="https://images.unsplash.com/photo-1600566753190-17f0baa2a6c3?auto=format&fit=crop&w=1400&q=80"
       imageAlt="Interieur avec details muraux decoratifs"
-      productImage="https://images.unsplash.com/photo-1600210491892-03d54c0aaf87?auto=format&fit=crop&w=900&q=80"
+      productImage="/categories/int-moulures.png"
       productImageAlt="detail de mur interieur avec moulures"
       stats={[
         { value: String(sourceProducts.length), label: 'references' },
