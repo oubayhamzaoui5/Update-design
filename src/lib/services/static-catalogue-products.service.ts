@@ -76,11 +76,54 @@ export async function getAccessoryProductsForCategory(
   const matcher = ACCESSORY_MATCHERS[categoryKey]
   if (!matcher) return []
 
-  return getExcelCatalogueProducts(CATEGORY_NAMES.accessories)
+  const products = getExcelCatalogueProducts(CATEGORY_NAMES.accessories)
     .filter((product) => matcher(product.code.trim().toUpperCase()))
     .map((product) => ({
       code: product.code,
       name: product.name,
       note: product.price > 0 ? `${product.price} DT` : 'Accessoire catalogue',
     }))
+
+  if (categoryKey === 'woodInterior') {
+    return groupCatalogueProducts(products, (product) => {
+      const [type, texture = 'standard'] = product.code.split('-')
+      const label =
+        type === 'C43' ? 'Cloture 90 PVC effet bois' :
+        type === 'C35' ? 'Corniere PVC 35x35' :
+        'Corniere PVC 25x25'
+
+      return {
+        code: type,
+        name: label,
+        note: 'Accessoire profil bois',
+        variant: texture,
+        image: product.image,
+      }
+    })
+  }
+
+  if (categoryKey === 'woodExterior') {
+    return groupCatalogueProducts(products, (product) => {
+      const code = product.code.toUpperCase()
+      const type =
+        code === 'CLIPS' ? 'CLIPS' :
+        code === 'ART2384' || code.startsWith('C50-') ? 'C50' :
+        'CB50'
+      const finish = code.includes('-') ? code.split('-')[1] : 'standard'
+      const label =
+        type === 'CLIPS' ? 'Clips de fixation' :
+        type === 'CB50' ? 'Corniere bombee WPC 50x50' :
+        'Corniere WPC 50x50'
+
+      return {
+        code: type,
+        name: label,
+        note: 'Accessoire WPC exterieur',
+        variant: finish,
+        image: product.image,
+      }
+    })
+  }
+
+  return products
 }
