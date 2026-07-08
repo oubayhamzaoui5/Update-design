@@ -26,11 +26,11 @@ const columns = [
   {
     heading: "Projet",
     links: [
-      { label: "Demander un devis", href: "/contact" },
+      { label: "Demander un devis", href: "/devis" },
       { label: "Configurer un store", href: "/tinda" },
       { label: "Configurer un parasol", href: "/parasol" },
       { label: "Prix volume", href: "/contact" },
-      { label: "Livraison nationale", href: "/contact" },
+      { label: "Nous contacter", href: "/contact" },
     ],
   },
   {

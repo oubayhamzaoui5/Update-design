@@ -24,15 +24,15 @@ const gazonModels = [
 ]
 
 const lampeModels = [
-  { code: '60CM', name: 'Tube LED 60cm', note: 'Format compact', image: '/categories/led-neon-t8.png' },
-  { code: '90CM', name: 'Tube LED 90cm', note: 'Format intermediaire', image: '/categories/led-neon-t8.png' },
-  { code: '120-150CM', name: 'Tube LED grand format', note: 'Lignes continues', image: '/categories/led-neon-t8.png' },
+  { code: '60CM', name: 'Tube LED 60cm', note: 'Format compact', image: '/categories/lampes/tube-led-60cm.png' },
+  { code: '90CM', name: 'Tube LED 90cm', note: 'Format intermediaire', image: '/categories/lampes/tube-led-90cm.png' },
+  { code: '120-150CM', name: 'Tube LED grand format', note: 'Lignes continues', image: '/categories/lampes/tube-led-120cm.png' },
 ]
 
 const moulureModels = [
-  { code: '20MM', name: 'Bombage central 20mm', note: 'Relief fin', image: '/categories/int-moulures.png' },
-  { code: '40MM', name: 'Bombage central 40mm', note: 'Relief marque', image: '/categories/int-moulures.png' },
-  { code: '100MM', name: 'Plinthe centrale 100mm', note: 'Finition basse', image: '/categories/int-moulures.png' },
+  { code: '20MM', name: 'Bombage central 20mm', note: 'Relief fin', image: '/categories/moulures/profil-bombage-20mm.png' },
+  { code: '40MM', name: 'Bombage central 40mm', note: 'Relief marque', image: '/categories/moulures/profil-bombage-40mm.png' },
+  { code: '100MM', name: 'Plinthe centrale 100mm', note: 'Finition basse', image: '/categories/moulures/profil-plinthe-100mm.png' },
 ]
 
 const exteriorModels = [
@@ -49,17 +49,17 @@ const gazonAccessories = [
 ]
 
 const lampAccessories = [
-  { name: 'Supports de fixation', text: 'Clips et supports adaptes aux longueurs de tubes pour une pose droite.', image: 'https://images.unsplash.com/photo-1621905252507-b35492cc74b4?auto=format&fit=crop&w=700&q=80', tag: 'Pose' },
-  { name: 'Connecteurs electriques', text: 'Raccords et bornes pour installation propre par l electricien.', image: 'https://images.unsplash.com/photo-1615873968403-89e068629265?auto=format&fit=crop&w=700&q=80', tag: 'Raccord' },
-  { name: 'Goulottes', text: 'Passage de cable discret sur murs, plafonds ou arriere-boutiques.', image: 'https://images.unsplash.com/photo-1581092160562-40aa08e78837?auto=format&fit=crop&w=700&q=80', tag: 'Cable' },
-  { name: 'Consommables chantier', text: 'Visserie et petites fournitures prevues selon support existant.', image: 'https://images.unsplash.com/photo-1504148455328-c376907d081c?auto=format&fit=crop&w=700&q=80', tag: 'Finition' },
+  { name: 'Supports de fixation', text: 'Clips et supports adaptes aux longueurs de tubes pour une pose droite.', image: '/categories/lampes/accessoire-supports-fixation.png', tag: 'Pose' },
+  { name: 'Connecteurs electriques', text: 'Raccords et bornes pour installation propre par l electricien.', image: '/categories/lampes/accessoire-connecteurs-electriques.png', tag: 'Raccord' },
+  { name: 'Goulottes', text: 'Passage de cable discret sur murs, plafonds ou arriere-boutiques.', image: '/categories/lampes/accessoire-goulottes.png', tag: 'Cable' },
+  { name: 'Consommables chantier', text: 'Visserie et petites fournitures prevues selon support existant.', image: '/categories/lampes/accessoire-consommables-chantier.png', tag: 'Finition' },
 ]
 
 const moulureAccessories = [
-  { name: 'Colle de montage', text: 'Fixation adaptee aux supports interieurs prepares.', image: 'https://images.unsplash.com/photo-1581092160562-40aa08e78837?auto=format&fit=crop&w=700&q=80', tag: 'Pose' },
-  { name: 'Mastic de finition', text: 'Traitement des joints, angles et raccords avant peinture.', image: 'https://images.unsplash.com/photo-1562259949-e8e7689d7828?auto=format&fit=crop&w=700&q=80', tag: 'Joint' },
-  { name: 'Coupes d angle', text: 'Accessoires et consommables pour jonctions nettes.', image: 'https://images.unsplash.com/photo-1586864387967-d02ef85d93e8?auto=format&fit=crop&w=700&q=80', tag: 'Angle' },
-  { name: 'Primaire peinture', text: 'Preparation de surface selon finition souhaitee.', image: 'https://images.unsplash.com/photo-1562259949-e8e7689d7828?auto=format&fit=crop&w=700&q=80', tag: 'Peinture' },
+  { name: 'Colle de montage', text: 'Fixation adaptee aux supports interieurs prepares.', image: '/categories/moulures/accessoire-colle-montage.png', tag: 'Pose' },
+  { name: 'Mastic de finition', text: 'Traitement des joints, angles et raccords avant peinture.', image: '/categories/moulures/accessoire-mastic-finition.png', tag: 'Joint' },
+  { name: 'Coupes d angle', text: 'Accessoires et consommables pour jonctions nettes.', image: '/categories/moulures/accessoire-angles.png', tag: 'Angle' },
+  { name: 'Primaire peinture', text: 'Preparation de surface selon finition souhaitee.', image: '/categories/moulures/accessoire-primaire-peinture.png', tag: 'Peinture' },
 ]
 
 function toAccessories(products: Awaited<ReturnType<typeof getAccessoryProductsForCategory>>) {
@@ -109,7 +109,7 @@ function lampProducts(products: Awaited<ReturnType<typeof getStaticCatalogueProd
       name: `Lumiere ${temp}`,
       note: temp === '4000K' ? 'Blanc neutre' : 'Blanc froid',
       variant: `${size}cm${power ? ` - ${power}W` : ''}`,
-      image: '/categories/led-neon-t8.png',
+      image: size === '60' ? '/categories/lampes/tube-led-60cm.png' : size === '90' ? '/categories/lampes/tube-led-90cm.png' : size === '150' ? '/categories/lampes/tube-led-150cm.png' : '/categories/lampes/tube-led-120cm.png',
     }
   })
 }
@@ -123,7 +123,7 @@ function moulureProducts(products: Awaited<ReturnType<typeof getStaticCatalogueP
       name: plinthe ? 'Plinthe centrale' : 'Bombage central',
       note: plinthe ? 'Finition basse decorative' : 'Relief mural decoratif',
       variant: `${size}mm ${plinthe ? 'plinthe' : product.code.endsWith('L') ? 'lineaire' : 'central'}`,
-      image: '/categories/int-moulures.png',
+      image: plinthe ? '/categories/moulures/profil-plinthe-100mm.png' : size === '40' ? '/categories/moulures/profil-bombage-40mm.png' : '/categories/moulures/profil-bombage-20mm.png',
     }
   })
 }

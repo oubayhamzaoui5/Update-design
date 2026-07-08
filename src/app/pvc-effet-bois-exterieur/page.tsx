@@ -1,75 +1,48 @@
 import type { Metadata } from 'next'
 
-import StaticCataloguePage from '@/components/catalogue/static-category-page'
+import ExterieurShowcase from '@/components/catalogue/exterieur-showcase'
 import { getEditableCatalogueContent } from '@/lib/services/editable-catalogue.service'
-import { groupCatalogueProducts, getAccessoryProductsForCategory, getStaticCatalogueProductsByCategory } from '@/lib/services/static-catalogue-products.service'
+import { getAccessoryProductsForCategory } from '@/lib/services/static-catalogue-products.service'
 
 export const metadata: Metadata = {
   title: 'PVC Effet Bois Exterieur | Catalogue Update Design Tunisie',
-  description: 'Catalogue statique des profiles et lames WPC exterieur effet bois Update Design: EX01, EX04 et EX05 en finitions black, white, teak, grey et coffee.',
+  description: 'Catalogue des lames et profiles WPC exterieur effet bois Update Design: lame de bardage EX01 150mm et profiles EX04 / EX05 219mm, finitions teck, brun, noir, blanc, gris, cafe et bicolore.',
   alternates: { canonical: '/pvc-effet-bois-exterieur' },
 }
 
-const fallbackProducts = [
-  { code: 'EX04-RW/BK', name: 'PROFILET EXT EN WPC 219*2900mm BRAW BLACK', note: 'Bicolore' },
-  { code: 'EX04-WT/BK', name: 'PROFILET EXT EN WPC 219*2900mm WHITE BLACK', note: 'Bicolore' },
-  { code: 'EX04-TK/BK', name: 'PROFILET EXT EN WPC 219*2900mm TEAK BLACK', note: 'Bicolore' },
-  { code: 'EX05-RW', name: 'PROFILET EXT EN WPC 219*2900mm BRAWN', note: 'Finition bois' },
-  { code: 'EX05-AT', name: 'PROFILET EXT EN WPC 219*2900mm AT', note: 'Finition AT' },
-  { code: 'EX04-AT/BK', name: 'PROFILET EXT EN WPC 219*2900mm AT-BLACK', note: 'Bicolore' },
-  { code: 'EX05-BK', name: 'PROFILET EXT EN WPC 219*2900mm BLACK', note: 'Noir' },
-  { code: 'EX05-WT', name: 'PROFILET EXT EN WPC 219*2900mm WHITE', note: 'Blanc' },
-  { code: 'EX04-BK', name: 'PROFILET EXT EN WPC 219*2900mm BLACK', note: 'Noir' },
-  { code: 'EX05-TK', name: 'PROFILET EXT EN WPC 219*2900mm TEAK', note: 'Teck' },
-  { code: 'EX04-WT', name: 'PROFILET EXT EN WPC 219*2900mm WHITE', note: 'Blanc' },
-  { code: 'EX01-GRAY', name: 'LAME DE BARDAGE EN WPC 150*2900mm GREY', note: 'Lame 150mm' },
-  { code: 'EX01-BK', name: 'LAME DE BARDAGE EN WPC 150*2900mm BLACK', note: 'Lame 150mm' },
-  { code: 'EX01-COFFE', name: 'LAME DE BARDAGE EN WPC 150*2900mm COFFE', note: 'Lame 150mm' },
-  { code: 'EX01-D2', name: 'LAME DE BARDAGE EN WPC 150*2900mm MC', note: 'Lame 150mm' },
-  { code: 'EX01-TEAK', name: 'LAME DE BARDAGE EN WPC 150*2900mm TEAK', note: 'Lame 150mm' },
+// ── Real catalogue (source: Liste des produits.xlsx, "PVC EFFET BOIS EXTERIEUR")
+//    3 models × finish tones = 16 SKUs.
+const MODELS = [
+  { code: 'EX01', name: 'Lame de bardage', format: '150 × 2900 mm', note: 'Lame linéaire pour façade et habillage mural complet.' },
+  { code: 'EX04', name: 'Profilé bicolore', format: '219 × 2900 mm', note: 'Effet bois avec arête noire (bicolore) ou plein ton.' },
+  { code: 'EX05', name: 'Profilé plein ton', format: '219 × 2900 mm', note: 'Teck, brun, noir, blanc et beige unis.' },
 ]
 
-const models = [
-  { code: 'EX01', name: 'Lame de bardage 150mm', note: 'Lame lineaire pour facade et habillage mural', image: '/categories/ext-profiles.png' },
-  { code: 'EX04', name: 'Profile WPC bicolore', note: 'Effet bois avec contraste black selon finition', image: '/categories/ext-profiles.png' },
-  { code: 'EX05', name: 'Profile WPC plein ton', note: 'Teak, black, white, brawn et finitions unies', image: '/categories/ext-profiles.png' },
+const FINISHES = [
+  { code: 'TEAK', name: 'Teck', color: '#9C6B3F', items: [{ model: 'EX01', sku: 'EX01-TEAK' }, { model: 'EX05', sku: 'EX05-TK' }] },
+  { code: 'BLACK', name: 'Noir', color: '#1C1B19', items: [{ model: 'EX01', sku: 'EX01-BK' }, { model: 'EX04', sku: 'EX04-BK' }, { model: 'EX05', sku: 'EX05-BK' }] },
+  { code: 'WHITE', name: 'Blanc', color: '#E7E2D7', items: [{ model: 'EX04', sku: 'EX04-WT' }, { model: 'EX05', sku: 'EX05-WT' }] },
+  { code: 'GREY', name: 'Gris', color: '#878781', items: [{ model: 'EX01', sku: 'EX01-GRAY' }] },
+  { code: 'COFFEE', name: 'Café', color: '#4A3527', items: [{ model: 'EX01', sku: 'EX01-COFFE' }] },
+  { code: 'MC', name: 'Taupe MC', color: '#6E6256', items: [{ model: 'EX01', sku: 'EX01-D2' }] },
+  { code: 'AT', name: 'Beige naturel', color: '#B19A7B', items: [{ model: 'EX05', sku: 'EX05-AT' }] },
+  { code: 'BRAWN', name: 'Brun bois', color: '#6E4A30', items: [{ model: 'EX05', sku: 'EX05-RW' }] },
+  { code: 'RW/BK', name: 'Bicolore brun / noir', color: '#6E4A30', bicolore: true, items: [{ model: 'EX04', sku: 'EX04-RW/BK' }] },
+  { code: 'WT/BK', name: 'Bicolore blanc / noir', color: '#E7E2D7', bicolore: true, items: [{ model: 'EX04', sku: 'EX04-WT/BK' }] },
+  { code: 'TK/BK', name: 'Bicolore teck / noir', color: '#9C6B3F', bicolore: true, items: [{ model: 'EX04', sku: 'EX04-TK/BK' }] },
+  { code: 'AT/BK', name: 'Bicolore beige / noir', color: '#B19A7B', bicolore: true, items: [{ model: 'EX04', sku: 'EX04-AT/BK' }] },
 ]
+
+const REFERENCE_COUNT = FINISHES.reduce((n, f) => n + f.items.length, 0)
 
 export default async function PvcEffetBoisExterieurPage() {
-  const products = await getStaticCatalogueProductsByCategory('woodExterior')
   const accessoryProducts = await getAccessoryProductsForCategory('woodExterior')
-  const sourceProducts = products.length > 0 ? products : fallbackProducts
-  const catalogueProducts = groupCatalogueProducts(sourceProducts, (product) => {
-    const code = product.code.toUpperCase()
-    const finish =
-      code.includes('/BK') ? 'bicolore black' :
-      code.includes('TEAK') || code.endsWith('-TK') ? 'teak' :
-      code.includes('COFFE') || code.endsWith('-RW') ? 'coffee' :
-      code.includes('GRAY') || code.endsWith('-GR') ? 'grey' :
-      code.endsWith('-WT') ? 'white' :
-      code.endsWith('-BK') ? 'black' :
-      code.endsWith('-AT') ? 'AT' :
-      code.endsWith('-D2') ? 'MC' :
-      product.note ?? product.code
-    const family =
-      code.startsWith('EX01') ? 'Lame 150x2900mm' :
-      code.startsWith('EX04') ? 'Profile 219x2900mm bicolore' :
-      'Profile 219x2900mm'
-
-    return {
-      code: finish.toUpperCase(),
-      name: `Finition ${finish}`,
-      note: 'Texture WPC exterieur',
-      variant: family,
-      image: product.image,
-    }
-  })
   const editable = await getEditableCatalogueContent('pvc-effet-bois-exterieur', {
-    models,
-    products: catalogueProducts,
+    models: MODELS,
+    products: [],
     accessories: accessoryProducts.map((product) => ({
       name: product.name,
-      text: product.note ?? 'Accessoire WPC exterieur',
+      text: product.note ?? 'Accessoire WPC extérieur',
       image: product.image ?? '/categories/int-accessoires.png',
       tag: `Ref. ${product.code}`,
       variants: product.variants,
@@ -77,33 +50,11 @@ export default async function PvcEffetBoisExterieurPage() {
   })
 
   return (
-    <StaticCataloguePage
-      eyebrow="Bardage exterieur WPC"
-      title="Bois"
-      italic="pour facade."
-      intro="Profiles et lames WPC effet bois pour habillage exterieur, murs techniques, facades commerciales, terrasses couvertes et projets qui demandent un rendu bois durable."
-      image="https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=1400&q=80"
-      imageAlt="Maison moderne avec habillage exterieur"
-      productImage="/categories/ext-profiles.png"
-      productImageAlt="lames effet bois exterieur"
-      stats={[
-        { value: String(sourceProducts.length), label: 'references WPC' },
-        { value: '150', label: 'lames mm' },
-        { value: '219', label: 'profiles mm' },
-      ]}
-      models={editable.models}
-      products={editable.products}
-      features={[
-        { title: 'Usage facade', text: 'Profiles et lames prevus pour habiller des surfaces exterieures et zones semi-exposees.' },
-        { title: 'Finitions bois', text: 'Teak, coffee, grey, black et white pour composer une facade sobre ou contrastee.' },
-        { title: 'Longueur projet', text: 'Formats 2900mm pour couvrir rapidement de grandes surfaces.' },
-      ]}
+    <ExterieurShowcase
+      models={MODELS}
+      finishes={FINISHES}
       accessories={editable.accessories}
-      application={[
-        'Prevoir un support stable, ventile et aligne avant pose.',
-        'Choisir les profils de rive avec la couleur des lames.',
-        'Calculer les pertes selon coupes, angles et ouvertures.',
-      ]}
+      referenceCount={REFERENCE_COUNT}
     />
   )
 }

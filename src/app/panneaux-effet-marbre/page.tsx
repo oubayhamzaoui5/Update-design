@@ -178,11 +178,6 @@ export default async function PanneauxEffetMarbrePage() {
       { name: 'Type L', text: 'Angles et bordures propres.', image: '/accessories/type-l-gold.png', tag: 'Angle', variants: ['Black', 'Purple', 'Gold', 'Silver', 'Grey', 'White'] },
     ],
   })
-  const panelModels = editable.models.map((item) => ({
-    model: item.name,
-    image: item.image ?? '/categories/int-marbre.png',
-    text: item.note ?? `Ref. ${item.code}`,
-  }))
   const referenceModels = editable.products.map((item) => ({
     ref: item.code,
     name: item.name,
@@ -190,6 +185,24 @@ export default async function PanneauxEffetMarbrePage() {
     src: item.image ?? marbleFallbackImage(item.code),
     variants: item.variants ?? [],
   }))
+
+  const countByFormat = (size: string) => referenceModels.filter((m) => m.variants.includes(size)).length
+  const panelFormats = [
+    {
+      code: '244',
+      h: 2440,
+      image: `${SOTUMA}/web/image/231443/MB004-.jpg`,
+      count: countByFormat('1220x2440mm') || 11,
+      note: 'hauteur standard',
+    },
+    {
+      code: '290',
+      h: 2900,
+      image: `${SOTUMA}/web/image/163663/MB007.jpg`,
+      count: countByFormat('1220x2900mm') || 29,
+      note: 'sol au plafond sans raccord',
+    },
+  ]
 
   const marbleHref = (ref: string) => {
     const sku = ref.toUpperCase()
@@ -202,88 +215,65 @@ export default async function PanneauxEffetMarbrePage() {
       <Navbar reserveSpace />
 
       <main>
-        <header className="relative overflow-hidden" style={{ background: DARK, color: CREAM }}>
-          <div
-            className="absolute inset-0 opacity-[0.06]"
-            style={{
-              backgroundImage:
-                'linear-gradient(90deg,#C4A23E 1px,transparent 1px),linear-gradient(#C4A23E 1px,transparent 1px)',
-              backgroundSize: '72px 72px',
-            }}
-          />
-          <div className="relative mx-auto grid min-h-[76vh] max-w-[1500px] gap-12 px-6 py-20 md:px-10 lg:grid-cols-[0.9fr_1.1fr] lg:items-end lg:py-28">
-            <div>
-              <p className="mb-5 text-[10px] font-bold uppercase tracking-[0.34em]" style={{ color: GOLD }}>
-                {content.hero.eyebrow}
-              </p>
-              <h1
-                style={{
-                  fontFamily: DISPLAY,
-                  fontSize: 'clamp(3.2rem, 8vw, 7.2rem)',
-                  lineHeight: 0.86,
-                  fontWeight: 400,
-                }}
-              >
-                {content.hero.headline}
-                <br />
-                <em style={{ color: 'rgba(247,242,232,0.52)', fontStyle: 'italic' }}>{content.hero.italic}</em>
-              </h1>
-              <p className="mt-8 max-w-[620px] text-base leading-8 text-white/64">
-                {content.hero.body}
-              </p>
-              <div className="mt-10 flex flex-col gap-3 sm:flex-row">
-                <Link href="/devis" className="inline-flex items-center justify-center gap-3 px-7 py-4 text-[11px] font-bold uppercase tracking-[0.2em] text-white" style={{ background: GOLD }}>
-                  {content.hero.primaryLabel} <ArrowRight size={14} />
-                </Link>
-                <Link href={content.hero.secondaryHref} className="inline-flex items-center justify-center gap-3 border border-white/20 px-7 py-4 text-[11px] font-bold uppercase tracking-[0.2em] text-white/90 transition hover:bg-white/10">
-                  {content.hero.secondaryLabel}
+        {/* COMPACT CATEGORY BAND — no tall hero */}
+        <section className="border-b" style={{ background: CREAM, borderColor: 'rgba(20,19,15,0.12)' }}>
+          <div className="mx-auto max-w-[1500px] px-6 py-7 md:px-10">
+            <nav className="mb-3 text-[10px] font-bold uppercase tracking-[0.2em] text-[#14130F]/45">
+              <Link href="/boutique" className="hover:text-[#14130F]">Catalogue</Link>
+              <span className="px-2">/</span>
+              <span style={{ color: GOLD }}>Panneaux effet marbre</span>
+            </nav>
+            <div className="flex flex-wrap items-end justify-between gap-4">
+              <div>
+                <h1 style={{ fontFamily: DISPLAY, fontWeight: 400 }} className="text-4xl leading-none md:text-5xl">
+                  Panneaux PVC effet marbre
+                </h1>
+                <p className="mt-2 max-w-[640px] text-sm leading-6 text-[#14130F]/60">
+                  Panneaux muraux grand format, rendu pierre naturelle sans le poids du marbre massif. Choisissez le veinage parmi les références MB, puis le format 1220×2440 ou 1220×2900&nbsp;mm.
+                </p>
+              </div>
+              <div className="flex items-center gap-5">
+                <div className="text-right">
+                  <p style={{ fontFamily: DISPLAY }} className="text-3xl leading-none">{referenceModels.length}</p>
+                  <p className="text-[9px] font-bold uppercase tracking-[0.2em] text-[#14130F]/45">veinages</p>
+                </div>
+                <Link href="/devis" className="inline-flex items-center gap-2 px-5 py-3 text-[11px] font-bold uppercase tracking-[0.18em] text-white" style={{ background: GOLD }}>
+                  Devis <ArrowRight size={14} />
                 </Link>
               </div>
             </div>
-
-            <div className="grid gap-4 sm:grid-cols-2">
-              {content.hero.stats.map((item) => (
-                <div key={item.value} className="border border-[#C4A23E]/18 p-6">
-                  <p style={{ fontFamily: DISPLAY }} className="text-5xl leading-none">
-                    {item.label}
-                  </p>
-                  <p className="mt-3 text-[10px] font-bold uppercase tracking-[0.2em] text-white/50">{item.value}</p>
-                </div>
-              ))}
-            </div>
           </div>
-        </header>
+        </section>
 
-        <section className="py-16 md:py-24" style={{ background: PAPER }}>
+        {/* FORMATS — panels drawn to real scale (1220×2440 vs 1220×2900) */}
+        <section className="py-12 md:py-16" style={{ background: PAPER }}>
           <div className="mx-auto max-w-[1500px] px-6 md:px-10">
-            <div className="grid gap-4 md:grid-cols-2">
-              {panelModels.map((item) => (
-                <article key={item.model} className="overflow-hidden border border-[#14130F]/10 bg-[#FCFCFD] transition duration-300 hover:-translate-y-1 hover:border-[#C4A23E]/45 hover:shadow-[0_18px_45px_rgba(20,19,15,0.12)]">
-                  <div className="relative aspect-square bg-[#FCFCFD]">
-                    <Image
-                      src={item.image}
-                      alt={`Modele panneau effet marbre ${item.model}`}
-                      fill
-                      sizes="(max-width: 768px) 100vw, 50vw"
-                      className="object-cover"
-                    />
-                  </div>
+            <div className="mb-8 flex items-end justify-between gap-4">
+              <div>
+                <p className="text-[11px] font-bold uppercase tracking-[0.22em]" style={{ color: GOLD }}>Formats</p>
+                <h2 className="mt-2 text-2xl font-black tracking-[0.04em]">Deux hauteurs, à l&apos;échelle réelle.</h2>
+              </div>
+              <p className="hidden items-center gap-2 text-[11px] font-bold uppercase tracking-[0.22em] text-[#14130F]/52 sm:flex">
+                <Ruler className="h-4 w-4" style={{ color: GOLD }} /> largeur 1220mm
+              </p>
+            </div>
+            <div className="flex items-end justify-center gap-8 md:gap-14">
+              {panelFormats.map((f) => (
+                <figure key={f.code} className="w-[40%] max-w-[280px]">
                   <div
-                    className="border-t border-[#14130F]/10 p-5"
-                    style={{
-                      backgroundColor: '#D5D0C6',
-                      backgroundImage:
-                        'radial-gradient(rgba(20,19,15,0.08) 0.7px, transparent 0.7px), linear-gradient(135deg, rgba(255,255,255,0.32), rgba(20,19,15,0.035))',
-                      backgroundSize: '7px 7px, 100% 100%',
-                    }}
+                    className="relative w-full overflow-hidden border border-[#14130F]/15 bg-white shadow-[0_18px_45px_rgba(20,19,15,0.12)]"
+                    style={{ aspectRatio: `1220 / ${f.h}` }}
                   >
-                    <div className="flex items-center justify-between gap-4">
-                      <h3 className="text-lg font-black tracking-[0.08em]">{item.model}</h3>
-                      <Ruler className="h-4 w-4" style={{ color: GOLD }} />
-                    </div>
-                    <p className="mt-2 text-sm text-[#14130F]/58">{item.text}</p>
+                    <Image src={f.image} alt={`Panneau PVC effet marbre format 1220x${f.h}mm`} fill sizes="(max-width:768px) 40vw, 280px" className="object-cover" />
+                    <span className="absolute left-3 top-3 border border-[#14130F]/15 bg-white/80 px-2 py-1 text-[9px] font-black uppercase tracking-[0.14em] text-[#14130F]/70">
+                      {f.h}mm
+                    </span>
                   </div>
-                </article>
+                  <figcaption className="mt-4 text-center">
+                    <p style={{ fontFamily: DISPLAY }} className="text-2xl leading-none">1220 × {f.h}</p>
+                    <p className="mt-2 text-[10px] font-bold uppercase tracking-[0.2em] text-[#14130F]/50">{f.count} veinages · {f.note}</p>
+                  </figcaption>
+                </figure>
               ))}
             </div>
           </div>
@@ -428,53 +418,31 @@ export default async function PanneauxEffetMarbrePage() {
           </div>
         </section>
 
-        <section className="py-16 md:py-24" style={{ background: DARK, color: CREAM }}>
-          <div className="mx-auto grid max-w-[1500px] gap-12 px-6 md:grid-cols-[0.9fr_1.1fr] md:px-10">
-            <div>
-              <p className="mb-5 text-[10px] font-bold uppercase tracking-[0.3em]" style={{ color: GOLD }}>
-                {content.advice.eyebrow}
-              </p>
-              <h2
-                style={{
-                  fontFamily: DISPLAY,
-                  fontSize: 'clamp(2.4rem, 5vw, 4.6rem)',
-                  lineHeight: 0.95,
-                  fontWeight: 400,
-                }}
-              >
-                {content.advice.headline}
-                <br />
-                <em style={{ color: 'rgba(247,242,232,0.5)' }}>{content.advice.italic}</em>
-              </h2>
-            </div>
-            <div className="grid gap-4">
-              {content.advice.points.map((item) => (
-                <div key={item} className="flex gap-4 border-b border-[#C4A23E]/15 pb-5 text-sm leading-7 text-white/65">
-                  <Check className="mt-1 h-4 w-4 shrink-0" style={{ color: GOLD }} />
-                  {item}
-                </div>
-              ))}
-              <Link href={content.advice.ctaHref} className="mt-5 inline-flex w-fit items-center gap-3 px-7 py-4 text-[11px] font-bold uppercase tracking-[0.2em] text-white" style={{ background: GOLD }}>
-                {content.advice.ctaLabel} <ArrowRight size={14} />
-              </Link>
-            </div>
-          </div>
-        </section>
-
-        <section className="relative overflow-hidden py-20 md:py-24" style={{ background: PAPER }}>
+        {/* CLOSING CTA — image + conseil + devis */}
+        <section className="py-16 md:py-24" style={{ background: PAPER }}>
           <div className="mx-auto grid max-w-[1500px] gap-10 px-6 md:grid-cols-[0.82fr_1.18fr] md:px-10">
-            <div className="relative min-h-[360px] overflow-hidden border border-[#14130F]/12">
+            <div className="relative min-h-[320px] overflow-hidden border border-[#14130F]/12 md:min-h-[420px]">
               <Image src={content.proposal.image} alt={content.proposal.imageAlt} fill sizes="(max-width: 768px) 100vw, 40vw" className="object-cover" />
             </div>
             <div className="flex flex-col justify-center py-6">
-              <MessageCircle className="mb-7 h-8 w-8" style={{ color: GOLD }} />
-              <h2 style={{ fontFamily: DISPLAY, fontSize: 'clamp(2.4rem, 5vw, 4.8rem)', lineHeight: 0.95, fontWeight: 400 }}>
-                {content.proposal.headline}
+              <MessageCircle className="mb-6 h-7 w-7" style={{ color: GOLD }} />
+              <h2 style={{ fontFamily: DISPLAY, fontSize: 'clamp(2.2rem, 4.5vw, 4rem)', lineHeight: 0.96, fontWeight: 400 }}>
+                {content.advice.headline}
+                <br />
+                <em style={{ color: 'rgba(20,19,15,0.48)' }}>{content.advice.italic}</em>
               </h2>
-              <p className="mt-7 max-w-[620px] text-base leading-8 text-[#14130F]/62">
+              <p className="mt-6 max-w-[620px] text-base leading-8 text-[#14130F]/62">
                 {content.proposal.body}
               </p>
-              <Link href="/devis" className="mt-9 inline-flex w-fit items-center gap-3 px-8 py-4 text-[11px] font-bold uppercase tracking-[0.2em] text-white" style={{ background: GOLD }}>
+              <div className="mt-7 grid gap-3">
+                {content.advice.points.map((item) => (
+                  <div key={item} className="flex gap-4 border-b border-[#C4A23E]/20 pb-4 text-sm font-semibold leading-7 text-[#14130F]/66">
+                    <Check className="mt-1 h-4 w-4 shrink-0" style={{ color: GOLD }} />
+                    {item}
+                  </div>
+                ))}
+              </div>
+              <Link href="/devis" className="mt-8 inline-flex w-fit items-center gap-3 px-8 py-4 text-[11px] font-bold uppercase tracking-[0.2em] text-white" style={{ background: GOLD }}>
                 {content.proposal.ctaLabel} <ArrowRight size={14} />
               </Link>
             </div>

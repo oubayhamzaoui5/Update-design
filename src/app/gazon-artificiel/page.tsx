@@ -1,6 +1,6 @@
 import type { Metadata } from 'next'
 
-import StaticCataloguePage from '@/components/catalogue/static-category-page'
+import GazonShowcase from '@/components/catalogue/gazon-showcase'
 import { getEditableCatalogueContent } from '@/lib/services/editable-catalogue.service'
 import { groupCatalogueProducts, getStaticCatalogueProductsByCategory } from '@/lib/services/static-catalogue-products.service'
 
@@ -56,33 +56,10 @@ export default async function GazonArtificielPage() {
   })
 
   return (
-    <StaticCataloguePage
-      eyebrow="Exterieur & jardin"
-      title="Gazon"
-      italic="pret a poser."
-      intro="Rouleaux de gazon artificiel pour terrasses, jardins, bords de piscine, evenements, showrooms et espaces professionnels sans entretien lourd."
-      image="https://images.unsplash.com/photo-1558904541-efa843a96f01?auto=format&fit=crop&w=1400&q=80"
-      imageAlt="Surface de gazon vert en exterieur"
-      productImage="/categories/ext-gazon.png"
-      productImageAlt="rouleau de gazon artificiel"
-      stats={[
-        { value: String(sourceProducts.length), label: 'references gazon' },
-        { value: '10-45', label: 'hauteurs mm' },
-        { value: '2/4m', label: 'largeurs' },
-      ]}
-      models={editable.models}
+    <GazonShowcase
       products={editable.products}
-      features={[
-        { title: 'Plusieurs hauteurs', text: 'Du 10mm pratique au 45mm premium pour ajuster confort, densite et budget.' },
-        { title: 'Largeurs chantier', text: 'Formats 2m et 4m pour reduire les joints selon la surface.' },
-        { title: 'Usage exterieur', text: 'Solution decorative pour zones de passage, terrasses et espaces de presentation.' },
-      ]}
       accessories={editable.accessories}
-      application={[
-        'Mesurer largeur et longueur utiles avant choix 2m ou 4m.',
-        'Prevoir evacuation d eau et support stable avant pose.',
-        'Choisir une hauteur plus dense pour zones visibles et premium.',
-      ]}
+      referenceCount={sourceProducts.length}
     />
   )
 }

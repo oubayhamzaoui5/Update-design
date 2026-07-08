@@ -2,7 +2,6 @@ import type { ReactNode } from 'react'
 import type { Metadata } from 'next'
 import { Plus_Jakarta_Sans } from 'next/font/google'
 
-import { OrderNotificationsListener } from '@/components/admin/order-notifications'
 import Sidebar from '@/components/admin/sidebar'
 import { requireAdmin } from '@/lib/auth'
 
@@ -20,8 +19,7 @@ export default async function AdminLayout({
   await requireAdmin()
 
   return (
-    <div className={`${jakarta.className} flex h-screen overflow-hidden`} style={{ background: '#F4F6FB' }}>
-      <OrderNotificationsListener />
+    <div className={`${jakarta.className} flex h-screen overflow-hidden text-[#1C1A14]`} style={{ background: '#F6F5F1' }}>
       <Sidebar />
       <div className="flex flex-1 flex-col overflow-hidden">
         <main className="flex-1 overflow-auto">{children}</main>

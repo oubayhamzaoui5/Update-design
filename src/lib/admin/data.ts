@@ -3,6 +3,11 @@ import 'server-only'
 import { requireAdmin } from '@/lib/auth'
 import { createServerPb } from '@/lib/pb'
 import type { OrderRecord, OrderStatus, UserRecord } from '@/types/order.types'
+import type {
+  QuoteRequestItem,
+  QuoteRequestRecord,
+  QuoteRequestStatus,
+} from '@/types/quote-request.types'
 
 export type AdminCategoryRecord = {
   id: string
@@ -56,6 +61,48 @@ export type AdminVedetteRecord = {
   id: string
   productId: string
   product: AdminVedetteProductOption | null
+}
+
+function normalizeQuoteStatus(value: unknown): QuoteRequestStatus {
+  if (
+    value === 'new' ||
+    value === 'contacted' ||
+    value === 'quote_sent' ||
+    value === 'won' ||
+    value === 'lost'
+  ) {
+    return value
+  }
+
+  return 'new'
+}
+
+function normalizeQuoteItems(value: unknown): QuoteRequestItem[] {
+  if (!Array.isArray(value)) return []
+
+  return value.reduce<QuoteRequestItem[]>((items, item) => {
+      if (!item || typeof item !== 'object') return items
+      const raw = item as Record<string, unknown>
+      const type = raw.type === 'Modele' || raw.type === 'Texture' || raw.type === 'Accessoire'
+        ? raw.type
+        : 'Texture'
+      const id = String(raw.id ?? '')
+      const name = String(raw.name ?? '')
+
+      if (!id || !name) return items
+
+      items.push({
+        id,
+        category: String(raw.category ?? ''),
+        type,
+        name,
+        ref: raw.ref ? String(raw.ref) : undefined,
+        image: raw.image ? String(raw.image) : undefined,
+        quantity: Math.max(1, Number(raw.quantity ?? 1)),
+      })
+
+      return items
+    }, [])
 }
 
 
@@ -500,4 +547,88 @@ export async function getAdminOrders(): Promise<OrderRecord[]> {
       }
     })
   )
+}
+
+export async function getAdminQuoteRequests(): Promise<QuoteRequestRecord[]> {
+  const pb = await createAdminPb()
+
+  try {
+    const records = await pb.collection('quote_requests').getFullList({
+      sort: '-created',
+      requestKey: null,
+    })
+
+    return records.map((record: any) => ({
+      id: String(record.id ?? ''),
+      created: String(record.created ?? ''),
+      updated: String(record.updated ?? ''),
+      name: String(record.name ?? ''),
+      phone: String(record.phone ?? ''),
+      email: record.email ? String(record.email) : undefined,
+      city: record.city ? String(record.city) : undefined,
+      notes: record.notes ? String(record.notes) : undefined,
+      items: normalizeQuoteItems(record.items),
+      status: normalizeQuoteStatus(record.status),
+      adminNotes: record.adminNotes ? String(record.adminNotes) : undefined,
+      source: record.source ? String(record.source) : undefined,
+    }))
+  } catch (error: any) {
+    if (error?.status === 404) return []
+    throw error
+  }
+}
+
+export async function getAdminShowroomSummary(): Promise<{
+  quoteRequestsTotal: number
+  quoteRequestsNew: number
+  cataloguePages: number
+  catalogueItems: number
+  visitsToday: number
+}> {
+  const pb = await createAdminPb()
+  const now = new Date()
+  const start = new Date(now.getFullYear(), now.getMonth(), now.getDate())
+  const pbDate = start.toISOString().replace('T', ' ').split('.')[0]
+
+  const [quotes, newQuotes, sitePages, visits] = await Promise.all([
+    pb.collection('quote_requests').getList(1, 1, { requestKey: null }).catch(() => ({ totalItems: 0 })),
+    pb.collection('quote_requests').getList(1, 1, {
+      filter: 'status = "new"',
+      requestKey: null,
+    }).catch(() => ({ totalItems: 0 })),
+    pb.collection('site_pages').getFullList({
+      filter: 'slug ~ "catalogue-"',
+      fields: 'content',
+      requestKey: null,
+    }).catch(() => []),
+    pb.collection('visits').getFullList({
+      filter: `created >= "${pbDate}"`,
+      fields: 'visitorId',
+      requestKey: null,
+    }).catch(() => []),
+  ])
+
+  const catalogueItems = Array.isArray(sitePages)
+    ? sitePages.reduce((total, page: any) => {
+        const content = page?.content && typeof page.content === 'object' ? page.content : {}
+        return total +
+          (Array.isArray(content.models) ? content.models.length : 0) +
+          (Array.isArray(content.products) ? content.products.length : 0) +
+          (Array.isArray(content.accessories) ? content.accessories.length : 0)
+      }, 0)
+    : 0
+
+  const uniqueVisitors = new Set(
+    Array.isArray(visits)
+      ? visits.map((visit: any) => String(visit?.visitorId ?? '')).filter(Boolean)
+      : []
+  )
+
+  return {
+    quoteRequestsTotal: Number(quotes.totalItems ?? 0),
+    quoteRequestsNew: Number(newQuotes.totalItems ?? 0),
+    cataloguePages: Array.isArray(sitePages) ? sitePages.length : 0,
+    catalogueItems,
+    visitsToday: uniqueVisitors.size,
+  }
 }

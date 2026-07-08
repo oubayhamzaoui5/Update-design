@@ -10,7 +10,7 @@ import { DEFAULT_WOOD_PROFILE_CONTENT } from '@/lib/site-page-defaults'
 import { getSitePageContent } from '@/lib/services/site-content.service'
 import { getProductHrefBySku } from '@/lib/services/catalogue-links.service'
 import { getEditableCatalogueContent } from '@/lib/services/editable-catalogue.service'
-import { getAccessoryProductsForCategory } from '@/lib/services/static-catalogue-products.service'
+import { getAccessoryProductsForCategory, getStaticCatalogueProductsByCategory } from '@/lib/services/static-catalogue-products.service'
 
 export const dynamic = 'force-dynamic'
 
@@ -131,7 +131,10 @@ export default async function ProfilMuralEffetBoisPage() {
     getSitePageContent('profil-mural-effet-bois', DEFAULT_WOOD_PROFILE_CONTENT),
     getProductHrefBySku(),
   ])
-  const accessoryProducts = await getAccessoryProductsForCategory('woodInterior')
+  const [accessoryProducts, woodProducts] = await Promise.all([
+    getAccessoryProductsForCategory('woodInterior'),
+    getStaticCatalogueProductsByCategory('woodInterior'),
+  ])
   const editable = await getEditableCatalogueContent('profil-mural-effet-bois', {
     models: [],
     products: [],
@@ -149,41 +152,35 @@ export default async function ProfilMuralEffetBoisPage() {
       <Navbar reserveSpace />
 
       <main>
-        <header className="relative overflow-hidden" style={{ background: DARK, color: CREAM }}>
-          <div className="absolute inset-0 opacity-[0.06]" style={{ backgroundImage: 'linear-gradient(90deg,#C4A23E 1px,transparent 1px),linear-gradient(#C4A23E 1px,transparent 1px)', backgroundSize: '72px 72px' }} />
-          <div className="relative mx-auto grid min-h-[76vh] max-w-[1500px] gap-12 px-6 py-20 md:px-10 lg:grid-cols-[0.9fr_1.1fr] lg:items-end lg:py-28">
-            <div>
-              <p className="mb-5 text-[10px] font-bold uppercase tracking-[0.34em]" style={{ color: GOLD }}>
-                {content.hero.eyebrow}
-              </p>
-              <h1 style={{ fontFamily: DISPLAY, fontSize: 'clamp(3.2rem, 8vw, 7.2rem)', lineHeight: 0.86, fontWeight: 400 }}>
-                {content.hero.headline}
-                <br />
-                <em style={{ color: 'rgba(247,242,232,0.52)', fontStyle: 'italic' }}>{content.hero.italic}</em>
-              </h1>
-              <p className="mt-8 max-w-[620px] text-base leading-8 text-white/64">
-                {content.hero.body}
-              </p>
-              <div className="mt-10 flex flex-col gap-3 sm:flex-row">
-                <Link href="/devis" className="inline-flex items-center justify-center gap-3 px-7 py-4 text-[11px] font-bold uppercase tracking-[0.2em] text-white" style={{ background: GOLD }}>
-                  {content.hero.primaryLabel} <ArrowRight size={14} />
-                </Link>
-                <Link href={content.hero.secondaryHref} className="inline-flex items-center justify-center gap-3 border border-white/20 px-7 py-4 text-[11px] font-bold uppercase tracking-[0.2em] text-white/90 transition hover:bg-white/10">
-                  {content.hero.secondaryLabel}
+        {/* COMPACT CATEGORY BAND — no tall hero */}
+        <section className="border-b" style={{ background: CREAM, borderColor: 'rgba(20,19,15,0.12)' }}>
+          <div className="mx-auto max-w-[1500px] px-6 py-7 md:px-10">
+            <nav className="mb-3 text-[10px] font-bold uppercase tracking-[0.2em] text-[#14130F]/45">
+              <Link href="/boutique" className="hover:text-[#14130F]">Catalogue</Link>
+              <span className="px-2">/</span>
+              <span style={{ color: GOLD }}>Profil mural effet bois</span>
+            </nav>
+            <div className="flex flex-wrap items-end justify-between gap-4">
+              <div>
+                <h1 style={{ fontFamily: DISPLAY, fontWeight: 400 }} className="text-4xl leading-none md:text-5xl">
+                  Profil mural effet bois
+                </h1>
+                <p className="mt-2 max-w-[640px] text-sm leading-6 text-[#14130F]/60">
+                  Lames murales décoratives PVC effet bois pour habillage intérieur. Choisissez le modèle de profil (L24, L18, R15, U12, O15, P40), puis la texture bois.
+                </p>
+              </div>
+              <div className="flex items-center gap-5">
+                <div className="text-right">
+                  <p style={{ fontFamily: DISPLAY }} className="text-3xl leading-none">{woodProducts.length}</p>
+                  <p className="text-[9px] font-bold uppercase tracking-[0.2em] text-[#14130F]/45">références</p>
+                </div>
+                <Link href="/devis" className="inline-flex items-center gap-2 px-5 py-3 text-[11px] font-bold uppercase tracking-[0.18em] text-white" style={{ background: GOLD }}>
+                  Devis <ArrowRight size={14} />
                 </Link>
               </div>
             </div>
-
-            <div className="grid gap-4 sm:grid-cols-2">
-              {content.hero.stats.map((item) => (
-                <div key={item.value} className="border border-[#C4A23E]/18 p-6">
-                  <p style={{ fontFamily: DISPLAY }} className="text-5xl leading-none">{item.label}</p>
-                  <p className="mt-3 text-[10px] font-bold uppercase tracking-[0.2em] text-white/50">{item.value}</p>
-                </div>
-              ))}
-            </div>
           </div>
-        </header>
+        </section>
 
 <ProfileCatalogueClient rows={content.textures} productHrefBySku={productHrefBySku} />
 
@@ -237,7 +234,7 @@ export default async function ProfilMuralEffetBoisPage() {
           </section>
         )}
 
-        <section className="py-8 md:py-12" style={{ background: PAPER }}>
+        <section className="py-8 md:py-12">
           <div className="mx-auto max-w-[1500px] px-6 md:px-10">
 <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
               {content.quality.items.map((item) => (
@@ -264,21 +261,21 @@ export default async function ProfilMuralEffetBoisPage() {
           </div>
         </section>
 
-        <section className="py-16 md:py-24" style={{ background: DARK, color: CREAM }}>
-          <div className="mx-auto grid max-w-[1500px] gap-12 px-6 md:grid-cols-[0.9fr_1.1fr] md:px-10">
+        <section className="py-16 md:py-24" style={{ background: PAPER }}>
+          <div className="mx-auto grid max-w-[1500px] gap-10 px-6 md:grid-cols-[0.8fr_1.2fr] md:px-10">
             <div>
               <p className="mb-5 text-[10px] font-bold uppercase tracking-[0.3em]" style={{ color: GOLD }}>
                 {content.advice.eyebrow}
               </p>
-              <h2 style={{ fontFamily: DISPLAY, fontSize: 'clamp(2.4rem, 5vw, 4.6rem)', lineHeight: 0.95, fontWeight: 400 }}>
+              <h2 style={{ fontFamily: DISPLAY, fontSize: 'clamp(2.2rem, 4.5vw, 4rem)', lineHeight: 0.96, fontWeight: 400 }}>
                 {content.advice.headline}
                 <br />
-                <em style={{ color: 'rgba(247,242,232,0.5)' }}>{content.advice.italic}</em>
+                <em style={{ color: 'rgba(20,19,15,0.48)' }}>{content.advice.italic}</em>
               </h2>
             </div>
             <div className="grid gap-4">
               {content.advice.points.map((item) => (
-                <div key={item} className="flex gap-4 border-b border-[#C4A23E]/15 pb-5 text-sm leading-7 text-white/65">
+                <div key={item} className="flex gap-4 border-b border-[#C4A23E]/20 pb-4 text-sm font-semibold leading-7 text-[#14130F]/66">
                   <Check className="mt-1 h-4 w-4 shrink-0" style={{ color: GOLD }} />
                   {item}
                 </div>

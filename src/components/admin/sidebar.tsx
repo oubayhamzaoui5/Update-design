@@ -3,28 +3,21 @@
 import NavLink from "./nav-link"
 import {
   LayoutDashboard,
-  Package,
-  FolderTree,
-  Boxes,
-  ShoppingCart,
   LogOut,
   Sliders,
   FileText,
-  Users,
   ShieldCheck,
   Settings,
-  KeyRound,
   Layers,
+  MessageSquareText,
+  Home,
+  ExternalLink,
 } from "lucide-react"
 import { useRouter } from "next/navigation"
-import Image from "next/image"
 import Link from "next/link"
-import { useEffect, useState } from "react"
-import { getPendingOrdersCountAction } from "@/app/(admin)/admin/dashboard/actions"
 
 export default function Sidebar() {
   const router = useRouter()
-  const [pendingCount, setPendingCount] = useState(0)
 
   const handleLogout = async () => {
     try {
@@ -35,110 +28,66 @@ export default function Sidebar() {
     }
   }
 
-  useEffect(() => {
-    let active = true
-
-    async function fetchPending() {
-      const count = await getPendingOrdersCountAction()
-      if (active) setPendingCount(count)
-    }
-
-    function handleOrdersChanged() {
-      void fetchPending()
-    }
-
-    void fetchPending()
-    window.addEventListener("admin:orders-changed", handleOrdersChanged)
-    window.addEventListener("focus", handleOrdersChanged)
-
-    return () => {
-      active = false
-      window.removeEventListener("admin:orders-changed", handleOrdersChanged)
-      window.removeEventListener("focus", handleOrdersChanged)
-    }
-  }, [])
-
   return (
-    <aside
-      className="hidden w-60 md:flex md:flex-col"
-      style={{
-        background: '#FFFFFF',
-        borderRight: '1px solid #E8EAED',
-      }}
-    >
-      {/* Logo */}
-      <div
-        className="flex items-center gap-3 px-5 py-4"
-        style={{ borderBottom: '1px solid #F0F2F5' }}
-      >
-        <Link href="/" className="flex items-center gap-3">
+    <aside className="hidden w-64 shrink-0 flex-col border-r border-[#1C1A14]/8 bg-white md:flex">
+      {/* Brand */}
+      <div className="flex items-center justify-between px-5 py-5">
+        <Link href="/admin" className="flex items-center gap-3">
           <div
-            className="relative h-8 w-8 overflow-hidden rounded-lg shrink-0"
-            style={{ background: '#EEF2FF' }}
+            className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg text-sm font-bold text-[#C4A23E]"
+            style={{ background: "#1C1A14", fontFamily: "var(--font-display), Georgia, serif" }}
           >
-            <Image
-              src="/logow.webp"
-              alt="logo"
-              width={32}
-              height={32}
-              className="object-cover"
-            />
+            UD
           </div>
-          <span
-            className="text-sm font-bold truncate"
-            style={{ color: '#111827', letterSpacing: '-0.01em' }}
-          >
-            Panneau admin
-          </span>
+          <div className="leading-tight">
+            <p className="text-[13px] font-bold tracking-tight text-[#1C1A14]">Update Design</p>
+            <p className="text-[10px] font-semibold uppercase tracking-[0.16em] text-[#9A9486]">
+              Espace admin
+            </p>
+          </div>
         </Link>
       </div>
 
       {/* Navigation */}
-      <nav className="flex-1 overflow-y-auto px-3 py-4 space-y-0.5">
-        <p
-          className="px-3 pb-2 text-[10px] font-semibold uppercase tracking-widest"
-          style={{ color: '#9CA3AF' }}
-        >
-          Main
+      <nav className="flex-1 space-y-1 overflow-y-auto px-3 py-2">
+        <p className="px-3 pb-2 pt-2 text-[10px] font-bold uppercase tracking-[0.18em] text-[#B5AF9F]">
+          Showroom
         </p>
         <NavLink href="/admin" icon={LayoutDashboard} label="Tableau de bord" />
-        <NavLink href="/admin/produits" icon={Package} label="Produits" />
-        <NavLink href="/admin/categories" icon={FolderTree} label="Categories" />
+        <NavLink href="/admin/devis" icon={MessageSquareText} label="Demandes devis" />
         <NavLink href="/admin/catalogue" icon={Layers} label="Catalogue" />
+
+        <p className="px-3 pb-2 pt-5 text-[10px] font-bold uppercase tracking-[0.18em] text-[#B5AF9F]">
+          Contenu
+        </p>
+        <NavLink href="/admin/contenu" icon={Home} label="Pages site" />
+        <NavLink href="/admin/blog" icon={FileText} label="Blog" />
         <NavLink href="/admin/variables" icon={Sliders} label="Variables" />
 
-        <p
-          className="px-3 pt-4 pb-2 text-[10px] font-semibold uppercase tracking-widest"
-          style={{ color: '#9CA3AF' }}
-        >
-          Operations
+        <p className="px-3 pb-2 pt-5 text-[10px] font-bold uppercase tracking-[0.18em] text-[#B5AF9F]">
+          Système
         </p>
-        <NavLink href="/admin/commandes" icon={ShoppingCart} label="Commandes" badge={pendingCount} />
-        <NavLink href="/admin/inventaire" icon={Boxes} label="Stock" />
-        <NavLink href="/admin/utilisateurs" icon={Users} label="Clients" />
         <NavLink href="/admin/administrateurs" icon={ShieldCheck} label="Administrateurs" />
-        <NavLink href="/admin/blog" icon={FileText} label="Blog" />
-        <NavLink href="/admin/contenu" icon={Sliders} label="Contenu site" />
-
-        <p
-          className="px-3 pt-4 pb-2 text-[10px] font-semibold uppercase tracking-widest"
-          style={{ color: '#9CA3AF' }}
-        >
-          System
-        </p>
-        <NavLink href="/admin/cles" icon={KeyRound} label="Cles API" />
-        <NavLink href="/admin/parametres" icon={Settings} label="Parametres" />
+        <NavLink href="/admin/parametres" icon={Settings} label="Paramètres" />
       </nav>
 
-      {/* Logout */}
-      <div className="px-3 pb-4 pt-2" style={{ borderTop: '1px solid #F0F2F5' }}>
+      {/* Footer */}
+      <div className="space-y-1 border-t border-[#1C1A14]/8 p-3">
+        <a
+          href="/"
+          target="_blank"
+          rel="noreferrer"
+          className="flex items-center gap-2.5 rounded-lg px-3 py-2.5 text-sm font-medium text-[#5A554A] transition-colors hover:bg-[#1C1A14]/[0.05] hover:text-[#1C1A14]"
+        >
+          <ExternalLink className="h-[17px] w-[17px] text-[#9A9486]" />
+          Voir le site
+        </a>
         <button
           onClick={handleLogout}
-          className="group flex w-full cursor-pointer items-center gap-3 rounded-xl px-4 py-2.5 text-sm font-semibold transition-colors hover:bg-[#FFF1F1]"
-          style={{ color: '#EF4444' }}
+          className="flex w-full cursor-pointer items-center gap-2.5 rounded-lg px-3 py-2.5 text-sm font-semibold text-[#C0392B] transition-colors hover:bg-[#C0392B]/[0.07]"
         >
-          <LogOut size={16} />
-          Se deconnecter
+          <LogOut className="h-[17px] w-[17px]" />
+          Se déconnecter
         </button>
       </div>
     </aside>

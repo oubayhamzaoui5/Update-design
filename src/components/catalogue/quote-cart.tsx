@@ -88,6 +88,12 @@ export function QuoteButton({
 export function QuoteCartPanel() {
   const [items, setItems] = useState<QuoteCartItem[]>([])
   const [notes, setNotes] = useState('')
+  const [name, setName] = useState('')
+  const [phone, setPhone] = useState('')
+  const [email, setEmail] = useState('')
+  const [city, setCity] = useState('')
+  const [submitting, setSubmitting] = useState(false)
+  const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null)
 
   useEffect(() => {
     const sync = () => setItems(readItems())
@@ -124,6 +130,57 @@ export function QuoteCartPanel() {
   const whatsappHref = `https://wa.me/?text=${encodeURIComponent(
     `Bonjour Update Design,\nJe souhaite un devis pour:\n${summary || '-'}\n\nNotes: ${notes || '-'}`
   )}`
+
+  async function submitRequest() {
+    setMessage(null)
+
+    if (items.length === 0) {
+      setMessage({ type: 'error', text: 'Ajoutez au moins une reference au devis.' })
+      return
+    }
+
+    if (!phone.trim()) {
+      setMessage({ type: 'error', text: 'Ajoutez votre telephone pour etre contacte.' })
+      return
+    }
+
+    setSubmitting(true)
+    try {
+      const response = await fetch('/api/quote-requests', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          name,
+          phone,
+          email,
+          city,
+          notes,
+          items,
+        }),
+      })
+      const data = await response.json().catch(() => ({}))
+
+      if (!response.ok) {
+        throw new Error(typeof data.message === 'string' ? data.message : 'Erreur')
+      }
+
+      writeItems([])
+      setItems([])
+      setNotes('')
+      setName('')
+      setPhone('')
+      setEmail('')
+      setCity('')
+      setMessage({ type: 'success', text: 'Demande envoyee. Notre equipe vous contactera rapidement.' })
+    } catch (error) {
+      setMessage({
+        type: 'error',
+        text: error instanceof Error ? error.message : 'Impossible d envoyer la demande.',
+      })
+    } finally {
+      setSubmitting(false)
+    }
+  }
 
   return (
     <main className="min-h-screen px-6 py-28 md:px-10" style={{ fontFamily: BODY, background: CREAM, color: DARK }}>
@@ -185,8 +242,34 @@ export function QuoteCartPanel() {
           <div className="border border-[#14130F]/10 bg-white p-6">
             <p className="text-[10px] font-bold uppercase tracking-[0.22em]" style={{ color: GOLD }}>Finaliser</p>
             <p className="mt-4 text-sm leading-7 text-[#14130F]/58">
-              Ajoutez vos dimensions, surface, ville ou urgence. Vous pouvez envoyer la demande ou continuer a explorer.
+              Ajoutez vos coordonnees, dimensions, surface, ville ou urgence. La demande sera envoyee au showroom.
             </p>
+            <div className="mt-5 grid gap-3">
+              <input
+                value={name}
+                onChange={(event) => setName(event.target.value)}
+                className="w-full border border-[#14130F]/12 bg-[#F7F2E8] p-4 text-sm outline-none focus:border-[#C4A23E]"
+                placeholder="Nom"
+              />
+              <input
+                value={phone}
+                onChange={(event) => setPhone(event.target.value)}
+                className="w-full border border-[#14130F]/12 bg-[#F7F2E8] p-4 text-sm outline-none focus:border-[#C4A23E]"
+                placeholder="Telephone *"
+              />
+              <input
+                value={email}
+                onChange={(event) => setEmail(event.target.value)}
+                className="w-full border border-[#14130F]/12 bg-[#F7F2E8] p-4 text-sm outline-none focus:border-[#C4A23E]"
+                placeholder="Email"
+              />
+              <input
+                value={city}
+                onChange={(event) => setCity(event.target.value)}
+                className="w-full border border-[#14130F]/12 bg-[#F7F2E8] p-4 text-sm outline-none focus:border-[#C4A23E]"
+                placeholder="Ville"
+              />
+            </div>
             <textarea
               value={notes}
               onChange={(event) => setNotes(event.target.value)}
@@ -194,8 +277,29 @@ export function QuoteCartPanel() {
               className="mt-5 w-full border border-[#14130F]/12 bg-[#F7F2E8] p-4 text-sm outline-none focus:border-[#C4A23E]"
               placeholder="Surface, dimensions, ville, delai..."
             />
-            <a href={whatsappHref} target="_blank" rel="noreferrer" className="mt-5 inline-flex w-full items-center justify-center gap-3 px-6 py-4 text-[11px] font-bold uppercase tracking-[0.18em] text-white" style={{ background: GOLD }}>
-              Proceed devis <ArrowRight size={13} />
+            {message && (
+              <p
+                className="mt-4 border px-4 py-3 text-sm font-semibold"
+                style={{
+                  borderColor: message.type === 'success' ? '#A7F3D0' : '#FECACA',
+                  background: message.type === 'success' ? '#ECFDF5' : '#FEF2F2',
+                  color: message.type === 'success' ? '#047857' : '#B91C1C',
+                }}
+              >
+                {message.text}
+              </p>
+            )}
+            <button
+              type="button"
+              onClick={submitRequest}
+              disabled={submitting || items.length === 0}
+              className="mt-5 inline-flex w-full cursor-pointer items-center justify-center gap-3 px-6 py-4 text-[11px] font-bold uppercase tracking-[0.18em] text-white transition disabled:cursor-not-allowed disabled:opacity-50"
+              style={{ background: GOLD }}
+            >
+              {submitting ? 'Envoi...' : 'Envoyer la demande'} <ArrowRight size={13} />
+            </button>
+            <a href={whatsappHref} target="_blank" rel="noreferrer" className="mt-3 inline-flex w-full items-center justify-center gap-3 border border-[#14130F]/16 px-6 py-4 text-[11px] font-bold uppercase tracking-[0.18em] text-[#14130F]">
+              Envoyer aussi sur WhatsApp
             </a>
             <Link href="/#nos-categories" className="mt-3 inline-flex w-full items-center justify-center gap-3 border border-[#14130F]/16 px-6 py-4 text-[11px] font-bold uppercase tracking-[0.18em] text-[#14130F]">
               Continuer exploration
