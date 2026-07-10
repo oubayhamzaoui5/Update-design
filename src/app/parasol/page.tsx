@@ -81,7 +81,7 @@ type Config = {
 }
 
 const EMPTY: Config = {
-  modele: null, couleurStruct: null, tissu: null,
+  modele: null, couleurStruct: 'Noir', tissu: null,
   logo: false, logoFile: null,
 }
 
@@ -90,7 +90,7 @@ function isStepValid(step: number, c: Config): boolean {
   if (step === 0) {
     return c.modele !== null
   }
-  if (step === 1) return c.couleurStruct !== null && c.tissu !== null
+  if (step === 1) return c.tissu !== null
   return true
 }
 
@@ -378,47 +378,8 @@ export default function ParasolPage() {
                   Structure & tissu
                 </h1>
                 <p style={{ fontFamily: BODY, fontSize: '0.85rem', color: 'rgba(28,26,20,0.55)', lineHeight: 1.75 }}>
-                  Choisissez la couleur de la structure et du tissu de votre parasol.
+                  Choisissez la couleur du tissu de votre parasol.
                 </p>
-              </div>
-
-              <div>
-              <FieldLabel>Couleur de la structure</FieldLabel>
-              <div className="grid grid-cols-6 gap-2.5">
-                {COULEURS_STRUCT.map((c) => {
-                  const active = config.couleurStruct === c.id
-                  return (
-                    <button
-                      key={c.id}
-                      type="button"
-                      onClick={() => set('couleurStruct', c.id)}
-                      title={c.label}
-                      className="flex flex-col items-center gap-1.5 cursor-pointer"
-                    >
-                      <div
-                        style={{
-                          width: '100%', aspectRatio: '1/1',
-                          background: 'hex' in c ? c.hex : undefined,
-                          border: `2px solid ${active ? GOLD : 'transparent'}`,
-                          boxShadow: active ? `0 0 0 1px ${CREAM}, 0 0 0 3px ${GOLD}` : '0 0 0 1px rgba(0,0,0,0.1)',
-                          transition: 'all 0.15s',
-                          overflow: 'hidden',
-                        }}
-                      >
-                        {'swatch' in c && (
-                          <img src={c.swatch} alt={c.label} style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
-                        )}
-                      </div>
-                      <span style={{
-                        fontFamily: BODY, fontSize: 11, color: active ? GOLD : DARK,
-                        fontWeight: active ? 700 : 500, textAlign: 'center', lineHeight: 1.2, letterSpacing: '0.03em',
-                      }}>
-                        {c.label}
-                      </span>
-                    </button>
-                  )
-                })}
-              </div>
               </div>
 
               {/* ── Tissu ──────────────────────────────────────────────────────── */}
