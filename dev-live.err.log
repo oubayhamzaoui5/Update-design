@@ -1,0 +1,107 @@
+⨯ upstream image response timed out for https://images.unsplash.com/photo-1604762512526-b6ce1b9e8ef6?auto=format&fit=crop&w=700&q=80
+⨯ The requested resource isn't a valid image for /a-proposimg.webp received null
+⨯ The requested resource isn't a valid image for /a-proposimg.webp received null
+⨯ The requested resource isn't a valid image for /a-proposimg.webp received null
+⨯ The requested resource isn't a valid image for /a-proposimg.webp received null
+⚠ Fast Refresh had to perform a full reload due to a runtime error.
+⨯ ReferenceError: Image is not defined
+    at ImgPlaceholder (src\components\catalogue\gazon-showcase.tsx:62:10)
+  60 |     return (
+  61 |       <div className="relative w-full overflow-hidden" style={{ aspectRatio: `${w} / ${h}` }}>
+> 62 |         <Image src={src} alt={alt} fill sizes="(max-width:768px) 100vw, 60vw" className="object-cover" />
+     |          ^
+  63 |       </div>
+  64 |     )
+  65 |   } {
+  digest: '345562035'
+}
+⚠ Fast Refresh had to perform a full reload due to a runtime error.
+⨯ ReferenceError: ImgPlaceholder is not defined
+    at GazonShowcase (src\components\catalogue\gazon-showcase.tsx:107:14)
+  105 |         <section>
+  106 |           <div className="mx-auto max-w-[1500px] px-6 pt-8 md:px-10">
+> 107 |             <ImgPlaceholder
+      |              ^
+  108 |               ar="21:9"
+  109 |               label="Visuel principal"
+  110 |               src={LEAD_IMAGE} {
+  digest: '2767245515'
+}
+⚠ Fast Refresh had to perform a full reload due to a runtime error.
+⨯ ReferenceError: ImgPlaceholder is not defined
+    at eval (src\components\catalogue\gazon-showcase.tsx:156:22)
+    at Array.map (<anonymous>)
+    at GazonShowcase (src\components\catalogue\gazon-showcase.tsx:147:22)
+  154 |                   {/* full-width grass image at this height */}
+  155 |                   <div className="relative">
+> 156 |                     <ImgPlaceholder
+      |                      ^
+  157 |                       ar="16:9"
+  158 |                       label={`Gazon ${h.mm}mm`}
+  159 |                       src={HEIGHT_IMAGES[i]} {
+  digest: '1229201711'
+}
+⚠ Fast Refresh had to perform a full reload due to a runtime error.
+⚠ Fast Refresh had to perform a full reload due to a runtime error.
+⨯ TypeError: models is not iterable
+    at ExterieurShowcase.useMemo[modelMeta] (src\components\catalogue\exterieur-showcase.tsx:48:21)
+    at ExterieurShowcase (src\components\catalogue\exterieur-showcase.tsx:46:28)
+  46 |   const modelMeta = useMemo(() => {
+  47 |     const m: Record<string, Model> = {}
+> 48 |     for (const x of models) m[x.code] = x
+     |                     ^
+  49 |     return m
+  50 |   }, [models])
+  51 | {
+  digest: '660871764'
+}
+⚠ Fast Refresh had to perform a full reload due to a runtime error.
+⨯ ReferenceError: groupCatalogueProducts is not defined
+    at MouluresDecorativesPage (src\app\moulures-decoratives\page.tsx:30:29)
+  28 |   const products = await getStaticCatalogueProductsByCategory('moulures')
+  29 |   const sourceProducts = products.length > 0 ? products : fallbackProducts
+> 30 |   const catalogueProducts = groupCatalogueProducts(sourceProducts, (product) => {
+     |                             ^
+  31 |     const size = product.name.match(/(\d+)\s*mm/i)?.[1] ?? product.code.match(/-(\d+)/)?.[1] ?? product.code
+  32 |     const plinthe = /plinthe/i.test(product.name)
+  33 |     const profile = product.code.endsWith('L') ? 'lineaire' : 'central' {
+  digest: '245245502'
+}
+⚠ Fast Refresh had to perform a full reload due to a runtime error.
+Only plain objects can be passed to Client Components from Server Components. Classes or other objects with methods are not supported.
+  <... ar="21:9" accent="#C4A23E" Icon={{$$typeof: ..., render: ...}} label=... src=... alt=... prompt=...>
+                                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+⨯ Error: Functions cannot be passed directly to Client Components unless you explicitly expose it by marking it with "use server". Or maybe you meant to call this function rather than return it.
+  {$$typeof: ..., render: function PenTool}
+                          ^^^^^^^^^^^^^^^^
+    at stringify (<anonymous>) {
+  digest: '2023292146'
+}
+Only plain objects can be passed to Client Components from Server Components. Classes or other objects with methods are not supported.
+  <... ar="21:9" accent="#C4A23E" Icon={{$$typeof: ..., render: ...}} label=... src=... alt=... prompt=...>
+                                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+⨯ Error: Functions cannot be passed directly to Client Components unless you explicitly expose it by marking it with "use server". Or maybe you meant to call this function rather than return it.
+  {$$typeof: ..., render: function PenTool}
+                          ^^^^^^^^^^^^^^^^
+    at stringify (<anonymous>) {
+  digest: '2023292146'
+}
+Only plain objects can be passed to Client Components from Server Components. Classes or other objects with methods are not supported.
+  <... ar="21:9" accent="#C4A23E" Icon={{$$typeof: ..., render: ...}} label=... src=... alt=... prompt=...>
+                                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+⨯ Error: Functions cannot be passed directly to Client Components unless you explicitly expose it by marking it with "use server". Or maybe you meant to call this function rather than return it.
+  {$$typeof: ..., render: function PenTool}
+                          ^^^^^^^^^^^^^^^^
+    at stringify (<anonymous>) {
+  digest: '2023292146'
+}
+Only plain objects can be passed to Client Components from Server Components. Classes or other objects with methods are not supported.
+  <... ar="21:9" accent="#C4A23E" Icon={{$$typeof: ..., render: ...}} label=... src=... alt=... prompt=...>
+                                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+⨯ Error: Functions cannot be passed directly to Client Components unless you explicitly expose it by marking it with "use server". Or maybe you meant to call this function rather than return it.
+  {$$typeof: ..., render: function PenTool}
+                          ^^^^^^^^^^^^^^^^
+    at stringify (<anonymous>) {
+  digest: '2023292146'
+}
+⚠ Fast Refresh had to perform a full reload due to a runtime error.
